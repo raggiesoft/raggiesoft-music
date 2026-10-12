@@ -6,7 +6,7 @@ node_modules
 .netlify
 .wrangler
 /.svelte-kit
-/build
+# /build  <- Allowed so Jenna can push the static build for Sarah to pull
 
 # OS
 .DS_Store

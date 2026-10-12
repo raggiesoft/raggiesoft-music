@@ -1,0 +1,57 @@
+{
+  "name": "Engine Room Records",
+  "short_name": "Engine Room",
+  "description": "Persistent, WCAG AA compliant audio streaming platform for the RaggieSoft universe.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#2563eb",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "entertainment", "audio"],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "shortcuts": [
+    {
+      "name": "Now Playing",
+      "short_name": "Player",
+      "description": "Return to active audio player",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Rock Operas",
+      "short_name": "Rock Operas",
+      "description": "Stream continuous multi-disc rock operas",
+      "url": "/?filter=rock-opera",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
+
