@@ -33,6 +33,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [legacyTier]
  * @property {string} [loreNote]
  * @property {string} audioUrl
+ * @property {boolean} [isPlayable]
  */
 
 /**
@@ -43,8 +44,14 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} artist
  * @property {string} artistSlug
  * @property {string} year
+ * @property {string} [temporalCoverage]
+ * @property {string} [datePublished]
  * @property {string} genre
  * @property {boolean} isRockOpera
+ * @property {string} status
+ * @property {string} statusLabel
+ * @property {number} playableTrackCount
+ * @property {number} totalTracksCount
  * @property {string} artwork
  * @property {string} description
  * @property {Track[]} tracks
@@ -104,22 +111,26 @@ export const allArtists = (() => {
 export const catalogStats = {
 	totalArtists: allArtists.length,
 	totalAlbums: allAlbums.length,
-	totalTracks: allAlbums.reduce((acc, curr) => acc + curr.tracks.length, 0)
+	totalTracks: allAlbums.reduce((acc, curr) => acc + curr.tracks.length, 0),
+	playableTracks: allAlbums.reduce((acc, curr) => acc + (curr.playableTrackCount || 0), 0)
 };
 
 /**
  * Transforms an album's track list into formatted player queue items.
+ * Only includes playable tracks with valid audio streams.
  * Maps album-level metadata down to every individual track object.
  *
  * @param {Album} album
  * @returns {Array<Track & { album: string; artist: string; artwork: string; year: string }>}
  */
 export function formatAlbumQueue(album) {
-	return album.tracks.map((t) => ({
-		...t,
-		album: album.title,
-		artist: album.artist,
-		artwork: album.artwork,
-		year: album.year
-	}));
+	return album.tracks
+		.filter((t) => t.isPlayable && t.audioUrl)
+		.map((t) => ({
+			...t,
+			album: album.title,
+			artist: album.artist,
+			artwork: album.artwork,
+			year: album.year
+		}));
 }

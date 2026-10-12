@@ -101,21 +101,28 @@
 	/**
 	 * Plays an entire album sequentially from track 1.
 	 * Enables continuous, gapless-style playback across rock operas.
+	 * Only enqueues tracks that have active audio streams.
 	 * @param {typeof currentCatalog[0]} album
 	 */
 	function playAlbum(album) {
 		const queue = formatAlbumQueue(album);
-		player.loadQueue(queue, 0, true);
+		if (queue.length > 0) {
+			player.loadQueue(queue, 0, true);
+		}
 	}
 
 	/**
-	 * Plays a specific track from an album and queues the rest of the album following it.
+	 * Plays a specific track from an album and queues the rest of the playable album following it.
 	 * @param {typeof currentCatalog[0]} album
-	 * @param {number} trackIndex
+	 * @param {typeof currentCatalog[0]['tracks'][0]} track
 	 */
-	function playTrack(album, trackIndex) {
+	function playTrack(album, track) {
+		if (!track.isPlayable || !track.audioUrl) return;
 		const queue = formatAlbumQueue(album);
-		player.loadQueue(queue, trackIndex, true);
+		const qIdx = queue.findIndex((item) => item.id === track.id);
+		if (qIdx !== -1) {
+			player.loadQueue(queue, qIdx, true);
+		}
 	}
 
 	/**
@@ -170,8 +177,15 @@
 		<span
 			class="rounded-md border border-blue-800/80 bg-blue-950/60 px-2.5 py-1 font-semibold text-blue-300 shadow-sm"
 		>
-			{catalogStats.totalTracks} Songs
+			{catalogStats.playableTracks} Playable Songs
 		</span>
+		{#if catalogStats.totalTracks - catalogStats.playableTracks > 0}
+			<span
+				class="rounded-md border border-amber-800/80 bg-amber-950/60 px-2.5 py-1 font-semibold text-amber-300 shadow-sm"
+			>
+				{catalogStats.totalTracks - catalogStats.playableTracks} In Studio
+			</span>
+		{/if}
 		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1">Live CDN Audio</span>
 		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1"
 			>WCAG 2.1 AA Compliant</span
@@ -279,19 +293,31 @@
 					/>
 
 					<!-- Play Album Overlay Button -->
-					<button
-						onclick={() => playAlbum(album)}
-						class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500"
-						aria-label="Play complete album {album.title}"
-					>
-						<span
-							class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/50 transition-transform hover:scale-110"
+					{#if album.status !== 'coming-soon'}
+						<button
+							onclick={() => playAlbum(album)}
+							class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500"
+							aria-label="Play {album.title}"
 						>
-							<svg class="h-7 w-7 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-						</span>
-					</button>
+							<span
+								class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/50 transition-transform hover:scale-110"
+							>
+								<svg class="h-7 w-7 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+							</span>
+						</button>
+					{:else}
+						<div
+							class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+						>
+							<span
+								class="rounded-full border border-amber-600/60 bg-amber-950/90 px-3 py-1 text-xs font-semibold text-amber-300 shadow-lg"
+							>
+								In Studio
+							</span>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Album Info -->
@@ -305,8 +331,21 @@
 									Rock Opera
 								</span>
 							{/if}
+							{#if album.status === 'coming-soon'}
+								<span
+									class="rounded border border-amber-600/50 bg-amber-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-amber-300 uppercase"
+								>
+									Coming Soon
+								</span>
+							{:else if album.status === 'in-progress'}
+								<span
+									class="rounded border border-sky-600/50 bg-sky-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-sky-300 uppercase"
+								>
+									In Production ({album.playableTrackCount}/{album.totalTracksCount} Ready)
+								</span>
+							{/if}
 							<span class="font-mono text-xs font-semibold text-slate-400">
-								{album.year} • {album.genre}
+								{album.temporalCoverage || album.year} • {album.genre}
 							</span>
 						</div>
 
@@ -323,15 +362,36 @@
 
 					<!-- Card Action Bar -->
 					<div class="mt-4 flex items-center gap-3 border-t border-slate-800/80 pt-4">
-						<button
-							onclick={() => playAlbum(album)}
-							class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
-						>
-							<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							Play Album
-						</button>
+						{#if album.status === 'coming-soon'}
+							<span
+								class="flex items-center gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3.5 py-2 text-xs font-semibold text-amber-300 select-none cursor-not-allowed sm:text-sm"
+							>
+								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+								Coming Soon
+							</span>
+						{:else if album.status === 'in-progress'}
+							<button
+								onclick={() => playAlbum(album)}
+								class="flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-sky-600/20 transition-colors hover:bg-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:text-sm"
+							>
+								<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Play Preview ({album.playableTrackCount})
+							</button>
+						{:else}
+							<button
+								onclick={() => playAlbum(album)}
+								class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+							>
+								<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Play Album
+							</button>
+						{/if}
 
 						<button
 							onclick={() => toggleAlbumDetails(album.id)}
@@ -356,39 +416,51 @@
 					<div class="divide-y divide-slate-800/60">
 						{#each album.tracks as track, tIdx (track.id || tIdx)}
 							<div
-								class="group flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-800/50 {player
-									.currentTrack.id === track.id
+								class="group flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors {track.isPlayable
+									? 'hover:bg-slate-800/50'
+									: 'opacity-65'} {player.currentTrack.id === track.id
 									? 'bg-slate-800/80 text-blue-400'
 									: 'text-slate-300'}"
 							>
 								<div class="flex min-w-0 flex-1 items-center gap-3">
-									<button
-										onclick={() => playTrack(album, tIdx)}
-										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-										aria-label="Play {track.title}"
-									>
-										{#if player.currentTrack.id === track.id && player.isPlaying}
-											<svg
-												class="h-3.5 w-3.5 text-blue-400 group-hover:text-white"
-												fill="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+									{#if track.isPlayable}
+										<button
+											onclick={() => playTrack(album, track)}
+											class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+											aria-label="Play {track.title}"
+										>
+											{#if player.currentTrack.id === track.id && player.isPlaying}
+												<svg
+													class="h-3.5 w-3.5 text-blue-400 group-hover:text-white"
+													fill="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+												</svg>
+											{:else}
+												<svg
+													class="h-3.5 w-3.5 translate-x-0.5"
+													fill="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path d="M8 5v14l11-7z" />
+												</svg>
+											{/if}
+										</button>
+									{:else}
+										<span
+											class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-500 cursor-not-allowed"
+											title="Audio in studio production"
+										>
+											<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 											</svg>
-										{:else}
-											<svg
-												class="h-3.5 w-3.5 translate-x-0.5"
-												fill="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path d="M8 5v14l11-7z" />
-											</svg>
-										{/if}
-									</button>
+										</span>
+									{/if}
 
 									<div class="min-w-0 flex-1">
 										<div class="flex items-center gap-2">
-											<span class="truncate text-sm font-medium">
+											<span class="truncate text-sm font-medium {track.isPlayable ? '' : 'text-slate-400'}">
 												{track.track}. {track.title}
 											</span>
 											{#if track.legacyTier}
@@ -396,6 +468,13 @@
 													class="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300"
 												>
 													{track.legacyTier}
+												</span>
+											{/if}
+											{#if !track.isPlayable}
+												<span
+													class="shrink-0 rounded border border-amber-900/40 bg-amber-950/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300/80"
+												>
+													In Studio
 												</span>
 											{/if}
 										</div>

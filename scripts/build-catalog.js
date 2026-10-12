@@ -177,15 +177,25 @@ function buildCatalog() {
 					.join(' ');
 			}
 
-			// Resolve release year
+			// Resolve temporalCoverage and datePublished (ISO 8601)
+			const temporalCoverage = albumData.temporalCoverage
+				? String(albumData.temporalCoverage).trim()
+				: '';
+			const datePublished = albumData.datePublished
+				? String(albumData.datePublished).trim()
+				: (albumData.albumRelease?.datePublished
+					? String(albumData.albumRelease.datePublished).trim()
+					: '');
+
+			// Resolve narrative release year
 			let year = '';
 			const yearMatch = albumSlug.match(/^(\d{4})/);
 			if (yearMatch) {
 				year = yearMatch[1];
-			} else if (albumData.temporalCoverage) {
-				year = String(albumData.temporalCoverage).substring(0, 4);
-			} else if (albumData.albumRelease?.datePublished) {
-				year = String(albumData.albumRelease.datePublished).substring(0, 4);
+			} else if (temporalCoverage) {
+				year = temporalCoverage.substring(0, 4);
+			} else if (datePublished) {
+				year = datePublished.substring(0, 4);
 			}
 
 			// Resolve genre and description
@@ -207,12 +217,14 @@ function buildCatalog() {
 				artwork = `${CDN_BASE}/${artistSlug}/${albumSlug}/album-art.png`;
 			}
 
-			// Process individual tracks
+			// Web MP3 audio directory path
+			const webMp3Dir = path.join(albumDir, 'web-mp3');
+
+			// Process individual tracks and check physical audio file presence
 			const formattedTracks = rawTracks.map((t, idx) => {
 				const trackNum = typeof t.track === 'number' ? t.track : idx + 1;
 				const discNum = typeof t.disc === 'number' ? t.disc : 1;
 				const trackTitle = t.title || `Track ${trackNum}`;
-				const duration = t.duration || '0:00';
 				const isrc = t.isrc || '';
 				const legacyTier = t.legacyTier || '';
 
@@ -231,14 +243,25 @@ function buildCatalog() {
 					}
 				}
 
-				// Resolve audio URL
+				// Resolve audio file name and test physical presence on disk
 				let fileName = t.fileName || '';
 				if (!fileName && t.masterWavPath) {
 					fileName = path.basename(t.masterWavPath);
 				}
-				const audioUrl = fileName
+
+				const hasPhysicalMp3 = Boolean(
+					fileName && fs.existsSync(path.join(webMp3Dir, `${fileName}.mp3`))
+				);
+
+				const audioUrl = hasPhysicalMp3
 					? `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${fileName}.mp3`
 					: '';
+
+				// Format duration; if unrendered and duration is missing/zero, mark as In Studio
+				let duration = t.duration || '0:00';
+				if (!hasPhysicalMp3 && (duration === '0:00' || !duration)) {
+					duration = 'In Studio';
+				}
 
 				return {
 					id: `${artistSlug}-${albumSlug}-${discNum}-${trackNum}`,
@@ -249,11 +272,27 @@ function buildCatalog() {
 					isrc,
 					legacyTier,
 					loreNote,
-					audioUrl
+					audioUrl,
+					isPlayable: hasPhysicalMp3
 				};
 			});
 
 			totalTracks += formattedTracks.length;
+
+			// Automated Album Status Determination based on physical MP3 availability
+			const playableTracks = formattedTracks.filter((t) => t.isPlayable);
+			const playableTrackCount = playableTracks.length;
+			const totalTracksCount = formattedTracks.length;
+
+			let status = 'released';
+			let statusLabel = 'Released';
+			if (playableTrackCount === 0) {
+				status = 'coming-soon';
+				statusLabel = 'Coming Soon';
+			} else if (playableTrackCount < totalTracksCount) {
+				status = 'in-progress';
+				statusLabel = 'In Production';
+			}
 
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
@@ -262,8 +301,14 @@ function buildCatalog() {
 				artist: artistName,
 				artistSlug,
 				year,
+				temporalCoverage,
+				datePublished,
 				genre,
 				isRockOpera,
+				status,
+				statusLabel,
+				playableTrackCount,
+				totalTracksCount,
 				artwork,
 				description,
 				tracks: formattedTracks
@@ -271,9 +316,11 @@ function buildCatalog() {
 		}
 	}
 
-	// Sort catalog chronologically then alphabetically by artist
+	// Sort catalog chronologically by ISO 8601 temporalCoverage/year, then title
 	catalog.sort((a, b) => {
-		if (a.year !== b.year) return a.year.localeCompare(b.year);
+		const dateA = a.temporalCoverage || a.year || '9999';
+		const dateB = b.temporalCoverage || b.year || '9999';
+		if (dateA !== dateB) return dateA.localeCompare(dateB);
 		return a.title.localeCompare(b.title);
 	});
 
