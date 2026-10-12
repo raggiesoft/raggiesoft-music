@@ -4,20 +4,45 @@
  * vite.config.js
  * ============================================================================
  * Vite 8 configuration for Engine Room Records (music.raggiesoft.com).
- * In SvelteKit 3, all SvelteKit options (adapter, compilerOptions, runes)
- * are configured directly via the `sveltekit({...})` plugin.
+ * Configures Tailwind CSS v4 and a dedicated static PWA adapter that outputs
+ * production-ready HTML/JS/CSS bundles for high-performance Nginx hosting.
  * ============================================================================
  */
 import tailwindcss from '@tailwindcss/vite';
-import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+
+/**
+ * Custom static PWA adapter that exports static HTML/JS/CSS to `build/`
+ * for zero-overhead Nginx static file serving with fallback routing.
+ * @param {{ pages?: string, fallback?: string }} [options]
+ * @returns {import('@sveltejs/kit').Adapter}
+ */
+function staticPwaAdapter(options = {}) {
+	const out = options?.pages || 'build';
+	const fallback = options?.fallback || 'index.html';
+
+	return {
+		name: 'engine-room-static-pwa-adapter',
+		async adapt(builder) {
+			builder.rimraf(out);
+			builder.mkdirp(out);
+
+			builder.writeClient(out);
+			builder.writePrerendered(out);
+
+			if (fallback) {
+				builder.generateFallback(`${out}/${fallback}`);
+			}
+		}
+	};
+}
 
 export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
-			adapter: adapter(),
+			adapter: staticPwaAdapter({ pages: 'build', fallback: 'index.html' }),
 			compilerOptions: {
 				runes: true
 			}

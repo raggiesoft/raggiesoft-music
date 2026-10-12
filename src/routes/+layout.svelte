@@ -5,15 +5,56 @@
 	 * +layout.svelte
 	 * ============================================================================
 	 * Root application layout for Engine Room Records (music.raggiesoft.com).
-	 * Renders global navigation header, dynamic route content, and the persistent
-	 * WCAG AA accessible audio player.
+	 * Renders global navigation header, PWA install prompt, dynamic route content,
+	 * and the persistent WCAG AA accessible audio player.
 	 * ============================================================================
 	 */
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Player from '#lib/components/Player.svelte';
 
 	let { children } = $props();
+
+	let deferredPrompt = $state(/** @type {any} */ (null));
+	let canInstall = $state(false);
+
+	onMount(() => {
+		// Register Service Worker for PWA capabilities
+		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch((err) => {
+				console.warn('PWA service worker registration failed:', err);
+			});
+		}
+
+		// Intercept browser install prompt to offer an in-app button
+		const handleBeforeInstall = (/** @type {Event} */ e) => {
+			e.preventDefault();
+			deferredPrompt = e;
+			canInstall = true;
+		};
+
+		window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+		window.addEventListener('appinstalled', () => {
+			canInstall = false;
+			deferredPrompt = null;
+		});
+
+		return () => {
+			window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+		};
+	});
+
+	async function installApp() {
+		if (!deferredPrompt) return;
+		deferredPrompt.prompt();
+		const { outcome } = await deferredPrompt.userChoice;
+		if (outcome === 'accepted') {
+			canInstall = false;
+		}
+		deferredPrompt = null;
+	}
 </script>
 
 <div
@@ -56,6 +97,24 @@
 			</a>
 
 			<nav class="flex items-center gap-2 text-sm font-medium sm:gap-4">
+				{#if canInstall}
+					<button
+						onclick={installApp}
+						class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+						aria-label="Install Engine Room Records as an App"
+					>
+						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+							/>
+						</svg>
+						Install App
+					</button>
+				{/if}
+
 				<a
 					href={resolve('/')}
 					class="rounded-lg px-3 py-1.5 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
