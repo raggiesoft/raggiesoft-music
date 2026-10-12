@@ -47,6 +47,12 @@ export class AudioPlayer {
 	// Local session persistence flag
 	hasSavedSession = $state(false);
 
+	// Gentle notice when switching albums on the identical song (matched by ISRC)
+	isrcNotice = $state(
+		/** @type {{ message: string, title: string, album: string, isrc: string } | null} */ (null)
+	);
+	_isrcNoticeTimeout = /** @type {any} */ (null);
+
 	// Active track entity
 	currentTrack = $state({
 		id: '',
@@ -174,11 +180,105 @@ export class AudioPlayer {
 	}
 
 	/**
+	 * Displays a gentle notice when a song continues playing across album boundaries by matching ISRC.
+	 * @param {any} track
+	 */
+	notifySameSong(track) {
+		if (this._isrcNoticeTimeout) {
+			clearTimeout(this._isrcNoticeTimeout);
+		}
+		this.isrcNotice = {
+			message: `Same recording • Continuing playback on "${track.album || 'new album'}"`,
+			title: track.title,
+			album: track.album || '',
+			isrc: track.isrc
+		};
+		this._isrcNoticeTimeout = setTimeout(() => {
+			this.isrcNotice = null;
+			this._isrcNoticeTimeout = null;
+		}, 4500);
+	}
+
+	/**
+	 * Manually dismisses the gentle ISRC notice banner.
+	 */
+	dismissIsrcNotice() {
+		this.isrcNotice = null;
+		if (this._isrcNoticeTimeout) {
+			clearTimeout(this._isrcNoticeTimeout);
+			this._isrcNoticeTimeout = null;
+		}
+	}
+
+	/**
 	 * Loads an individual track and begins playback.
+	 *
+	 * ARCHITECTURAL RULE (ISRC as Absolute Source of Truth):
+	 * If the requested track has the identical ISRC code as the track currently loaded
+	 * or playing, the player MUST preserve continuous playback without resetting to 0:00,
+	 * without interrupting the audio stream, and gently informs the listener.
+	 *
 	 * @param {any} track
 	 * @param {boolean} [autoPlay=true]
 	 */
 	loadTrack(track, autoPlay = true) {
+		const currentIsrc = (this.currentTrack.isrc || '').trim().toUpperCase();
+		const targetIsrc = (track.isrc || '').trim().toUpperCase();
+
+		// Check if target track has the identical ISRC and an existing audio stream is active/loaded
+		const isSameSongByIsrc = Boolean(
+			currentIsrc &&
+				targetIsrc &&
+				currentIsrc === targetIsrc &&
+				(this.currentTrack.audioUrl || this.currentTime > 0)
+		);
+
+		if (isSameSongByIsrc) {
+			const previousAlbum = this.currentTrack.album;
+			const isDifferentAlbum = track.album && track.album !== previousAlbum;
+
+			// Seamlessly update metadata to match new album context without resetting playhead
+			this.currentTrack.id = track.id || this.currentTrack.id;
+			this.currentTrack.title = track.title || this.currentTrack.title;
+			this.currentTrack.artist = track.artist || this.currentTrack.artist;
+			this.currentTrack.album = track.album || this.currentTrack.album;
+			this.currentTrack.artwork = track.artwork || this.currentTrack.artwork;
+			this.currentTrack.disc = track.disc || 1;
+			this.currentTrack.track = track.track || 1;
+			this.currentTrack.year = track.year || this.currentTrack.year;
+			this.currentTrack.temporalCoverage =
+				track.temporalCoverage || this.currentTrack.temporalCoverage;
+			this.currentTrack.loreNote = track.loreNote || this.currentTrack.loreNote;
+			this.currentTrack.lyrics = track.lyrics || this.currentTrack.lyrics;
+			this.currentTrack.isrc = targetIsrc;
+			this.currentTrack.legacyTier = track.legacyTier || this.currentTrack.legacyTier;
+
+			// If current track lacked audioUrl, fall back to target's url
+			if (!this.currentTrack.audioUrl && track.audioUrl) {
+				this.currentTrack.audioUrl = track.audioUrl;
+			}
+
+			// Update VTT lyrics if different
+			if (track.vttUrl && track.vttUrl !== this.currentTrack.vttUrl) {
+				this.currentTrack.vttUrl = track.vttUrl;
+				this.fetchVttCues(track.vttUrl);
+			}
+
+			// Ensure playing if autoPlay requested
+			if (autoPlay && !this.isPlaying) {
+				this.isPlaying = true;
+			}
+
+			// Gently notify the listener that playback continues across releases
+			if (isDifferentAlbum) {
+				this.notifySameSong(track);
+			}
+
+			this.saveSession();
+			return;
+		}
+
+		// Standard Track Loading (starts from 0:00)
 		this.currentTrack = {
 			id: track.id || '',
 			title: track.title || 'Unknown Title',

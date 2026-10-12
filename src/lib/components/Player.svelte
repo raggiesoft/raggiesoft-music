@@ -662,6 +662,43 @@
 {/if}
 
 <!-- ======================================================================= -->
+<!-- GENTLE ISRC MATCH NOTIFICATION BANNER                                   -->
+<!-- ======================================================================= -->
+{#if player.isrcNotice}
+	<aside
+		class="fixed bottom-22 left-1/2 z-50 -translate-x-1/2 flex max-w-[90vw] items-center gap-3 rounded-full border border-emerald-500/40 bg-slate-900/95 px-4 py-2.5 text-xs text-emerald-300 shadow-2xl backdrop-blur-md transition-all duration-300"
+		role="status"
+		aria-live="polite"
+	>
+		<div
+			class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400"
+		>
+			<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2.5"
+					d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+				/>
+			</svg>
+		</div>
+		<div class="truncate text-left font-medium">
+			<span class="font-bold text-white">{player.isrcNotice.title}</span>: {player.isrcNotice.message}
+			<span class="ml-1 font-mono text-[10px] text-emerald-400/80">({player.isrcNotice.isrc})</span>
+		</div>
+		<button
+			onclick={() => player.dismissIsrcNotice()}
+			class="ml-1 rounded-full p-1 text-slate-400 transition-colors hover:text-white focus:outline-none"
+			aria-label="Dismiss notice"
+		>
+			<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+			</svg>
+		</button>
+	</aside>
+{/if}
+
+<!-- ======================================================================= -->
 <!-- PERSISTENT BOTTOM PLAYER BAR (WCAG 2.1 AA)                             -->
 <!-- ======================================================================= -->
 <nav

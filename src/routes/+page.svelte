@@ -165,26 +165,46 @@
 	);
 
 	/**
-	 * Plays an entire album sequentially from track 1.
-	 * Enables continuous, gapless-style playback across rock operas.
+	 * Plays an entire album sequentially.
+	 * If the track currently playing is present on this album (as matched by its ISRC),
+	 * the player seamlessly aligns to that track in the new album queue without restarting,
+	 * letting playback continue uninterrupted.
+	 *
 	 * @param {typeof currentCatalog[0]} album
 	 */
 	function playAlbum(album) {
 		const queue = formatAlbumQueue(album);
 		if (queue.length > 0) {
-			player.loadQueue(queue, 0, true);
+			const currentIsrc = (player.currentTrack.isrc || '').trim().toUpperCase();
+			let targetIndex = 0;
+			if (currentIsrc) {
+				const matchingIndex = queue.findIndex(
+					(t) => (t.isrc || '').trim().toUpperCase() === currentIsrc
+				);
+				if (matchingIndex !== -1) {
+					targetIndex = matchingIndex;
+				}
+			}
+			player.loadQueue(queue, targetIndex, true);
 		}
 	}
 
 	/**
 	 * Plays a specific track from an album and queues the rest of the playable album following it.
+	 * Uses track ID or ISRC to locate the track in the album queue. If the track matches the currently
+	 * playing track's ISRC, loadQueue seamlessly continues playback without resetting to 0:00.
+	 *
 	 * @param {typeof currentCatalog[0]} album
 	 * @param {typeof currentCatalog[0]['tracks'][0]} track
 	 */
 	function playTrack(album, track) {
 		if (!track.isPlayable || !track.audioUrl) return;
 		const queue = formatAlbumQueue(album);
-		const qIdx = queue.findIndex((item) => item.id === track.id);
+		let qIdx = queue.findIndex((item) => item.id === track.id);
+		if (qIdx === -1 && track.isrc) {
+			const targetIsrc = track.isrc.trim().toUpperCase();
+			qIdx = queue.findIndex((item) => (item.isrc || '').trim().toUpperCase() === targetIsrc);
+		}
 		if (qIdx !== -1) {
 			player.loadQueue(queue, qIdx, true);
 		}
