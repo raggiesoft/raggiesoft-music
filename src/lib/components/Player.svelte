@@ -45,6 +45,12 @@
 		audioElement.muted = player.isMuted;
 	});
 
+	// Synchronize audio playback rate
+	$effect(() => {
+		if (!audioElement) return;
+		audioElement.playbackRate = player.playbackRate;
+	});
+
 	// Synchronize browser Media Session API
 	$effect(() => {
 		if (
@@ -195,131 +201,375 @@
 		<div
 			class="relative z-10 mx-auto flex max-h-[88vh] w-full max-w-5xl flex-col overflow-y-auto rounded-t-2xl border-t border-slate-700/80 bg-slate-900 p-6 shadow-2xl"
 		>
-			<!-- Header / Close button -->
-			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
-				<div class="flex items-center gap-3">
-					<span
-						class="rounded border border-blue-700/50 bg-blue-900/60 px-2.5 py-1 text-xs font-semibold tracking-wider text-blue-300 uppercase"
+			<!-- Header / Navigation Tabs / Close button -->
+			<div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+				<div class="flex flex-wrap items-center gap-2">
+					<button
+						onclick={() => (player.drawerTab = 'lyrics-lore')}
+						class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.drawerTab ===
+						'lyrics-lore'
+							? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+							: 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white'}"
 					>
-						Now Playing
-					</span>
+						<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+							/>
+						</svg>
+						Lyrics & Lore
+					</button>
+
+					<button
+						onclick={() => (player.drawerTab = 'queue')}
+						class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.drawerTab ===
+						'queue'
+							? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+							: 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white'}"
+					>
+						<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 6h16M4 10h16M4 14h16M4 18h16"
+							/>
+						</svg>
+						Queue ({player.queue.length})
+					</button>
+
+					<button
+						onclick={() => (player.drawerTab = 'credits')}
+						class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.drawerTab ===
+						'credits'
+							? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+							: 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white'}"
+					>
+						<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						Liner Notes & Masters
+					</button>
+				</div>
+
+				<div class="flex items-center gap-3">
 					{#if player.currentTrack.disc && player.currentTrack.track}
 						<span class="font-mono text-xs text-slate-400">
 							Disc {player.currentTrack.disc} • Track {player.currentTrack.track}
 						</span>
 					{/if}
+					<button
+						onclick={() => (player.isExpanded = false)}
+						class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+						aria-label="Close details"
+					>
+						<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					</button>
 				</div>
-				<button
-					onclick={() => (player.isExpanded = false)}
-					class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-					aria-label="Close details"
-				>
-					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					</svg>
-				</button>
 			</div>
 
 			<!-- Main Drawer Grid -->
 			<div class="grid grid-cols-1 gap-8 py-6 md:grid-cols-12">
-				<!-- Left Column: Album Art & Metadata -->
+				<!-- Left Column: Album Art, Expanded Controls, Speed & Sleep Timer -->
 				<div
 					class="flex flex-col items-center text-center md:col-span-5 md:items-start md:text-left"
 				>
-					{#if player.currentTrack.artwork}
-						<img
-							src={player.currentTrack.artwork}
-							alt="Cover artwork for {player.currentTrack.album}"
-							class="h-64 w-64 rounded-xl border border-slate-800 object-cover shadow-2xl md:h-80 md:w-80"
-						/>
-					{:else}
-						<div
-							class="flex h-64 w-64 items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-600 md:h-80 md:w-80"
-						>
-							<span class="text-5xl">♫</span>
-						</div>
-					{/if}
-
-					<div class="mt-4 w-full">
-						<h2 class="text-2xl font-bold tracking-tight text-white">
-							{player.currentTrack.title}
-						</h2>
-						<p class="mt-1 text-lg font-medium text-blue-400">{player.currentTrack.artist}</p>
-						<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
-
-						{#if player.currentTrack.isrc}
+					<div class="relative group">
+						{#if player.currentTrack.artwork}
+							<img
+								src={player.currentTrack.artwork}
+								alt="Cover artwork for {player.currentTrack.album}"
+								class="h-64 w-64 rounded-2xl border border-slate-800 object-cover shadow-2xl transition-transform md:h-80 md:w-80 {player.isPlaying
+									? 'shadow-blue-500/10'
+									: ''}"
+							/>
+						{:else}
 							<div
-								class="mt-4 flex items-center justify-between border-t border-slate-800/80 pt-3 font-mono text-xs text-slate-500"
+								class="flex h-64 w-64 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-slate-600 md:h-80 md:w-80"
 							>
-								<span>ISRC: {player.currentTrack.isrc}</span>
-								{#if player.currentTrack.year}
-									<span>{player.currentTrack.year}</span>
-								{/if}
+								<span class="text-5xl">♫</span>
+							</div>
+						{/if}
+
+						<!-- Equalizer visualizer badge overlay -->
+						{#if player.isPlaying}
+							<div
+								class="absolute bottom-3 right-3 flex items-end gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 backdrop-blur-md"
+							>
+								<span class="h-4 w-1 animate-pulse rounded bg-blue-400"></span>
+								<span
+									class="h-6 w-1 animate-pulse rounded bg-indigo-400"
+									style="animation-delay: 150ms;"
+								></span>
+								<span
+									class="h-3 w-1 animate-pulse rounded bg-blue-300"
+									style="animation-delay: 300ms;"
+								></span>
+								<span
+									class="h-5 w-1 animate-pulse rounded bg-purple-400"
+									style="animation-delay: 450ms;"
+								></span>
 							</div>
 						{/if}
 					</div>
-				</div>
 
-				<!-- Right Column: Lore Notes & Synchronized Lyrics / Queue -->
-				<div class="flex flex-col gap-6 md:col-span-7">
-					<!-- Canonical Universe Lore Note -->
-					{#if player.currentTrack.loreNote}
-						<div class="rounded-xl border border-indigo-900/40 bg-slate-950/80 p-5 shadow-inner">
-							<div
-								class="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wider text-indigo-400 uppercase"
+					<div class="mt-5 w-full">
+						<h2 class="text-2xl font-bold tracking-tight text-white">
+							{player.currentTrack.title || 'Engine Room Records'}
+						</h2>
+						<p class="mt-1 text-lg font-medium text-blue-400">
+							{player.currentTrack.artist || 'Select a track'}
+						</p>
+						<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
+
+						<!-- In-Drawer Progress Scrubber -->
+						<div class="mt-4">
+							<div class="flex justify-between font-mono text-xs text-slate-400">
+								<span>{player.formattedCurrentTime}</span>
+								<span>{player.formattedDuration}</span>
+							</div>
+							<div class="relative mt-1.5 h-2 w-full cursor-pointer rounded-full bg-slate-800">
+								<div
+									class="h-full rounded-full bg-blue-500"
+									style="width: {player.progressPercent}%"
+								></div>
+								<input
+									type="range"
+									min="0"
+									max={player.duration || 100}
+									step="0.1"
+									value={isScrubbing ? scrubTime : player.currentTime}
+									oninput={onScrubInput}
+									onchange={onScrubChange}
+									disabled={!player.currentTrack.audioUrl}
+									aria-label="Seek track"
+									class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+								/>
+							</div>
+						</div>
+
+						<!-- Playback Action Controls Row -->
+						<div class="mt-5 flex items-center justify-center gap-3 md:justify-start">
+							<!-- Shuffle Toggle -->
+							<button
+								onclick={() => player.toggleShuffle()}
+								class="rounded-full p-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.isShuffle
+									? 'bg-blue-600/30 text-blue-400'
+									: 'text-slate-400 hover:text-white'}"
+								title={player.isShuffle ? 'Shuffle: On' : 'Shuffle: Off'}
+								aria-label="Toggle shuffle"
 							>
 								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 									/>
 								</svg>
-								Canonical Lore Note
-							</div>
-							<p class="text-sm leading-relaxed whitespace-pre-line text-slate-300 italic">
-								"{player.currentTrack.loreNote}"
-							</p>
-						</div>
-					{/if}
+							</button>
 
-					<!-- Synchronized Lyrics (WebVTT Cues) -->
-					{#if player.cues.length > 0}
-						<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
-							<h3 class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase">
-								Synchronized Lyrics
-							</h3>
-							<div class="max-h-48 space-y-2 overflow-y-auto pr-2">
-								{#each player.cues as cue (cue.start + cue.text)}
-									<p
-										class="text-sm transition-all duration-200 {player.currentTime >= cue.start &&
-										player.currentTime <= cue.end
-											? 'scale-102 border-l-2 border-blue-500 pl-2 text-base font-bold text-white'
-											: 'text-slate-500'}"
+							<!-- Previous Track -->
+							<button
+								onclick={() => player.prev()}
+								disabled={!player.currentTrack.audioUrl}
+								class="rounded-full p-2.5 text-slate-300 hover:text-white disabled:opacity-40"
+								aria-label="Previous track"
+							>
+								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+								</svg>
+							</button>
+
+							<!-- Large Play/Pause Toggle -->
+							<button
+								onclick={() => player.togglePlay()}
+								disabled={!player.currentTrack.audioUrl}
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/40 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 disabled:opacity-40"
+								aria-label={player.isPlaying ? 'Pause' : 'Play'}
+							>
+								{#if player.isPlaying}
+									<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+										<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+									</svg>
+								{:else}
+									<svg class="h-6 w-6 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+										<path d="M8 5v14l11-7z" />
+									</svg>
+								{/if}
+							</button>
+
+							<!-- Next Track -->
+							<button
+								onclick={() => player.next()}
+								disabled={!player.hasNext && !player.isShuffle}
+								class="rounded-full p-2.5 text-slate-300 hover:text-white disabled:opacity-40"
+								aria-label="Next track"
+							>
+								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+								</svg>
+							</button>
+
+							<!-- Repeat Toggle -->
+							<button
+								onclick={() => player.toggleRepeat()}
+								class="relative rounded-full p-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.repeatMode !==
+								'none'
+									? 'bg-blue-600/30 text-blue-400'
+									: 'text-slate-400 hover:text-white'}"
+								title="Repeat: {player.repeatMode}"
+								aria-label="Toggle repeat mode"
+							>
+								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									/>
+								</svg>
+								{#if player.repeatMode === 'one'}
+									<span
+										class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
+										>1</span
 									>
-										{cue.text}
-									</p>
+								{/if}
+							</button>
+						</div>
+
+						<!-- Playback Speed & Sleep Timer Utilities -->
+						<div
+							class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80 pt-4"
+						>
+							<!-- Playback Speed -->
+							<div class="flex items-center gap-1.5">
+								<span class="text-[11px] font-medium text-slate-500 uppercase">Speed</span>
+								{#each [0.8, 1.0, 1.25, 1.5] as rate}
+									<button
+										onclick={() => player.setPlaybackRate(rate)}
+										class="rounded px-2 py-0.5 text-xs font-semibold transition-colors {player.playbackRate ===
+										rate
+											? 'bg-blue-600 text-white'
+											: 'bg-slate-800 text-slate-400 hover:text-white'}"
+									>
+										{rate}x
+									</button>
+								{/each}
+							</div>
+
+							<!-- Sleep Timer -->
+							<div class="flex items-center gap-1.5">
+								<span class="text-[11px] font-medium text-slate-500 uppercase">Sleep</span>
+								{#each [null, 15, 30, 45] as min}
+									<button
+										onclick={() => player.setSleepTimer(min)}
+										class="rounded px-2 py-0.5 text-xs font-semibold transition-colors {player.sleepTimerMinutes ===
+										min
+											? 'bg-indigo-600 text-white'
+											: 'bg-slate-800 text-slate-400 hover:text-white'}"
+									>
+										{min ? `${min}m` : 'Off'}
+									</button>
 								{/each}
 							</div>
 						</div>
-					{/if}
+					</div>
+				</div>
 
-					<!-- Active Rock Opera Queue -->
-					{#if player.queue.length > 0}
-						<div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+				<!-- Right Column: Tabs Content (Lyrics & Lore, Queue, Master Info) -->
+				<div class="flex flex-col gap-6 md:col-span-7">
+					{#if player.drawerTab === 'lyrics-lore'}
+						<!-- Canonical Universe Lore Note -->
+						{#if player.currentTrack.loreNote}
+							<div class="rounded-xl border border-indigo-900/40 bg-slate-950/80 p-5 shadow-inner">
+								<div
+									class="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wider text-indigo-400 uppercase"
+								>
+									<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+										/>
+									</svg>
+									Canonical Lore Note
+								</div>
+								<p class="text-sm leading-relaxed whitespace-pre-line text-slate-300 italic">
+									"{player.currentTrack.loreNote}"
+								</p>
+							</div>
+						{/if}
+
+						<!-- Synchronized Lyrics (WebVTT Cues) -->
+						{#if player.cues.length > 0}
+							<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
+								<div class="mb-3 flex items-center justify-between">
+									<h3 class="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+										Synchronized WebVTT Lyrics
+									</h3>
+									<span class="flex items-center gap-1.5 text-xs text-blue-400">
+										<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400"></span>
+										Live Karaoke Sync
+									</span>
+								</div>
+								<div class="max-h-72 space-y-2.5 overflow-y-auto pr-2">
+									{#each player.cues as cue (cue.start + cue.text)}
+										<p
+											class="text-sm transition-all duration-200 {player.currentTime >= cue.start &&
+											player.currentTime <= cue.end
+												? 'scale-102 border-l-3 border-blue-500 pl-3 text-base font-bold text-white'
+												: 'text-slate-500'}"
+										>
+											{cue.text}
+										</p>
+									{/each}
+								</div>
+							</div>
+						{:else if player.currentTrack.lyrics}
+							<!-- Static Formatted Lyrics from metadata.json -->
+							<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
+								<h3 class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+									Official Song Lyrics
+								</h3>
+								<div
+									class="max-h-80 space-y-2 overflow-y-auto pr-2 font-sans text-sm leading-relaxed whitespace-pre-line text-slate-300"
+								>
+									{player.currentTrack.lyrics}
+								</div>
+							</div>
+						{:else}
+							<div
+								class="rounded-xl border border-dashed border-slate-800 p-8 text-center text-sm text-slate-500"
+							>
+								No lyrics manifest filed for this recording. Enjoy the music!
+							</div>
+						{/if}
+					{:else if player.drawerTab === 'queue'}
+						<!-- Active Playback Queue List -->
+						<div class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-5">
 							<div class="mb-3 flex items-center justify-between">
 								<h3 class="text-xs font-semibold tracking-wider text-slate-400 uppercase">
 									Album Sequence ({player.queue.length} Tracks)
 								</h3>
-								<span class="text-xs text-slate-500">Continuous Playback Active</span>
+								<span class="text-xs text-slate-500">Continuous Rock Opera Flow</span>
 							</div>
-							<div class="max-h-56 divide-y divide-slate-800/60 overflow-y-auto">
+							<div class="max-h-96 divide-y divide-slate-800/60 overflow-y-auto">
 								{#each player.queue as track, idx (track.id || idx)}
 									<button
 										onclick={() => player.loadQueue(player.queue, idx, true)}
@@ -330,17 +580,78 @@
 									>
 										<div class="flex items-center gap-3 truncate">
 											<span class="w-6 text-center font-mono text-xs text-slate-500">
-												{idx === player.currentIndex && player.isPlaying
-													? '▶'
-													: track.track || idx + 1}
+												{#if idx === player.currentIndex && player.isPlaying}
+													<span class="text-blue-400">▶</span>
+												{:else}
+													{track.track || idx + 1}
+												{/if}
 											</span>
-											<span class="truncate text-sm">{track.title}</span>
+											<div class="truncate">
+												<span class="block truncate text-sm">{track.title}</span>
+												{#if track.loreNote}
+													<span class="block truncate text-[11px] text-slate-500"
+														>{track.loreNote.slice(0, 60)}...</span
+													>
+												{/if}
+											</div>
 										</div>
 										<span class="ml-4 shrink-0 font-mono text-xs text-slate-500">
 											{track.duration || ''}
 										</span>
 									</button>
 								{/each}
+							</div>
+						</div>
+					{:else if player.drawerTab === 'credits'}
+						<!-- Liner Notes, ISRC, and Master Details -->
+						<div class="space-y-4 rounded-xl border border-slate-800/80 bg-slate-950/60 p-5">
+							<h3 class="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+								Release Information & Sound Architecture
+							</h3>
+
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
+								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
+									<span class="block text-xs font-medium text-slate-500 uppercase"
+										>In-Universe Release</span
+									>
+									<span class="mt-0.5 block font-semibold text-slate-200">
+										{player.currentTrack.temporalCoverage ||
+											player.currentTrack.year ||
+											'Unspecified'}
+									</span>
+								</div>
+
+								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
+									<span class="block text-xs font-medium text-slate-500 uppercase"
+										>Earth Release Year</span
+									>
+									<span class="mt-0.5 block font-semibold text-slate-200">
+										{player.currentTrack.year || 'Standard Catalog'}
+									</span>
+								</div>
+
+								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
+									<span class="block text-xs font-medium text-slate-500 uppercase">ISRC Code</span>
+									<span class="mt-0.5 block font-mono text-xs text-blue-400">
+										{player.currentTrack.isrc || 'Pending Registration'}
+									</span>
+								</div>
+
+								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
+									<span class="block text-xs font-medium text-slate-500 uppercase"
+										>Master Quality Tier</span
+									>
+									<span class="mt-0.5 block font-semibold text-emerald-400">
+										{player.currentTrack.legacyTier || 'Lossless Vault Master'}
+									</span>
+								</div>
+							</div>
+
+							<div class="rounded-lg border border-slate-800/60 bg-slate-900/30 p-3.5 text-xs text-slate-400 leading-relaxed">
+								<p class="font-semibold text-slate-300">Streaming Specification:</p>
+								<p class="mt-1">
+									Audio streams served via <code class="text-blue-400">assets.raggiesoft.com</code> web-mp3 samples (free public tier). Master high-resolution WAV/FLAC archives remain securely stored in the private master vaults.
+								</p>
 							</div>
 						</div>
 					{/if}
@@ -434,7 +745,26 @@
 
 		<!-- 2. CENTER: Playback Controls & Timestamp Display -->
 		<div class="flex max-w-md flex-1 flex-col items-center justify-center">
-			<div class="flex items-center gap-4">
+			<div class="flex items-center gap-3 sm:gap-4">
+				<!-- Shuffle Toggle (Desktop) -->
+				<button
+					onclick={() => player.toggleShuffle()}
+					class="hidden rounded-full p-2 transition-colors sm:block {player.isShuffle
+						? 'text-blue-400'
+						: 'text-slate-500 hover:text-white'}"
+					aria-label="Toggle shuffle"
+					title={player.isShuffle ? 'Shuffle: On' : 'Shuffle: Off'}
+				>
+					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+						/>
+					</svg>
+				</button>
+
 				<!-- Step Backward / Previous Track -->
 				<button
 					onclick={() => player.prev()}
@@ -480,13 +810,39 @@
 				<!-- Step Forward / Next Track -->
 				<button
 					onclick={() => player.next()}
-					disabled={!player.hasNext}
+					disabled={!player.hasNext && !player.isShuffle}
 					aria-label="Next track"
 					class="rounded-full p-2 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
 						<path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
 					</svg>
+				</button>
+
+				<!-- Repeat Toggle (Desktop) -->
+				<button
+					onclick={() => player.toggleRepeat()}
+					class="relative hidden rounded-full p-2 transition-colors sm:block {player.repeatMode !==
+					'none'
+						? 'text-blue-400'
+						: 'text-slate-500 hover:text-white'}"
+					aria-label="Toggle repeat"
+					title="Repeat: {player.repeatMode}"
+				>
+					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+						/>
+					</svg>
+					{#if player.repeatMode === 'one'}
+						<span
+							class="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white"
+							>1</span
+						>
+					{/if}
 				</button>
 			</div>
 

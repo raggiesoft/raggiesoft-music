@@ -228,18 +228,24 @@ function buildCatalog() {
 				const isrc = t.isrc || '';
 				const legacyTier = t.legacyTier || '';
 
-				// Extract lore note if provided directly, otherwise extract from metadata.json
+				// Extract lore note and lyrics from metadata.json or direct track definitions
 				let loreNote = t.loreNote || '';
-				if (!loreNote) {
+				let lyrics = t.lyrics || '';
+
+				if (!loreNote || !lyrics) {
 					const lookupKey = `${artistName.toLowerCase()}:::${trackTitle.toLowerCase()}`;
 					const narrative = metadataMap.get(lookupKey) || '';
 					if (narrative.includes('**LORE NOTE:**')) {
 						const parts = narrative.split('**LORE NOTE:**');
 						const loreSection = parts[1].split('**LYRICS:**')[0].trim();
-						loreNote = loreSection.replace(/\r\n/g, ' ').replace(/\n/g, ' ');
-						if (loreNote.length > 280) {
-							loreNote = `${loreNote.slice(0, 277)}...`;
+						if (!loreNote) {
+							loreNote = loreSection.replace(/\r\n/g, '\n');
 						}
+						if (parts[1].includes('**LYRICS:**') && !lyrics) {
+							lyrics = parts[1].split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
+						}
+					} else if (narrative.includes('**LYRICS:**') && !lyrics) {
+						lyrics = narrative.split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
 					}
 				}
 
@@ -257,6 +263,18 @@ function buildCatalog() {
 					? `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${fileName}.mp3`
 					: '';
 
+				// Detect WebVTT synchronized lyrics if available on disk
+				let vttUrl = '';
+				if (fileName) {
+					if (fs.existsSync(path.join(albumDir, 'lyrics', `${fileName}.vtt`))) {
+						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/lyrics/${fileName}.vtt`;
+					} else if (
+						fs.existsSync(path.join(albumDir, 'streaming-services', 'lyrics', `${fileName}.vtt`))
+					) {
+						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/streaming-services/lyrics/${fileName}.vtt`;
+					}
+				}
+
 				// Format duration; if unrendered and duration is missing/zero, mark as In Studio
 				let duration = t.duration || '0:00';
 				if (!hasPhysicalMp3 && (duration === '0:00' || !duration)) {
@@ -272,7 +290,9 @@ function buildCatalog() {
 					isrc,
 					legacyTier,
 					loreNote,
+					lyrics,
 					audioUrl,
+					vttUrl,
 					isPlayable: hasPhysicalMp3
 				};
 			});

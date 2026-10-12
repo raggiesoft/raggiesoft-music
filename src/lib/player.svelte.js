@@ -32,6 +32,20 @@ export class AudioPlayer {
 
 	// Drawer / Modal overlay state for expanded lyrics & canonical lore view
 	isExpanded = $state(false);
+	drawerTab = $state(/** @type {'lyrics-lore' | 'queue' | 'credits'} */ ('lyrics-lore'));
+
+	// Playback speed and timer
+	playbackRate = $state(1);
+	sleepTimerMinutes = $state(/** @type {number | null} */ (null));
+	sleepTimerEnd = $state(/** @type {number | null} */ (null));
+	_sleepTimeout = /** @type {any} */ (null);
+
+	// Queue playback modes
+	isShuffle = $state(false);
+	repeatMode = $state(/** @type {'none' | 'all' | 'one'} */ ('none'));
+
+	// Local session persistence flag
+	hasSavedSession = $state(false);
 
 	// Active track entity
 	currentTrack = $state({
@@ -43,11 +57,14 @@ export class AudioPlayer {
 		audioUrl: '',
 		vttUrl: '',
 		loreNote: '',
+		lyrics: '',
 		year: '',
+		temporalCoverage: '',
 		disc: 1,
 		track: 1,
 		duration: '',
-		isrc: ''
+		isrc: '',
+		legacyTier: ''
 	});
 
 	// Active playback queue for seamless album / rock opera sequencing
@@ -171,11 +188,14 @@ export class AudioPlayer {
 			audioUrl: track.audioUrl || '',
 			vttUrl: track.vttUrl || '',
 			loreNote: track.loreNote || '',
+			lyrics: track.lyrics || '',
 			year: track.year || '',
+			temporalCoverage: track.temporalCoverage || '',
 			disc: track.disc || 1,
 			track: track.track || 1,
 			duration: track.duration || '',
-			isrc: track.isrc || ''
+			isrc: track.isrc || '',
+			legacyTier: track.legacyTier || ''
 		};
 
 		this.currentTime = 0;
@@ -190,6 +210,8 @@ export class AudioPlayer {
 		if (autoPlay) {
 			this.isPlaying = true;
 		}
+
+		this.saveSession();
 	}
 
 	/**
@@ -207,12 +229,22 @@ export class AudioPlayer {
 	}
 
 	/**
-	 * Advances playback to the next track in the queue.
+	 * Advances playback to the next track in the queue, with shuffle support.
 	 */
 	next() {
-		if (this.hasNext) {
+		if (this.isShuffle && this.queue.length > 1) {
+			let nextIdx = Math.floor(Math.random() * this.queue.length);
+			if (nextIdx === this.currentIndex) {
+				nextIdx = (this.currentIndex + 1) % this.queue.length;
+			}
+			this.currentIndex = nextIdx;
+			this.loadTrack(this.queue[this.currentIndex], true);
+		} else if (this.hasNext) {
 			this.currentIndex += 1;
 			this.loadTrack(this.queue[this.currentIndex], true);
+		} else if (this.repeatMode === 'all' && this.queue.length > 0) {
+			this.currentIndex = 0;
+			this.loadTrack(this.queue[0], true);
 		}
 	}
 
@@ -232,15 +264,131 @@ export class AudioPlayer {
 
 	/**
 	 * Called automatically when the HTML audio element triggers 'ended'.
-	 * Flawlessly enables gapless/continuous playback for multi-part rock operas.
+	 * Flawlessly enables gapless/continuous playback for multi-part rock operas
+	 * and honors single-track / queue repeat modes.
 	 */
 	onTrackEnded() {
-		if (this.hasNext) {
+		if (this.repeatMode === 'one') {
+			this.seek(0);
+			this.play();
+		} else if (this.hasNext || this.isShuffle) {
 			this.next();
+		} else if (this.repeatMode === 'all' && this.queue.length > 0) {
+			this.currentIndex = 0;
+			this.loadTrack(this.queue[0], true);
 		} else {
 			this.isPlaying = false;
 			this.currentTime = 0;
 		}
+	}
+
+	/**
+	 * Toggles queue shuffle mode.
+	 */
+	toggleShuffle() {
+		this.isShuffle = !this.isShuffle;
+	}
+
+	/**
+	 * Cycles queue repeat mode: none -> all -> one -> none.
+	 */
+	toggleRepeat() {
+		if (this.repeatMode === 'none') this.repeatMode = 'all';
+		else if (this.repeatMode === 'all') this.repeatMode = 'one';
+		else this.repeatMode = 'none';
+	}
+
+	/**
+	 * Adjusts playback speed (0.75x to 2.0x).
+	 * @param {number} rate
+	 */
+	setPlaybackRate(rate) {
+		this.playbackRate = Math.max(0.5, Math.min(2.0, rate));
+	}
+
+	/**
+	 * Sets an in-app sleep timer in minutes.
+	 * @param {number | null} minutes
+	 */
+	setSleepTimer(minutes) {
+		if (this._sleepTimeout) {
+			clearTimeout(this._sleepTimeout);
+			this._sleepTimeout = null;
+		}
+		if (!minutes || minutes <= 0) {
+			this.sleepTimerMinutes = null;
+			this.sleepTimerEnd = null;
+			return;
+		}
+		this.sleepTimerMinutes = minutes;
+		this.sleepTimerEnd = Date.now() + minutes * 60 * 1000;
+		this._sleepTimeout = setTimeout(() => {
+			this.pause();
+			this.sleepTimerMinutes = null;
+			this.sleepTimerEnd = null;
+		}, minutes * 60 * 1000);
+	}
+
+	/**
+	 * Saves active playback session to browser localStorage for "Jump Back In".
+	 */
+	saveSession() {
+		if (typeof window === 'undefined' || !this.currentTrack.id) return;
+		try {
+			const session = {
+				track: this.currentTrack,
+				time: this.currentTime,
+				queue: this.queue,
+				currentIndex: this.currentIndex,
+				volume: this.volume,
+				updatedAt: Date.now()
+			};
+			localStorage.setItem('raggiesoft-music-last-session', JSON.stringify(session));
+			this.hasSavedSession = true;
+		} catch (e) {
+			// localStorage full or restricted
+		}
+	}
+
+	/**
+	 * Retrieves the saved session from localStorage.
+	 * @returns {any}
+	 */
+	getSavedSession() {
+		if (typeof window === 'undefined') return null;
+		try {
+			const raw = localStorage.getItem('raggiesoft-music-last-session');
+			return raw ? JSON.parse(raw) : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Resumes playback from the saved session ("Jump Back In").
+	 * @returns {boolean}
+	 */
+	resumeLastSession() {
+		const session = this.getSavedSession();
+		if (!session || !session.track || !session.track.audioUrl) return false;
+		if (Array.isArray(session.queue) && session.queue.length > 0) {
+			this.queue = session.queue;
+			this.currentIndex = session.currentIndex >= 0 ? session.currentIndex : 0;
+		}
+		this.loadTrack(session.track, true);
+		if (session.time > 0) {
+			this.seek(session.time);
+		}
+		return true;
+	}
+
+	/**
+	 * Checks on initial boot if a resumeable session exists.
+	 */
+	checkSavedSession() {
+		const session = this.getSavedSession();
+		this.hasSavedSession = Boolean(session && session.track && session.track.audioUrl);
+		return session;
 	}
 
 	/**

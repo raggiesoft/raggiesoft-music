@@ -32,7 +32,9 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [isrc]
  * @property {string} [legacyTier]
  * @property {string} [loreNote]
+ * @property {string} [lyrics]
  * @property {string} audioUrl
+ * @property {string} [vttUrl]
  * @property {boolean} [isPlayable]
  */
 
