@@ -5,29 +5,103 @@
 	 * +page.svelte
 	 * ============================================================================
 	 * Discovery & Discography Portal for Engine Room Records (music.raggiesoft.com).
-	 * Implements a composable UI component library built with Tailwind CSS v4,
-	 * showcasing album browsing, rock opera sequence playback, and canonical lore.
+	 *
+	 * Architecture & Design Decisions:
+	 * 1. Dynamic Catalog Ingestion: Automatically renders all artists, albums, and
+	 *    tracks discovered from `https://assets.raggiesoft.com/` / `musicCatalog.json`.
+	 * 2. Instant Offline PWA + SWR Sync: Uses pre-compiled catalog for zero-latency
+	 *    cold starts, and quietly fetches remote `catalog.json` to ingest live updates.
+	 * 3. Unified Real-Time Search: Fast sub-millisecond filtering across album titles,
+	 *    track names, artist names, musical genres, and canonical lore notes.
+	 * 4. Responsive Player Orchestration: Single-track playback or full-album queue
+	 *    loading with seamless gapless transitions across multi-movement rock operas.
 	 * ============================================================================
 	 */
+	import { onMount } from 'svelte';
 	import { player } from '#lib/player.svelte.js';
-	import { featuredAlbums, formatAlbumQueue } from '#lib/data/musicData.js';
+	import { allAlbums, catalogStats, formatAlbumQueue } from '#lib/data/musicData.js';
 
+	// Live reactive catalog state (seeded with pre-compiled catalog, refreshed from CDN)
+	let currentCatalog = $state(allAlbums);
 	let activeFilter = $state('all');
-	let expandedAlbumId = $state(/** @type {string | null} */ ('our-own-frequency'));
+	let searchQuery = $state('');
+	let expandedAlbumId = $state(
+		/** @type {string | null} */ ('fractured-prisms-1983-carnaby-street')
+	);
 
-	// Derived filtered album collection based on selected pill
+	// Background Stale-While-Revalidate (SWR) remote sync from CDN
+	onMount(() => {
+		fetch('https://assets.raggiesoft.com/engine-room-records/catalog.json')
+			.then((res) => (res.ok ? res.json() : null))
+			.then((remoteData) => {
+				if (Array.isArray(remoteData) && remoteData.length > 0) {
+					currentCatalog = remoteData;
+				}
+			})
+			.catch(() => {
+				// Silently fallback to bundled static catalog if offline or network restricted
+			});
+	});
+
+	// Dynamically derived list of unique artists from active catalog
+	let dynamicArtists = $derived.by(() => {
+		/** @type {Record<string, { slug: string, name: string, albumCount: number, trackCount: number }>} */
+		const map = {};
+		for (const alb of currentCatalog) {
+			if (map[alb.artistSlug]) {
+				map[alb.artistSlug].albumCount += 1;
+				map[alb.artistSlug].trackCount += alb.tracks.length;
+			} else {
+				map[alb.artistSlug] = {
+					slug: alb.artistSlug,
+					name: alb.artist,
+					albumCount: 1,
+					trackCount: alb.tracks.length
+				};
+			}
+		}
+		return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
+	});
+
+	// Derived filtered album collection based on category filter and search term
 	let filteredAlbums = $derived(
-		featuredAlbums.filter((album) => {
-			if (activeFilter === 'all') return true;
-			if (activeFilter === 'rock-opera') return album.isRockOpera;
-			return album.artistSlug === activeFilter;
+		currentCatalog.filter((album) => {
+			// 1. Primary Category Filter
+			if (activeFilter !== 'all') {
+				if (activeFilter === 'rock-opera') {
+					if (!album.isRockOpera) return false;
+				} else if (album.artistSlug !== activeFilter) {
+					return false;
+				}
+			}
+
+			// 2. Live Search Filter
+			if (searchQuery.trim()) {
+				const q = searchQuery.toLowerCase().trim();
+				const matchAlbum =
+					album.title.toLowerCase().includes(q) ||
+					album.artist.toLowerCase().includes(q) ||
+					album.genre.toLowerCase().includes(q) ||
+					album.year.includes(q);
+
+				const matchTrack = album.tracks.some(
+					(t) =>
+						t.title.toLowerCase().includes(q) ||
+						(t.loreNote && t.loreNote.toLowerCase().includes(q)) ||
+						(t.isrc && t.isrc.toLowerCase().includes(q))
+				);
+
+				return matchAlbum || matchTrack;
+			}
+
+			return true;
 		})
 	);
 
 	/**
 	 * Plays an entire album sequentially from track 1.
 	 * Enables continuous, gapless-style playback across rock operas.
-	 * @param {typeof featuredAlbums[0]} album
+	 * @param {typeof currentCatalog[0]} album
 	 */
 	function playAlbum(album) {
 		const queue = formatAlbumQueue(album);
@@ -36,7 +110,7 @@
 
 	/**
 	 * Plays a specific track from an album and queues the rest of the album following it.
-	 * @param {typeof featuredAlbums[0]} album
+	 * @param {typeof currentCatalog[0]} album
 	 * @param {number} trackIndex
 	 */
 	function playTrack(album, trackIndex) {
@@ -45,6 +119,7 @@
 	}
 
 	/**
+	 * Toggles the visibility of an album's track list drawer.
 	 * @param {string} albumId
 	 */
 	function toggleAlbumDetails(albumId) {
@@ -56,12 +131,12 @@
 	<title>Engine Room Records | Official Music Platform</title>
 	<meta
 		name="description"
-		content="A modern, persistent audio platform for the RaggieSoft universe, supporting continuous gapless playback across rock operas."
+		content="A modern, persistent audio platform for the RaggieSoft universe, reading directly from assets.raggiesoft.com with gapless continuous playback."
 	/>
 </svelte:head>
 
 <!-- Hero Section -->
-<section class="mx-auto mb-10 max-w-3xl text-center">
+<section class="mx-auto mb-8 max-w-3xl text-center">
 	<div
 		class="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-700/50 bg-blue-900/40 px-3 py-1 text-xs font-semibold tracking-wider text-blue-300 uppercase"
 	>
@@ -73,26 +148,70 @@
 		Sounds From the Engine Room
 	</h1>
 	<p class="mt-4 text-base leading-relaxed text-slate-400 sm:text-lg">
-		Immerse yourself in persistent audio, synchronized lyrics, and canonical lore spanning the
-		RaggieSoft music catalog—from 80s synth-rock to sprawling multi-disc rock operas.
+		Directly connected to the <span class="font-mono text-slate-300">assets.raggiesoft.com</span>
+		catalog. Featuring persistent audio streaming, canonical lore notes, and synchronized lyrics spanning
+		all artists.
 	</p>
 
-	<!-- Architectural Badges (WCAG AA, Svelte 5, Tailwind v4) -->
+	<!-- Live Dynamic Catalog Badges -->
 	<div
 		class="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-slate-400"
 	>
+		<span
+			class="rounded-md border border-blue-800/80 bg-blue-950/60 px-2.5 py-1 font-semibold text-blue-300 shadow-sm"
+		>
+			{dynamicArtists.length} Artists
+		</span>
+		<span
+			class="rounded-md border border-blue-800/80 bg-blue-950/60 px-2.5 py-1 font-semibold text-blue-300 shadow-sm"
+		>
+			{currentCatalog.length} Releases
+		</span>
+		<span
+			class="rounded-md border border-blue-800/80 bg-blue-950/60 px-2.5 py-1 font-semibold text-blue-300 shadow-sm"
+		>
+			{catalogStats.totalTracks} Songs
+		</span>
+		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1">Live CDN Audio</span>
 		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1"
 			>WCAG 2.1 AA Compliant</span
 		>
-		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1"
-			>Media Session API</span
-		>
-		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1">Svelte 5 Runes</span>
-		<span class="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1">Tailwind CSS v4</span>
 	</div>
 </section>
 
-<!-- Filter Navigation Pills -->
+<!-- Search Bar -->
+<div class="mx-auto mb-6 max-w-xl">
+	<div class="relative">
+		<div
+			class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500"
+		>
+			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+				/>
+			</svg>
+		</div>
+		<input
+			type="text"
+			bind:value={searchQuery}
+			placeholder="Search across all artists, songs, albums, and lore notes..."
+			class="w-full rounded-xl border border-slate-800 bg-slate-900/90 py-2.5 pr-12 pl-10 text-sm text-slate-200 placeholder-slate-500 shadow-inner transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+		/>
+		{#if searchQuery}
+			<button
+				onclick={() => (searchQuery = '')}
+				class="absolute inset-y-0 right-0 flex items-center pr-3 text-xs text-slate-400 hover:text-white"
+			>
+				Clear
+			</button>
+		{/if}
+	</div>
+</div>
+
+<!-- Dynamic Filter Navigation Pills -->
 <div class="mb-8 flex flex-wrap items-center justify-center gap-2">
 	<button
 		onclick={() => (activeFilter = 'all')}
@@ -101,7 +220,7 @@
 			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
 			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
 	>
-		All Releases
+		All Releases ({currentCatalog.length})
 	</button>
 	<button
 		onclick={() => (activeFilter = 'rock-opera')}
@@ -112,46 +231,37 @@
 	>
 		Rock Operas ⚡
 	</button>
-	<button
-		onclick={() => (activeFilter = 'the-stardust-engine')}
-		class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
-		'the-stardust-engine'
-			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
-	>
-		The Stardust Engine
-	</button>
-	<button
-		onclick={() => (activeFilter = 'the-paper-wall')}
-		class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
-		'the-paper-wall'
-			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
-	>
-		The Paper Wall
-	</button>
-	<button
-		onclick={() => (activeFilter = 'fractured-prisms')}
-		class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
-		'fractured-prisms'
-			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
-	>
-		Fractured Prisms
-	</button>
-	<button
-		onclick={() => (activeFilter = 'mana-canvas')}
-		class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
-		'mana-canvas'
-			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
-	>
-		Mana Canvas
-	</button>
+	{#each dynamicArtists as artist (artist.slug)}
+		<button
+			onclick={() => (activeFilter = artist.slug)}
+			class="rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
+			artist.slug
+				? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+				: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
+		>
+			{artist.name}
+			<span class="ml-1 font-mono text-[11px] opacity-60">({artist.albumCount})</span>
+		</button>
+	{/each}
 </div>
 
 <!-- Albums Grid -->
 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+	{#if filteredAlbums.length === 0}
+		<div class="col-span-full rounded-2xl border border-dashed border-slate-800 p-12 text-center">
+			<p class="text-base text-slate-400">No releases found matching your filter or search.</p>
+			<button
+				onclick={() => {
+					searchQuery = '';
+					activeFilter = 'all';
+				}}
+				class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+			>
+				Reset Search & Filters
+			</button>
+		</div>
+	{/if}
+
 	{#each filteredAlbums as album (album.id)}
 		<div
 			class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
