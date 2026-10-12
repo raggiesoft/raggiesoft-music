@@ -266,7 +266,8 @@ export class AudioPlayer {
 	parseVtt(vttText) {
 		const lines = vttText.split(/\r?\n/);
 		const cues = [];
-		const timeRegex = /(?:(\d+):)?(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(?:(\d+):)?(\d{2}):(\d{2})\.(\d{3})/;
+		const timeRegex =
+			/(?:(\d+):)?(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(?:(\d+):)?(\d{2}):(\d{2})\.(\d{3})/;
 
 		for (let i = 0; i < lines.length; i++) {
 			const match = lines[i].match(timeRegex);
@@ -298,4 +299,3 @@ export class AudioPlayer {
 
 // Export singleton instance for app-wide reactive state sharing
 export const player = new AudioPlayer();
-

@@ -35,5 +35,7 @@ export const trackCues = writable([]);
 
 export const activeCue = derived([playerState, trackCues], ([$state, $cues]) => {
 	if (!$cues || $cues.length === 0) return null;
-	return $cues.find((cue) => $state.currentTime >= cue.start && $state.currentTime <= cue.end) || null;
+	return (
+		$cues.find((cue) => $state.currentTime >= cue.start && $state.currentTime <= cue.end) || null
+	);
 });
