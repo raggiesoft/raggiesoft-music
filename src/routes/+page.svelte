@@ -139,6 +139,15 @@
 	>
 		Fractured Prisms
 	</button>
+	<button
+		onclick={() => (activeFilter = 'mana-canvas')}
+		class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeFilter ===
+		'mana-canvas'
+			? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+			: 'border border-slate-800 bg-slate-900 text-slate-400 hover:text-white'}"
+	>
+		Mana Canvas
+	</button>
 </div>
 
 <!-- Albums Grid -->
@@ -267,10 +276,19 @@
 										{/if}
 									</button>
 
-									<div class="truncate">
-										<span class="block truncate text-sm font-medium">
-											{track.track}. {track.title}
-										</span>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center gap-2">
+											<span class="truncate text-sm font-medium">
+												{track.track}. {track.title}
+											</span>
+											{#if track.legacyTier}
+												<span
+													class="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300"
+												>
+													{track.legacyTier}
+												</span>
+											{/if}
+										</div>
 										{#if track.loreNote}
 											<span class="block truncate text-[11px] text-slate-500 italic">
 												"{track.loreNote}"
