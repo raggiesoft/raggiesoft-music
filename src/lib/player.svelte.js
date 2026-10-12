@@ -298,3 +298,4 @@ export class AudioPlayer {
 
 // Export singleton instance for app-wide reactive state sharing
 export const player = new AudioPlayer();
+

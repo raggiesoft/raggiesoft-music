@@ -282,3 +282,4 @@ export function formatAlbumQueue(album) {
 		year: album.year
 	}));
 }
+
