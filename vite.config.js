@@ -20,7 +20,7 @@ import { defineConfig } from 'vite';
  */
 function staticPwaAdapter(options = {}) {
 	const out = options?.pages || 'build';
-	const fallback = options?.fallback || 'index.html';
+	const fallback = options?.fallback || '200.html';
 
 	return {
 		name: 'engine-room-static-pwa-adapter',
@@ -42,7 +42,7 @@ export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
-			adapter: staticPwaAdapter({ pages: 'build', fallback: 'index.html' }),
+			adapter: staticPwaAdapter({ pages: 'build', fallback: '200.html' }),
 			compilerOptions: {
 				runes: true
 			}

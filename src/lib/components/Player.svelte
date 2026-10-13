@@ -15,6 +15,7 @@
 	 * - High-resolution album artwork presentation with expandable canonical lore & lyrics drawer.
 	 * ============================================================================
 	 */
+	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
 
 	let audioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
@@ -288,7 +289,7 @@
 				<div
 					class="flex flex-col items-center text-center md:col-span-5 md:items-start md:text-left"
 				>
-					<div class="relative group">
+					<div class="group relative">
 						{#if player.currentTrack.artwork}
 							<img
 								src={player.currentTrack.artwork}
@@ -308,7 +309,7 @@
 						<!-- Equalizer visualizer badge overlay -->
 						{#if player.isPlaying}
 							<div
-								class="absolute bottom-3 right-3 flex items-end gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 backdrop-blur-md"
+								class="absolute right-3 bottom-3 flex items-end gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 backdrop-blur-md"
 							>
 								<span class="h-4 w-1 animate-pulse rounded bg-blue-400"></span>
 								<span
@@ -334,7 +335,30 @@
 						<p class="mt-1 text-lg font-medium text-blue-400">
 							{player.currentTrack.artist || 'Select a track'}
 						</p>
-						<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
+						{#if player.currentTrack.albumSlug}
+							<a
+								href={resolve('/album/[slug]', { slug: player.currentTrack.albumSlug })}
+								onclick={() => (player.isExpanded = false)}
+								class="mt-0.5 inline-flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-blue-300 hover:underline"
+							>
+								<span>{player.currentTrack.album}</span>
+								<svg
+									class="h-3 w-3 opacity-70"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 5l7 7-7 7"
+									/>
+								</svg>
+							</a>
+						{:else}
+							<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
+						{/if}
 
 						<!-- In-Drawer Progress Scrubber -->
 						<div class="mt-4">
@@ -459,7 +483,7 @@
 							<!-- Playback Speed -->
 							<div class="flex items-center gap-1.5">
 								<span class="text-[11px] font-medium text-slate-500 uppercase">Speed</span>
-								{#each [0.8, 1.0, 1.25, 1.5] as rate}
+								{#each [0.8, 1.0, 1.25, 1.5] as rate (rate)}
 									<button
 										onclick={() => player.setPlaybackRate(rate)}
 										class="rounded px-2 py-0.5 text-xs font-semibold transition-colors {player.playbackRate ===
@@ -475,7 +499,7 @@
 							<!-- Sleep Timer -->
 							<div class="flex items-center gap-1.5">
 								<span class="text-[11px] font-medium text-slate-500 uppercase">Sleep</span>
-								{#each [null, 15, 30, 45] as min}
+								{#each [null, 15, 30, 45] as min (min ?? 0)}
 									<button
 										onclick={() => player.setSleepTimer(min)}
 										class="rounded px-2 py-0.5 text-xs font-semibold transition-colors {player.sleepTimerMinutes ===
@@ -609,7 +633,7 @@
 								Release Information & Sound Architecture
 							</h3>
 
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
+							<div class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
 								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
 									<span class="block text-xs font-medium text-slate-500 uppercase"
 										>In-Universe Release</span
@@ -647,12 +671,36 @@
 								</div>
 							</div>
 
-							<div class="rounded-lg border border-slate-800/60 bg-slate-900/30 p-3.5 text-xs text-slate-400 leading-relaxed">
+							<div
+								class="rounded-lg border border-slate-800/60 bg-slate-900/30 p-3.5 text-xs leading-relaxed text-slate-400"
+							>
 								<p class="font-semibold text-slate-300">Streaming Specification:</p>
 								<p class="mt-1">
-									Audio streams served via <code class="text-blue-400">assets.raggiesoft.com</code> web-mp3 samples (free public tier). Master high-resolution WAV/FLAC archives remain securely stored in the private master vaults.
+									Audio streams served via <code class="text-blue-400">assets.raggiesoft.com</code> web-mp3
+									samples (free public tier). Master high-resolution WAV/FLAC archives remain securely
+									stored in the private master vaults.
 								</p>
 							</div>
+
+							{#if player.currentTrack.albumSlug}
+								<div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
+									<a
+										href={resolve('/album/[slug]', { slug: player.currentTrack.albumSlug })}
+										onclick={() => (player.isExpanded = false)}
+										class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300"
+									>
+										<span>View Dedicated Album Page & Lore</span>
+										<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+											/>
+										</svg>
+									</a>
+								</div>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -666,7 +714,7 @@
 <!-- ======================================================================= -->
 {#if player.isrcNotice}
 	<aside
-		class="fixed bottom-22 left-1/2 z-50 -translate-x-1/2 flex max-w-[90vw] items-center gap-3 rounded-full border border-emerald-500/40 bg-slate-900/95 px-4 py-2.5 text-xs text-emerald-300 shadow-2xl backdrop-blur-md transition-all duration-300"
+		class="fixed bottom-22 left-1/2 z-50 flex max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-full border border-emerald-500/40 bg-slate-900/95 px-4 py-2.5 text-xs text-emerald-300 shadow-2xl backdrop-blur-md transition-all duration-300"
 		role="status"
 		aria-live="polite"
 	>
@@ -683,7 +731,8 @@
 			</svg>
 		</div>
 		<div class="truncate text-left font-medium">
-			<span class="font-bold text-white">{player.isrcNotice.title}</span>: {player.isrcNotice.message}
+			<span class="font-bold text-white">{player.isrcNotice.title}</span>: {player.isrcNotice
+				.message}
 			<span class="ml-1 font-mono text-[10px] text-emerald-400/80">({player.isrcNotice.isrc})</span>
 		</div>
 		<button
@@ -692,7 +741,12 @@
 			aria-label="Dismiss notice"
 		>
 			<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M6 18L18 6M6 6l12 12"
+				/>
 			</svg>
 		</button>
 	</aside>

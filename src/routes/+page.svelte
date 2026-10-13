@@ -29,8 +29,9 @@
 	 * ============================================================================
 	 */
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { allAlbums, catalogStats, formatAlbumQueue, allArtists } from '#lib/data/musicData.js';
+	import { allAlbums, catalogStats, formatAlbumQueue } from '#lib/data/musicData.js';
 
 	// Primary View Navigation Tab ('home' | 'discography')
 	let activeTab = $state(/** @type {'home' | 'discography'} */ ('home'));
@@ -249,20 +250,119 @@
 			if (el) el.scrollIntoView({ behavior: 'smooth' });
 		}, 100);
 	}
+
+	// Share notification state
+	let shareToast = $state(/** @type {string | null} */ (null));
+	let shareToastTimer = /** @type {any} */ (null);
+
+	/**
+	 * Shares or copies a dedicated link to the specified album.
+	 * @param {import('#lib/data/musicData.js').Album} album
+	 */
+	async function shareAlbum(album) {
+		const shareUrl = `https://music.raggiesoft.com/album/${album.slug}`;
+		const shareData = {
+			title: `${album.title} by ${album.artist}`,
+			text: `Listen to ${album.title} on Engine Room Records: ${album.description}`,
+			url: shareUrl
+		};
+
+		if (
+			typeof navigator !== 'undefined' &&
+			navigator.share &&
+			navigator.canShare &&
+			navigator.canShare(shareData)
+		) {
+			try {
+				await navigator.share(shareData);
+				return;
+			} catch {
+				// User dismissed native share sheet; fallback to clipboard
+			}
+		}
+
+		if (typeof navigator !== 'undefined' && navigator.clipboard) {
+			try {
+				await navigator.clipboard.writeText(shareUrl);
+				showShareToast(`Copied share link for "${album.title}"!`);
+			} catch (err) {
+				console.warn('Clipboard write failed:', err);
+			}
+		}
+	}
+
+	/**
+	 * Displays transient toast confirmation.
+	 * @param {string} message
+	 */
+	function showShareToast(message) {
+		if (shareToastTimer) clearTimeout(shareToastTimer);
+		shareToast = message;
+		shareToastTimer = setTimeout(() => {
+			shareToast = null;
+		}, 3000);
+	}
 </script>
 
 <svelte:head>
-	<title>Engine Room Records | Official Music Platform</title>
+	<title>Engine Room Records | Official Music & Discography Platform</title>
 	<meta
 		name="description"
-		content="A modern, persistent audio platform for the RaggieSoft universe, reading directly from assets.raggiesoft.com with gapless continuous playback."
+		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
 	/>
+	<link rel="canonical" href="https://music.raggiesoft.com/" />
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Engine Room Records" />
+	<meta property="og:url" content="https://music.raggiesoft.com/" />
+	<meta property="og:title" content="Engine Room Records | Official Music & Discography Platform" />
+	<meta
+		property="og:description"
+		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
+	/>
+	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
+	<meta property="og:image:width" content="1376" />
+	<meta property="og:image:height" content="768" />
+	<meta property="og:image:alt" content="Engine Room Records - Official Music Platform" />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@RaggieSoft" />
+	<meta name="twitter:url" content="https://music.raggiesoft.com/" />
+	<meta
+		name="twitter:title"
+		content="Engine Room Records | Official Music & Discography Platform"
+	/>
+	<meta
+		name="twitter:description"
+		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
+	/>
+	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
 </svelte:head>
+
+<!-- Floating Share Toast Notification -->
+{#if shareToast}
+	<div
+		class="fixed top-20 left-1/2 z-50 -translate-x-1/2 transform rounded-xl border border-blue-500/40 bg-slate-900/95 px-4 py-2.5 text-sm font-semibold text-white shadow-2xl backdrop-blur-md"
+		role="status"
+		aria-live="polite"
+	>
+		<div class="flex items-center gap-2">
+			<svg class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+			</svg>
+			<span>{shareToast}</span>
+		</div>
+	</div>
+{/if}
 
 <!-- ======================================================================= -->
 <!-- NATIVE APP STYLE TOP BAR & WELCOMING GREETING (SOPHIA STYLE)            -->
 <!-- ======================================================================= -->
-<section class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-800/80 pb-6 sm:flex-row sm:items-end">
+<section
+	class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-800/80 pb-6 sm:flex-row sm:items-end"
+>
 	<div>
 		<p class="text-xs font-bold tracking-widest text-blue-400 uppercase sm:text-sm">
 			{timeGreeting}
@@ -271,12 +371,17 @@
 			Engine Room Records
 		</h1>
 		<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-			Autonomous audio sanctuary. Streaming directly from <span class="font-mono text-slate-300">assets.raggiesoft.com</span>.
+			Autonomous audio sanctuary. Streaming directly from <span class="font-mono text-slate-300"
+				>assets.raggiesoft.com</span
+			>.
 		</p>
 	</div>
 
 	<!-- Primary View Tabs (Home vs Discography) -->
-	<nav class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-1.5 shadow-inner" aria-label="Main Navigation">
+	<nav
+		class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-1.5 shadow-inner"
+		aria-label="Main Navigation"
+	>
 		<button
 			onclick={() => (activeTab = 'home')}
 			class="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm {activeTab ===
@@ -285,7 +390,12 @@
 				: 'text-slate-400 hover:text-white'}"
 		>
 			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+				/>
 			</svg>
 			Home
 		</button>
@@ -298,7 +408,12 @@
 				: 'text-slate-400 hover:text-white'}"
 		>
 			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+				/>
 			</svg>
 			Discography ({currentCatalog.length})
 		</button>
@@ -312,10 +427,14 @@
 	<div class="space-y-10">
 		<!-- 1. JUMP BACK IN SHELF (Session Persistence) -->
 		{#if savedSession && savedSession.track && savedSession.track.audioUrl}
-			<section class="rounded-2xl border border-blue-900/40 bg-gradient-to-r from-blue-950/40 via-slate-900/60 to-indigo-950/40 p-5 shadow-xl sm:p-6">
+			<section
+				class="rounded-2xl border border-blue-900/40 bg-gradient-to-r from-blue-950/40 via-slate-900/60 to-indigo-950/40 p-5 shadow-xl sm:p-6"
+			>
 				<div class="mb-3 flex items-center justify-between">
-					<div class="flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
-						<span class="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
+					<div
+						class="flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase"
+					>
+						<span class="h-2 w-2 animate-pulse rounded-full bg-blue-400"></span>
 						Jump Back In
 					</div>
 					<span class="text-xs text-slate-400">Previous Listening Session</span>
@@ -330,7 +449,9 @@
 								class="h-16 w-16 shrink-0 rounded-xl border border-slate-700 object-cover shadow-md"
 							/>
 						{:else}
-							<div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-slate-400">
+							<div
+								class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-slate-400"
+							>
 								♫
 							</div>
 						{/if}
@@ -365,32 +486,53 @@
 
 		<!-- 2. FEATURED ROCK OPERA SPOTLIGHT -->
 		{#if spotlightAlbum}
-			<section class="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl">
-				<div class="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl pointer-events-none"></div>
-				<div class="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-purple-600/10 blur-3xl pointer-events-none"></div>
+			<section
+				class="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl"
+			>
+				<div
+					class="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl"
+				></div>
+				<div
+					class="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-purple-600/10 blur-3xl"
+				></div>
 
 				<div class="relative z-10 flex flex-col gap-8 p-6 sm:p-10 lg:flex-row lg:items-center">
 					<!-- Cover Art -->
-					<div class="group relative h-64 w-64 shrink-0 self-center overflow-hidden rounded-2xl border border-slate-700/80 shadow-2xl sm:h-72 sm:w-72 lg:self-start">
+					<div
+						class="group relative h-64 w-64 shrink-0 self-center overflow-hidden rounded-2xl border border-slate-700/80 shadow-2xl sm:h-72 sm:w-72 lg:self-start"
+					>
 						<img
 							src={spotlightAlbum.artwork}
 							alt="Cover for {spotlightAlbum.title}"
 							class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 						/>
-						<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-						<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white">
-							<span class="rounded bg-black/60 px-2 py-1 backdrop-blur-md font-mono">{spotlightAlbum.year}</span>
-							<span class="rounded bg-indigo-600/80 px-2 py-1 backdrop-blur-md font-bold uppercase text-[10px]">Spotlight</span>
+						<div
+							class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+						></div>
+						<div
+							class="absolute right-3 bottom-3 left-3 flex items-center justify-between text-xs text-white"
+						>
+							<span class="rounded bg-black/60 px-2 py-1 font-mono backdrop-blur-md"
+								>{spotlightAlbum.year}</span
+							>
+							<span
+								class="rounded bg-indigo-600/80 px-2 py-1 text-[10px] font-bold uppercase backdrop-blur-md"
+								>Spotlight</span
+							>
 						</div>
 					</div>
 
 					<!-- Spotlight Narrative Info -->
 					<div class="flex flex-1 flex-col text-left">
 						<div class="flex flex-wrap items-center gap-2">
-							<span class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-indigo-300 uppercase">
+							<span
+								class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-indigo-300 uppercase"
+							>
 								Featured Rock Opera ⚡
 							</span>
-							<span class="rounded border border-blue-700/50 bg-blue-900/60 px-2 py-0.5 font-mono text-xs text-blue-300">
+							<span
+								class="rounded border border-blue-700/50 bg-blue-900/60 px-2 py-0.5 font-mono text-xs text-blue-300"
+							>
 								In-Universe: {spotlightAlbum.temporalCoverage || spotlightAlbum.year}
 							</span>
 						</div>
@@ -406,7 +548,7 @@
 							{spotlightAlbum.description}
 						</p>
 
-						<div class="mt-6 flex flex-wrap items-center gap-4">
+						<div class="mt-6 flex flex-wrap items-center gap-3">
 							<button
 								onclick={() => playAlbum(spotlightAlbum)}
 								class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400"
@@ -423,6 +565,29 @@
 							>
 								View All Tracks ({spotlightAlbum.tracks.length})
 							</button>
+
+							<button
+								onclick={() => shareAlbum(spotlightAlbum)}
+								class="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+								aria-label="Share {spotlightAlbum.title}"
+							>
+								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+									/>
+								</svg>
+								Share
+							</button>
+
+							<a
+								href={resolve('/album/[slug]', { slug: spotlightAlbum.slug })}
+								class="rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+							>
+								Dedicated Page &rarr;
+							</a>
 						</div>
 					</div>
 				</div>
@@ -437,7 +602,9 @@
 						In-Universe Chronological Timeline
 					</h2>
 					<p class="text-xs text-slate-400 sm:text-sm">
-						Sequenced according to the in-universe historical timeline (<span class="font-mono text-slate-300">temporalCoverage</span>).
+						Sequenced according to the in-universe historical timeline (<span
+							class="font-mono text-slate-300">temporalCoverage</span
+						>).
 					</p>
 				</div>
 				<button
@@ -449,7 +616,7 @@
 			</div>
 
 			<!-- Horizontal Scroll Timeline Cards -->
-			<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
+			<div class="flex scrollbar-thin gap-4 overflow-x-auto pb-4">
 				{#each timelineMilestones as album (album.id)}
 					<div
 						class="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-all hover:border-slate-700 hover:shadow-lg"
@@ -460,7 +627,9 @@
 								alt="Cover for {album.title}"
 								class="h-full w-full object-cover transition-transform hover:scale-105"
 							/>
-							<span class="absolute top-2 left-2 rounded bg-black/70 px-2 py-0.5 font-mono text-[11px] font-bold text-blue-300 backdrop-blur-md">
+							<span
+								class="absolute top-2 left-2 rounded bg-black/70 px-2 py-0.5 font-mono text-[11px] font-bold text-blue-300 backdrop-blur-md"
+							>
 								{album.temporalCoverage ? album.temporalCoverage.slice(0, 4) : album.year}
 							</span>
 						</div>
@@ -473,8 +642,10 @@
 								<p class="truncate text-xs font-medium text-blue-400">{album.artist}</p>
 							</div>
 
-							<div class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-								<span class="text-[11px] text-slate-500 font-mono">
+							<div
+								class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5"
+							>
+								<span class="font-mono text-[11px] text-slate-500">
 									{album.playableTrackCount} Playable
 								</span>
 								{#if album.status !== 'coming-soon'}
@@ -504,7 +675,8 @@
 					Bands of Engine Room Records
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					Nine distinct soundscapes spanning progressive rock, synthwave, 16-bit RPG orchestrations, and post-punk.
+					Nine distinct soundscapes spanning progressive rock, synthwave, 16-bit RPG orchestrations,
+					and post-punk.
 				</p>
 			</div>
 
@@ -515,18 +687,31 @@
 						class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 					>
 						<div class="flex items-center gap-3">
-							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md">
+							<div
+								class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md"
+							>
 								{artist.name.charAt(0)}
 							</div>
 							<div>
 								<h3 class="text-sm font-bold text-white">{artist.name}</h3>
 								<p class="text-xs text-slate-400">
-									{artist.albumCount} {artist.albumCount === 1 ? 'Release' : 'Releases'} • {artist.trackCount} Songs
+									{artist.albumCount}
+									{artist.albumCount === 1 ? 'Release' : 'Releases'} • {artist.trackCount} Songs
 								</p>
 							</div>
 						</div>
-						<svg class="h-5 w-5 text-slate-500 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+						<svg
+							class="h-5 w-5 text-slate-500 transition-transform group-hover:translate-x-1"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</button>
 				{/each}
@@ -536,17 +721,25 @@
 		<!-- 5. IN-UNIVERSE LORE BRIEF -->
 		<section class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 sm:p-8">
 			<div class="max-w-3xl">
-				<div class="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
+				<div
+					class="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase"
+				>
 					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+						/>
 					</svg>
 					The Engine Room Sanctuary
 				</div>
-				<h3 class="text-xl font-bold text-white sm:text-2xl">
-					Music & Narrative Intertwined
-				</h3>
+				<h3 class="text-xl font-bold text-white sm:text-2xl">Music & Narrative Intertwined</h3>
 				<p class="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
-					Engine Room Records represents the musical heartbeat of the RaggieSoft universe. Founded in Williamsport, Maryland by Rhys Manning, the label provided sanctuary for independent artists reclaiming their masters, creating concept rock operas, and preserving memories across four decades of storytelling.
+					Engine Room Records represents the musical heartbeat of the RaggieSoft universe. Founded
+					in Williamsport, Maryland by Rhys Manning, the label provided sanctuary for independent
+					artists reclaiming their masters, creating concept rock operas, and preserving memories
+					across four decades of storytelling.
 				</p>
 				<div class="mt-5 flex items-center gap-4">
 					<a
@@ -604,7 +797,8 @@
 		<div class="mb-4 flex flex-wrap items-center justify-center gap-2">
 			<button
 				onclick={() => (activeStatusFilter = 'all')}
-				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter === 'all'
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter ===
+				'all'
 					? 'bg-slate-700 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
 			>
@@ -612,7 +806,8 @@
 			</button>
 			<button
 				onclick={() => (activeStatusFilter = 'released')}
-				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter === 'released'
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter ===
+				'released'
 					? 'bg-emerald-600 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
 			>
@@ -620,7 +815,8 @@
 			</button>
 			<button
 				onclick={() => (activeStatusFilter = 'in-progress')}
-				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter === 'in-progress'
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter ===
+				'in-progress'
 					? 'bg-sky-600 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
 			>
@@ -628,7 +824,8 @@
 			</button>
 			<button
 				onclick={() => (activeStatusFilter = 'coming-soon')}
-				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter === 'coming-soon'
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeStatusFilter ===
+				'coming-soon'
 					? 'bg-amber-600 text-white'
 					: 'text-slate-400 hover:text-slate-200'}"
 			>
@@ -673,7 +870,9 @@
 		<!-- Albums Grid -->
 		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 			{#if filteredAlbums.length === 0}
-				<div class="col-span-full rounded-2xl border border-dashed border-slate-800 p-12 text-center">
+				<div
+					class="col-span-full rounded-2xl border border-dashed border-slate-800 p-12 text-center"
+				>
 					<p class="text-base text-slate-400">No releases found matching your filter or search.</p>
 					<button
 						onclick={() => {
@@ -783,10 +982,15 @@
 							<div class="mt-4 flex items-center gap-3 border-t border-slate-800/80 pt-4">
 								{#if album.status === 'coming-soon'}
 									<span
-										class="flex items-center gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3.5 py-2 text-xs font-semibold text-amber-300 select-none cursor-not-allowed sm:text-sm"
+										class="flex cursor-not-allowed items-center gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3.5 py-2 text-xs font-semibold text-amber-300 select-none sm:text-sm"
 									>
 										<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
 										</svg>
 										Coming Soon
 									</span>
@@ -818,6 +1022,44 @@
 								>
 									{expandedAlbumId === album.id ? 'Hide Tracks' : `Tracks (${album.tracks.length})`}
 								</button>
+
+								<button
+									onclick={() => shareAlbum(album)}
+									class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+									title="Share album link"
+									aria-label="Share {album.title}"
+								>
+									<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+										/>
+									</svg>
+									<span>Share</span>
+								</button>
+
+								<a
+									href={resolve('/album/[slug]', { slug: album.slug })}
+									class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+									title="View dedicated album page"
+								>
+									<span>Details</span>
+									<svg
+										class="h-3.5 w-3.5 opacity-60"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 5l7 7-7 7"
+										/>
+									</svg>
+								</a>
 							</div>
 						</div>
 					</div>
@@ -850,7 +1092,7 @@
 												>
 													{#if player.currentTrack.id === track.id && player.isPlaying}
 														<svg
-															class="h-3.5 w-3.5 text-blue-400 group-hover:text-white fill-current"
+															class="h-3.5 w-3.5 fill-current text-blue-400 group-hover:text-white"
 															viewBox="0 0 24 24"
 														>
 															<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
@@ -866,18 +1108,32 @@
 												</button>
 											{:else}
 												<span
-													class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-500 cursor-not-allowed"
+													class="flex h-7 w-7 shrink-0 cursor-not-allowed items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-500"
 													title="Audio in studio production"
 												>
-													<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+													<svg
+														class="h-3 w-3"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+														/>
 													</svg>
 												</span>
 											{/if}
 
 											<div class="min-w-0 flex-1">
 												<div class="flex items-center gap-2">
-													<span class="truncate text-sm font-medium {track.isPlayable ? '' : 'text-slate-400'}">
+													<span
+														class="truncate text-sm font-medium {track.isPlayable
+															? ''
+															: 'text-slate-400'}"
+													>
 														{track.track}. {track.title}
 													</span>
 													{#if track.legacyTier}
@@ -903,7 +1159,9 @@
 											</div>
 										</div>
 
-										<div class="ml-4 flex shrink-0 items-center gap-3 font-mono text-xs text-slate-500">
+										<div
+											class="ml-4 flex shrink-0 items-center gap-3 font-mono text-xs text-slate-500"
+										>
 											{#if track.isrc}
 												<span class="hidden text-slate-600 sm:inline">{track.isrc}</span>
 											{/if}
@@ -911,6 +1169,20 @@
 										</div>
 									</div>
 								{/each}
+							</div>
+
+							<div
+								class="mt-4 flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs"
+							>
+								<span class="text-slate-500">
+									{album.playableTrackCount} of {album.totalTracksCount} tracks available to stream
+								</span>
+								<a
+									href={resolve('/album/[slug]', { slug: album.slug })}
+									class="inline-flex items-center gap-1 font-semibold text-blue-400 hover:text-blue-300"
+								>
+									Dedicated Album Page & Lore &rarr;
+								</a>
 							</div>
 						</div>
 					{/if}

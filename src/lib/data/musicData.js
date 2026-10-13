@@ -55,6 +55,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {number} playableTrackCount
  * @property {number} totalTracksCount
  * @property {string} artwork
+ * @property {string} socialPreview
  * @property {string} description
  * @property {Track[]} tracks
  */
@@ -123,7 +124,7 @@ export const catalogStats = {
  * Maps album-level metadata down to every individual track object.
  *
  * @param {Album} album
- * @returns {Array<Track & { album: string; artist: string; artwork: string; year: string }>}
+ * @returns {Array<Track & { album: string; albumSlug: string; artist: string; artistSlug: string; artwork: string; socialPreview: string; year: string; temporalCoverage?: string }>}
  */
 export function formatAlbumQueue(album) {
 	return album.tracks
@@ -131,8 +132,12 @@ export function formatAlbumQueue(album) {
 		.map((t) => ({
 			...t,
 			album: album.title,
+			albumSlug: album.slug,
 			artist: album.artist,
+			artistSlug: album.artistSlug,
 			artwork: album.artwork,
-			year: album.year
+			socialPreview: album.socialPreview,
+			year: album.year,
+			temporalCoverage: album.temporalCoverage
 		}));
 }

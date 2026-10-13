@@ -58,8 +58,11 @@ export class AudioPlayer {
 		id: '',
 		title: '',
 		artist: '',
+		artistSlug: '',
 		album: '',
+		albumSlug: '',
 		artwork: '',
+		socialPreview: '',
 		audioUrl: '',
 		vttUrl: '',
 		loreNote: '',
@@ -228,9 +231,9 @@ export class AudioPlayer {
 		// Check if target track has the identical ISRC and an existing audio stream is active/loaded
 		const isSameSongByIsrc = Boolean(
 			currentIsrc &&
-				targetIsrc &&
-				currentIsrc === targetIsrc &&
-				(this.currentTrack.audioUrl || this.currentTime > 0)
+			targetIsrc &&
+			currentIsrc === targetIsrc &&
+			(this.currentTrack.audioUrl || this.currentTime > 0)
 		);
 
 		if (isSameSongByIsrc) {
@@ -241,8 +244,11 @@ export class AudioPlayer {
 			this.currentTrack.id = track.id || this.currentTrack.id;
 			this.currentTrack.title = track.title || this.currentTrack.title;
 			this.currentTrack.artist = track.artist || this.currentTrack.artist;
+			this.currentTrack.artistSlug = track.artistSlug || this.currentTrack.artistSlug;
 			this.currentTrack.album = track.album || this.currentTrack.album;
+			this.currentTrack.albumSlug = track.albumSlug || this.currentTrack.albumSlug;
 			this.currentTrack.artwork = track.artwork || this.currentTrack.artwork;
+			this.currentTrack.socialPreview = track.socialPreview || this.currentTrack.socialPreview;
 			this.currentTrack.disc = track.disc || 1;
 			this.currentTrack.track = track.track || 1;
 			this.currentTrack.year = track.year || this.currentTrack.year;
@@ -283,8 +289,11 @@ export class AudioPlayer {
 			id: track.id || '',
 			title: track.title || 'Unknown Title',
 			artist: track.artist || 'Unknown Artist',
+			artistSlug: track.artistSlug || '',
 			album: track.album || 'Unknown Album',
+			albumSlug: track.albumSlug || '',
 			artwork: track.artwork || '',
+			socialPreview: track.socialPreview || '',
 			audioUrl: track.audioUrl || '',
 			vttUrl: track.vttUrl || '',
 			loreNote: track.loreNote || '',
@@ -422,11 +431,14 @@ export class AudioPlayer {
 		}
 		this.sleepTimerMinutes = minutes;
 		this.sleepTimerEnd = Date.now() + minutes * 60 * 1000;
-		this._sleepTimeout = setTimeout(() => {
-			this.pause();
-			this.sleepTimerMinutes = null;
-			this.sleepTimerEnd = null;
-		}, minutes * 60 * 1000);
+		this._sleepTimeout = setTimeout(
+			() => {
+				this.pause();
+				this.sleepTimerMinutes = null;
+				this.sleepTimerEnd = null;
+			},
+			minutes * 60 * 1000
+		);
 	}
 
 	/**
@@ -445,7 +457,7 @@ export class AudioPlayer {
 			};
 			localStorage.setItem('raggiesoft-music-last-session', JSON.stringify(session));
 			this.hasSavedSession = true;
-		} catch (e) {
+		} catch {
 			// localStorage full or restricted
 		}
 	}
@@ -459,7 +471,7 @@ export class AudioPlayer {
 		try {
 			const raw = localStorage.getItem('raggiesoft-music-last-session');
 			return raw ? JSON.parse(raw) : null;
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	}

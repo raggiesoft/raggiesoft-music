@@ -183,9 +183,9 @@ function buildCatalog() {
 				: '';
 			const datePublished = albumData.datePublished
 				? String(albumData.datePublished).trim()
-				: (albumData.albumRelease?.datePublished
+				: albumData.albumRelease?.datePublished
 					? String(albumData.albumRelease.datePublished).trim()
-					: '');
+					: '';
 
 			// Resolve narrative release year
 			let year = '';
@@ -211,10 +211,19 @@ function buildCatalog() {
 				albumTitle.toLowerCase().includes('book 2') ||
 				albumTitle.toLowerCase().includes('book 3');
 
-			// Resolve cover artwork URL
+			// Resolve cover artwork URL (1:1 square master)
 			let artwork = `${CDN_BASE}/${artistSlug}/${albumSlug}/album-art.jpg`;
 			if (fs.existsSync(path.join(albumDir, 'album-art.png'))) {
 				artwork = `${CDN_BASE}/${artistSlug}/${albumSlug}/album-art.png`;
+			}
+
+			// Resolve Open Graph social preview banner URL (1200x630 landscape)
+			// Checks for physical social-preview.jpg/png on disk; falls back to square artwork if absent.
+			let socialPreview = `${CDN_BASE}/${artistSlug}/${albumSlug}/social-preview.jpg`;
+			if (fs.existsSync(path.join(albumDir, 'social-preview.png'))) {
+				socialPreview = `${CDN_BASE}/${artistSlug}/${albumSlug}/social-preview.png`;
+			} else if (!fs.existsSync(path.join(albumDir, 'social-preview.jpg'))) {
+				socialPreview = artwork;
 			}
 
 			// Web MP3 audio directory path
@@ -330,6 +339,7 @@ function buildCatalog() {
 				playableTrackCount,
 				totalTracksCount,
 				artwork,
+				socialPreview,
 				description,
 				tracks: formattedTracks
 			});
