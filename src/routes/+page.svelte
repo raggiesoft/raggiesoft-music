@@ -928,7 +928,24 @@
 			</div>
 		</section>
 
-		<!-- 5. IN-UNIVERSE LORE BRIEF -->
+		<!-- 
+			5. IN-UNIVERSE LORE BRIEF & CLOSED-SYSTEM DISCLAIMER
+			========================================================================
+			ARCHITECTURAL OVERVIEW:
+			This section anchors Engine Room Records within the broader RaggieSoft Media
+			universe, communicating its narrative origins and four-decade storytelling scope.
+			
+			CLOSED-SYSTEM POLICY & PERIMETER SECURITY:
+			Engine Room Records is an artistic closed system and does NOT sign external artists;
+			every act on the roster is an AI Persona. Real-world unsolicited submissions are
+			automatically dropped and permanently deleted without review at the Microsoft
+			Exchange Transport Rule level.
+			
+			ACCESSIBILITY (WCAG):
+			The disclaimer banner uses high-contrast rose tokens (text-rose-200 on bg-rose-950/40 
+			with border-rose-500/40) ensuring strict WCAG AA/AAA compliance against dark backdrops.
+			========================================================================
+		-->
 		<section class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 sm:p-8">
 			<div class="max-w-3xl">
 				<div
@@ -951,6 +968,38 @@
 					sanctuary for independent artists reclaiming their masters, creating concept rock operas,
 					and preserving memories across four decades of storytelling.
 				</p>
+
+				<!-- Closed-System Policy & Exchange Transport Notice -->
+				<div
+					class="mt-4 rounded-xl border border-rose-500/40 bg-rose-950/40 p-4 text-xs text-rose-200 sm:text-sm"
+					role="note"
+					aria-label="Closed System and Submission Policy"
+				>
+					<div class="flex items-start gap-3">
+						<svg
+							class="mt-0.5 h-5 w-5 shrink-0 text-rose-400"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+							/>
+						</svg>
+						<div>
+							<div class="font-bold text-rose-300 mb-0.5">Closed System &bull; No Submissions Accepted</div>
+							<p class="leading-relaxed">
+								Engine Room Records does not sign outside artists—every artist on this label is an AI Persona. 
+								Any attempts to submit material or demos are automatically intercepted and permanently deleted unread 
+								at the Microsoft Exchange Transport Rule level.
+							</p>
+						</div>
+					</div>
+				</div>
+
 				<div class="mt-5 flex items-center gap-4">
 					<a
 						href="https://books.raggiesoft.com"
