@@ -716,9 +716,18 @@
 						<h2 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
 							{spotlightAlbum.title}
 						</h2>
-						<p class="mt-1 text-lg font-bold text-blue-400">
-							{spotlightAlbum.artist}
-						</p>
+						<div class="mt-1.5 flex items-center gap-2.5">
+							{#if spotlightAlbum.artistLogo}
+								<img
+									src={spotlightAlbum.artistLogo}
+									alt="{spotlightAlbum.artist} logo"
+									class="h-6 w-6 rounded-full object-cover border border-slate-700/80 bg-slate-950 shadow-sm"
+								/>
+							{/if}
+							<p class="text-lg font-bold text-blue-400">
+								{spotlightAlbum.artist}
+							</p>
+						</div>
 
 						<p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
 							{spotlightAlbum.description}
@@ -808,6 +817,14 @@
 							>
 								{album.temporalCoverage ? album.temporalCoverage.slice(0, 4) : album.year}
 							</span>
+							{#if album.artistLogo}
+								<img
+									src={album.artistLogo}
+									alt="{album.artist} logo badge"
+									class="absolute top-2 right-2 h-6 w-6 rounded-full border border-slate-700/80 bg-slate-950/80 object-cover shadow-md backdrop-blur-sm"
+									title={album.artist}
+								/>
+							{/if}
 						</div>
 
 						<div class="mt-3 flex flex-1 flex-col justify-between">
@@ -815,7 +832,16 @@
 								<h3 class="truncate text-sm font-bold text-white" title={album.title}>
 									{album.title}
 								</h3>
-								<p class="truncate text-xs font-medium text-blue-400">{album.artist}</p>
+								<div class="mt-0.5 flex items-center gap-1.5 truncate">
+									{#if album.artistLogo}
+										<img
+											src={album.artistLogo}
+											alt="{album.artist} logo"
+											class="h-3.5 w-3.5 shrink-0 rounded-full object-cover border border-slate-700/80 bg-slate-950"
+										/>
+									{/if}
+									<p class="truncate text-xs font-medium text-blue-400">{album.artist}</p>
+								</div>
 							</div>
 
 							<div
@@ -1102,6 +1128,54 @@
 			{/each}
 		</div>
 
+		<!-- Active Artist Discography Banner -->
+		{#if activeFilter !== 'all' && activeFilter !== 'rock-opera'}
+			{@const currentArtistObj = dynamicArtists.find((a) => a.slug === activeFilter)}
+			{#if currentArtistObj}
+				<div
+					class="mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl backdrop-blur-sm"
+				>
+					{#if currentArtistObj.logo}
+						<img
+							src={currentArtistObj.logo}
+							alt="{currentArtistObj.name} Logo"
+							class="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-2xl border border-slate-700/80 object-cover shadow-2xl bg-slate-950"
+						/>
+					{:else}
+						<div
+							class="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-3xl font-extrabold text-white shadow-2xl"
+						>
+							{currentArtistObj.name.charAt(0)}
+						</div>
+					{/if}
+					<div class="flex-1 text-center sm:text-left">
+						<div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+							<span
+								class="rounded-md border border-blue-700/50 bg-blue-950/80 px-2.5 py-0.5 font-mono text-xs font-bold text-blue-300 uppercase"
+							>
+								Engine Room Artist
+							</span>
+							<span class="font-mono text-xs text-slate-400">
+								{currentArtistObj.albumCount} {currentArtistObj.albumCount === 1 ? 'Album' : 'Albums'} • {currentArtistObj.trackCount} Songs
+							</span>
+						</div>
+						<h2 class="mt-1.5 text-2xl font-black tracking-tight text-white sm:text-3xl">
+							{currentArtistObj.name}
+						</h2>
+						<p class="mt-1 text-xs text-slate-400 sm:text-sm">
+							Showing all catalog recordings, rock operas, and live performances by {currentArtistObj.name}.
+						</p>
+					</div>
+					<button
+						onclick={() => (activeFilter = 'all')}
+						class="rounded-lg border border-slate-700/80 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+					>
+						View All Artists &rarr;
+					</button>
+				</div>
+			{/if}
+		{/if}
+
 		<!-- Albums Sections Grouped by Production Type -->
 		{#if filteredAlbums.length === 0}
 			<div
@@ -1141,17 +1215,17 @@
 							</div>
 						</div>
 
-						<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+						<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 							{#each section.albums as album (album.id)}
 				<div
 					id={album.id}
 					class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
 				>
 					<!-- Card Top / Hero Area -->
-					<div class="flex flex-col gap-6 p-6 sm:flex-row">
+					<div class="flex flex-col gap-5 p-5 sm:p-6 sm:flex-row">
 						<!-- Cover Art Container -->
 						<div
-							class="group relative h-44 w-44 shrink-0 self-center overflow-hidden rounded-xl border border-slate-800 shadow-lg sm:h-48 sm:w-48 sm:self-start"
+							class="group relative h-40 w-40 shrink-0 self-center overflow-hidden rounded-xl border border-slate-800 shadow-lg sm:h-44 sm:w-44 sm:self-start"
 						>
 							<img
 								src={album.artwork}
@@ -1188,7 +1262,7 @@
 						</div>
 
 						<!-- Album Info -->
-						<div class="flex flex-1 flex-col justify-between text-left">
+						<div class="flex flex-1 min-w-0 flex-col justify-between text-left">
 							<div>
 								<div class="mb-2 flex flex-wrap items-center gap-2">
 									{#if album.isRockOpera}
@@ -1244,21 +1318,30 @@
 								<h2 class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl">
 									{album.title}
 								</h2>
-								<p class="mt-1 text-sm font-semibold text-blue-400">
-									{album.artist}
-								</p>
+								<div class="mt-1 flex items-center gap-2 truncate">
+									{#if album.artistLogo}
+										<img
+											src={album.artistLogo}
+											alt="{album.artist} logo badge"
+											class="h-4 w-4 shrink-0 rounded-full object-cover border border-slate-700/80 bg-slate-950"
+										/>
+									{/if}
+									<p class="truncate text-sm font-semibold text-blue-400">
+										{album.artist}
+									</p>
+								</div>
 								<p class="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-400 sm:text-sm">
 									{album.description}
 								</p>
 							</div>
 
 							<!-- Card Action Bar -->
-							<div class="mt-4 flex items-center gap-3 border-t border-slate-800/80 pt-4">
+							<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5">
 								{#if album.status === 'coming-soon'}
 									<span
-										class="flex cursor-not-allowed items-center gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3.5 py-2 text-xs font-semibold text-amber-300 select-none sm:text-sm"
+										class="flex cursor-not-allowed items-center gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3 py-1.5 text-xs font-semibold text-amber-300 select-none"
 									>
-										<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"
@@ -1271,9 +1354,9 @@
 								{:else if album.status === 'in-progress'}
 									<button
 										onclick={() => playAlbum(album)}
-										class="flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-sky-600/20 transition-colors hover:bg-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:text-sm"
+										class="flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-sky-600/20 transition-colors hover:bg-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
 									>
-										<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+										<svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
 											<path d="M8 5v14l11-7z" />
 										</svg>
 										Play Preview ({album.playableTrackCount})
@@ -1281,9 +1364,9 @@
 								{:else}
 									<button
 										onclick={() => playAlbum(album)}
-										class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+										class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 									>
-										<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+										<svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
 											<path d="M8 5v14l11-7z" />
 										</svg>
 										Play Album
@@ -1292,18 +1375,18 @@
 
 								<button
 									onclick={() => toggleAlbumDetails(album.id)}
-									class="rounded-lg border border-slate-700/80 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+									class="rounded-lg border border-slate-700/80 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 								>
 									{expandedAlbumId === album.id ? 'Hide Tracks' : `Tracks (${album.tracks.length})`}
 								</button>
 
 								<button
 									onclick={() => shareAlbum(album)}
-									class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+									class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 									title="Share album link"
 									aria-label="Share {album.title}"
 								>
-									<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
@@ -1316,7 +1399,7 @@
 
 								<a
 									href={resolve('/album/[slug]', { slug: album.slug })}
-									class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm"
+									class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-2.5 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 									title="View dedicated album page"
 								>
 									<span>Details</span>

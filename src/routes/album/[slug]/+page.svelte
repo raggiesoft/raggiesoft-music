@@ -366,9 +366,18 @@
 						{album.title}
 					</h1>
 
-					<p class="mt-2 text-lg font-bold text-blue-400 sm:text-xl">
-						{album.artist}
-					</p>
+					<div class="mt-2.5 flex items-center gap-3">
+						{#if album.artistLogo}
+							<img
+								src={album.artistLogo}
+								alt="{album.artist} logo badge"
+								class="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border border-slate-700/80 shadow-md bg-slate-950 shrink-0"
+							/>
+						{/if}
+						<p class="text-lg font-bold text-blue-400 sm:text-xl">
+							{album.artist}
+						</p>
+					</div>
 
 					<p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
 						{album.description}

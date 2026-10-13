@@ -366,9 +366,18 @@
 						<h2 class="text-2xl font-bold tracking-tight text-white">
 							{player.currentTrack.title || 'Engine Room Records'}
 						</h2>
-						<p class="mt-1 text-lg font-medium text-blue-400">
-							{player.currentTrack.artist || 'Select a track'}
-						</p>
+						<div class="mt-1 flex items-center justify-center md:justify-start gap-2">
+							{#if player.currentTrack.artistLogo}
+								<img
+									src={player.currentTrack.artistLogo}
+									alt="{player.currentTrack.artist} logo"
+									class="h-6 w-6 rounded-full object-cover border border-slate-700/80 shadow-sm bg-slate-950 shrink-0"
+								/>
+							{/if}
+							<p class="text-lg font-medium text-blue-400">
+								{player.currentTrack.artist || 'Select a track'}
+							</p>
+						</div>
 						{#if player.currentTrack.albumSlug}
 							<a
 								href={resolve('/album/[slug]', { slug: player.currentTrack.albumSlug })}
@@ -869,13 +878,22 @@
 				</div>
 			</button>
 
-			<div class="truncate text-left">
+			<div class="truncate text-left min-w-0">
 				<h3 class="truncate text-sm leading-snug font-bold text-white">
 					{player.currentTrack.title || 'Engine Room Records'}
 				</h3>
-				<p class="mt-0.5 truncate text-xs text-slate-400">
-					{player.currentTrack.artist || 'Select a track to start'}
-				</p>
+				<div class="mt-0.5 flex items-center gap-1.5 truncate">
+					{#if player.currentTrack.artistLogo}
+						<img
+							src={player.currentTrack.artistLogo}
+							alt="{player.currentTrack.artist} logo"
+							class="h-3.5 w-3.5 shrink-0 rounded-full object-cover border border-slate-700/80 bg-slate-950"
+						/>
+					{/if}
+					<p class="truncate text-xs text-slate-400">
+						{player.currentTrack.artist || 'Select a track to start'}
+					</p>
+				</div>
 			</div>
 		</div>
 

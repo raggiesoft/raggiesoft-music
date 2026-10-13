@@ -132,7 +132,7 @@ export const catalogStats = {
  * Maps album-level metadata down to every individual track object.
  *
  * @param {Album} album
- * @returns {Array<Track & { album: string; albumSlug: string; artist: string; artistSlug: string; artwork: string; socialPreview: string; year: string; temporalCoverage?: string }>}
+ * @returns {Array<Track & { album: string; albumSlug: string; artist: string; artistSlug: string; artistLogo: string | null; artwork: string; socialPreview: string; year: string; temporalCoverage?: string }>}
  */
 export function formatAlbumQueue(album) {
 	return album.tracks
@@ -143,6 +143,7 @@ export function formatAlbumQueue(album) {
 			albumSlug: album.slug,
 			artist: album.artist,
 			artistSlug: album.artistSlug,
+			artistLogo: album.artistLogo || null,
 			artwork: album.artwork,
 			socialPreview: album.socialPreview,
 			year: album.year,
