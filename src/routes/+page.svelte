@@ -13,7 +13,7 @@
 	 *    - Home / Discover: Welcoming dashboard featuring personalized "Jump Back In"
 	 *      shelf (restoring playback from browser localStorage), a high-impact Rock Opera
 	 *      Spotlight, the in-universe chronological timeline, and artist showcases.
-	 *    - Discography / Library: Complete 28-album catalog sequenced strictly by
+	 *    - Discography / Library: Complete catalog sequenced strictly by
 	 *      in-universe ISO 8601 temporalCoverage, filterable by artist and WIP status.
 	 * 2. Automated Physical MP3 State Detection:
 	 *    - Albums are categorized dynamically as "Released", "In Production" (e.g. 2/11 Ready),
@@ -308,7 +308,7 @@
 	<title>Engine Room Records | Official Music & Discography Platform</title>
 	<meta
 		name="description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
+		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/" />
 
@@ -319,7 +319,7 @@
 	<meta property="og:title" content="Engine Room Records | Official Music & Discography Platform" />
 	<meta
 		property="og:description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
+		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta property="og:image:width" content="1376" />
@@ -336,7 +336,7 @@
 	/>
 	<meta
 		name="twitter:description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Explore 28 albums, synchronized lyrics, and in-universe lore across all artists."
+		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
 </svelte:head>
@@ -675,8 +675,8 @@
 					Bands of Engine Room Records
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					Nine distinct soundscapes spanning progressive rock, synthwave, 16-bit RPG orchestrations,
-					and post-punk.
+					Distinct soundscapes spanning progressive rock, synthwave, 16-bit RPG orchestrations, and
+					post-punk across the label's artist roster.
 				</p>
 			</div>
 

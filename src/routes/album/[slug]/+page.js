@@ -7,7 +7,7 @@
  * (/album/[slug]) on Engine Room Records (music.raggiesoft.com).
  *
  * Architecture & Design Decisions:
- * 1. Build-Time Static Prerendering: Generates static HTML for all 28 albums
+ * 1. Build-Time Static Prerendering: Generates static HTML for all catalog albums
  *    via `entries()`, baking unique Open Graph (og:*), Twitter Cards, and
  *    Schema.org JSON-LD directly into the HTML for social media crawlers.
  * 2. Instant Routing: Resolves album data from the canonical catalog
