@@ -3864,11 +3864,77 @@
     ]
   },
   {
-    "id": "the-winter-palace-2007-tales-from-the-solstice",
+    "id": "the-stardust-engine-2004-neon-nights",
+    "slug": "2004-neon-nights",
+    "title": "Neon Nights",
+    "artist": "The Stardust Engine",
+    "artistSlug": "the-stardust-engine",
+    "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
+    "year": "2004",
+    "temporalCoverage": "2004",
+    "datePublished": "",
+    "genre": "Synthwave / Speed Rock / 80s Rock",
+    "isRockOpera": false,
+    "albumType": "studio",
+    "albumTypeLabel": "Studio Album",
+    "status": "coming-soon",
+    "statusLabel": "Coming Soon",
+    "playableTrackCount": 0,
+    "totalTracksCount": 3,
+    "artwork": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2004-neon-nights/album-art.jpg",
+    "socialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2004-neon-nights/social-preview.jpg",
+    "description": "High-octane synth-metal and melodic night-drive anthems from The Stardust Engine. Conceived during their peak touring era, Neon Nights channels the adrenaline of high-speed rain-slicked highways and electric storms.",
+    "tracks": [
+      {
+        "id": "the-stardust-engine-2004-neon-nights-1-1",
+        "disc": 1,
+        "track": 1,
+        "title": "Before the Distance",
+        "duration": "In Studio",
+        "isrc": "",
+        "legacyTier": "Deep Cut",
+        "loreNote": "High-speed night drive track opening the Neon Nights release.",
+        "lyrics": "",
+        "audioUrl": "",
+        "vttUrl": "",
+        "isPlayable": false
+      },
+      {
+        "id": "the-stardust-engine-2004-neon-nights-1-2",
+        "disc": 1,
+        "track": 2,
+        "title": "Seconds into Forever",
+        "duration": "In Studio",
+        "isrc": "",
+        "legacyTier": "Fan Anthem",
+        "loreNote": "Soaring synth-rock anthem capturing the rush of eternal moments under city lights.",
+        "lyrics": "",
+        "audioUrl": "",
+        "vttUrl": "",
+        "isPlayable": false
+      },
+      {
+        "id": "the-stardust-engine-2004-neon-nights-1-3",
+        "disc": 1,
+        "track": 3,
+        "title": "Thunder in the Rain",
+        "duration": "In Studio",
+        "isrc": "",
+        "legacyTier": "Chart Smash",
+        "loreNote": "Electrifying heavy synth-metal crescendo with torrential rain and lightning energy.",
+        "lyrics": "",
+        "audioUrl": "",
+        "vttUrl": "",
+        "isPlayable": false
+      }
+    ]
+  },
+  {
+    "id": "the-arctic-symphony-project-2007-tales-from-the-solstice",
     "slug": "2007-tales-from-the-solstice",
     "title": "Tales from the Solstice",
-    "artist": "The Winter Palace",
-    "artistSlug": "the-winter-palace",
+    "artist": "The Arctic Symphony Project",
+    "artistSlug": "the-arctic-symphony-project",
     "artistLogo": null,
     "year": "2007",
     "temporalCoverage": "2007",
@@ -3881,40 +3947,40 @@
     "statusLabel": "Coming Soon",
     "playableTrackCount": 0,
     "totalTracksCount": 30,
-    "artwork": "https://assets.raggiesoft.com/engine-room-records/artists/the-winter-palace/2007-tales-from-the-solstice/album-art.jpg",
-    "socialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-winter-palace/2007-tales-from-the-solstice/social-preview.jpg",
+    "artwork": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/2007-tales-from-the-solstice/album-art.jpg",
+    "socialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/2007-tales-from-the-solstice/social-preview.jpg",
     "description": "A sweeping 3-disc symphonic rock opera chronicling the harrowing 1996 abduction of Julian Rowlands and the auditory fortress his family built to guide him home. This definitive 10th-anniversary release finally reclaims the band's narrative from the corporate vaults, featuring the sacred, newly remastered Trilingual 'Family Mix' of the legendary beacon track, 'Upon This Winter's Night'.",
     "tracks": [
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-1",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-1",
         "disc": 1,
         "track": 1,
         "title": "Overture of the Frost",
         "duration": "In Studio",
         "isrc": "",
         "legacyTier": "",
-        "loreNote": "Archival lyrics document.",
-        "lyrics": "[Instrumental Intro]\n[Symphonic Strings]\n\n[Heavy Cello Build]\n[Rock Drum Beat]\n\n[Distorted Guitar Entrance]\n[Epic Orchestral Drop]\n\n[Choir]\nAhhh, Ohhh\nAhhh, Ohhh\n\n[Massive Symphonic Rock Climax]\n[Heavy Rhythm Section]\n\n[Sudden Stop]\n[Lonely Piano Outro]\n[Fade to Silence]",
+        "loreNote": "",
+        "lyrics": "",
         "audioUrl": "",
         "vttUrl": "",
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-2",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-2",
         "disc": 1,
         "track": 2,
         "title": "The False Horizon",
         "duration": "In Studio",
         "isrc": "",
         "legacyTier": "",
-        "loreNote": "Archival lyrics document.",
-        "lyrics": "[Verse 1]\nRolling south down Hampton line\nTracing the grid inside the mind\nThe hospital glass is coming near\nThe transfer point is almost here\nThe air brakes hiss, the yellow cord is pulled\nFollowing the rules, just like we were told\n\n[Pre-Chorus]\nA sudden hand upon the arm\nA sweet smile to disarm the alarm\nWe're staying on, skipping the door\nThere's a little something more\n\n[Chorus]\nLook at the false horizon!\nA detour in the master plan!\nThe curfew clock begins to fade\nJust trying to play the easy hand\nIgnore the warnings in the chest\nFor a spontaneous request\nSwallow the panic, take the lead\nInto the emerald greed!\n\n[Verse 2]\nOlney and Granby, stepping in the cold\nThis isn't the story we were told\nA concrete fortress standing tall\nThe diesel fumes, the echoing hall\nWayfarer silver, Pathfinder blue\nWhat exactly are we going to do?\n\n[Bridge]\nTwo tickets out! Next bus to ride!\nRichmond is waiting on the other side!\nThe borders break, the tether tears!\nThe armor's left upon the stairs!\n\n[Outro]\nA sudden twist, an outstretched hand\nWalking blind into the sand\nA quiet nod, the closing eyes\nThe heavy gate locks on the prize!\n(The trap locks shut!)\n(The trap locks shut!)\n\n[Sudden Heavy Orchestral Hit]\n[End]",
+        "loreNote": "",
+        "lyrics": "",
         "audioUrl": "",
         "vttUrl": "",
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-3",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-3",
         "disc": 1,
         "track": 3,
         "title": "Diesel and Dust",
@@ -3928,7 +3994,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-4",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-4",
         "disc": 1,
         "track": 4,
         "title": "Appalachian Shadows",
@@ -3942,7 +4008,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-5",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-5",
         "disc": 1,
         "track": 5,
         "title": "The Nashville Panic",
@@ -3956,7 +4022,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-6",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-6",
         "disc": 1,
         "track": 6,
         "title": "A River of Iron",
@@ -3970,7 +4036,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-7",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-7",
         "disc": 1,
         "track": 7,
         "title": "The Gateway Arch",
@@ -3984,7 +4050,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-8",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-8",
         "disc": 1,
         "track": 8,
         "title": "Cold Tile (The Fall)",
@@ -3998,7 +4064,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-9",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-9",
         "disc": 1,
         "track": 9,
         "title": "The Longest Shadow",
@@ -4012,7 +4078,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-1-10",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-1-10",
         "disc": 1,
         "track": 10,
         "title": "Midnight Lullaby",
@@ -4026,7 +4092,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-1",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-1",
         "disc": 2,
         "track": 1,
         "title": "The Frozen Plains",
@@ -4040,7 +4106,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-2",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-2",
         "disc": 2,
         "track": 2,
         "title": "The Secret Fire",
@@ -4054,7 +4120,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-3",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-3",
         "disc": 2,
         "track": 3,
         "title": "Salt Lake Despair",
@@ -4068,7 +4134,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-4",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-4",
         "disc": 2,
         "track": 4,
         "title": "The Broken Lift",
@@ -4082,21 +4148,21 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-5",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-5",
         "disc": 2,
         "track": 5,
         "title": "Emerald City (The Trigger)",
         "duration": "In Studio",
         "isrc": "",
         "legacyTier": "",
-        "loreNote": "Archival lyrics document.",
-        "lyrics": "[Verse 1]\nLooking through the rain-streaked glass\nWaiting for the gray to pass\nThey say there's a place where the colors shine\nSomewhere past the border line\nA quiet dream above the rain\nTo wash away the miles of pain\n\n[Pre-Chorus]\nBut the sky turns black and the tires whine\nWelcome to the end of the line\n\n[Chorus]\nThe neon burns and the skyline bleeds!\nTrapped inside the emerald greed!\nThe sepia fades to a blinding light!\nSwallowed by the city tonight!\nThere is no magic at the end of the road!\nJust a heavy, crushing load!\n\n[Verse 2]\nI watched the gray world disappear\nBut there is only terror here\nThe towering glass and the glowing green\nWaking up inside the machine\nThe walls are high and the gates are locked\nWith every single hour mocked\n\n[Bridge]\nI can't go back, the bridge is burned!\nEvery single lesson learned!\nThe vibrant colors suffocate!\nDriven by a silent fate!\n\n[Outro]\nI just want to go home\nI just want to go home\nThe emerald light is blinding me\nI just want to go home\nI just want to go home",
+        "loreNote": "",
+        "lyrics": "",
         "audioUrl": "",
         "vttUrl": "",
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-6",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-6",
         "disc": 2,
         "track": 6,
         "title": "The Rain in the Sound",
@@ -4110,7 +4176,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-7",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-7",
         "disc": 2,
         "track": 7,
         "title": "Dead Weight",
@@ -4124,7 +4190,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-8",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-8",
         "disc": 2,
         "track": 8,
         "title": "A House Divided",
@@ -4138,7 +4204,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-9",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-9",
         "disc": 2,
         "track": 9,
         "title": "Shield of Empathy",
@@ -4152,7 +4218,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-2-10",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-2-10",
         "disc": 2,
         "track": 10,
         "title": "The Thaw",
@@ -4166,7 +4232,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-1",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-1",
         "disc": 3,
         "track": 1,
         "title": "First Class Sanctuary",
@@ -4180,7 +4246,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-2",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-2",
         "disc": 3,
         "track": 2,
         "title": "Above the Clouds",
@@ -4194,7 +4260,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-3",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-3",
         "disc": 3,
         "track": 3,
         "title": "Descent into the Hub",
@@ -4208,7 +4274,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-4",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-4",
         "disc": 3,
         "track": 4,
         "title": "The Prismatic Corridor",
@@ -4222,7 +4288,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-5",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-5",
         "disc": 3,
         "track": 5,
         "title": "Blind Faith",
@@ -4236,7 +4302,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-6",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-6",
         "disc": 3,
         "track": 6,
         "title": "Gate C22",
@@ -4250,21 +4316,21 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-7",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-7",
         "disc": 3,
         "track": 7,
         "title": "Upon This Winter's Night",
         "duration": "In Studio",
         "isrc": "",
         "legacyTier": "",
-        "loreNote": "Archival lyrics document.",
-        "lyrics": "\\[Intro]\n(Sudden, heavy driving cello riff enters)\n(Concussive rock drum kit and distorted rhythm guitar crash in)\n\n\\[Verse 1]\n(symphonic rock music backs off to allow glockenspiel to take over the melody)\nThe clock upon the mantel chimes\nReminding me of better times\nThe window pane is frosted white\nI'm searching for a sign tonight\n\n\\[Pre-Chorus]\n(Strings build tension, symphonic rock slowly kicks back in)\nCan you hear me calling?\nCan you see the glow?\nThrough the miles of silence\nAnd the drifting snow?\n\n\\[Chorus]\n(Symphonic Rock detonates with full authority back in at the word Candle)\nSo keep a candle burning bright\nUpon this winter's night\nThough you've wandered far and wide\nTime remains upon your side\nFollow the star, follow the light\nAnd make it home tonight (Make it home tonight!)\n\n\\[Instrumental Break]\n(Dramatic Cello Solo)\n\n\\[Verse 2]\nThe world is cold and full of fear\nBut sanctuary waits in here\nDon't let the shadows steal your way\nDon't listen to the words they say\nThe journey’s hard, the road is steep\nBut promises are yours to keep\nSo lift your head and face the wind\nAnd let the journey home begin\n\n\\[Chorus]\nSo keep a candle burning bright\nUpon this winter's night\nThough you've wandered far and wide\nTime remains upon your side\nFollow the star, follow the light\nAnd make it home tonight\n\n\\[Bridge]\n(Tempo speeds up - Rock Opera style)\n(Male Lead) I’m sending out a prayer!\n(Choir) (Bring him home! Bring him home!)\n(Male Lead) To vanish all despair!\n(Choir) (You are not alone!)\n(Male Lead) No matter where you are No matter how far!\n(Male Lead) Just look to the Northern Star!\n\n\\[Guitar Solo]\n(Soaring, melodic electric guitar solo with orchestral backing)\n\n\\[Chorus]\nSo keep a candle burning bright\nUpon this winter's night\nThough you've wandered far and wide\nTime remains upon your side\nFollow the star, follow the light\nAnd make it home tonight\n\n\\[Outro]\nMake it home tonight...\n(Follow the light...)\nMake it home tonight...\n(Upon this winter's night...)\n\n\\[Big Finish]\n(Orchestral hit) (Symphonic Rock gives way to a music box that is reminiscent of Johannes Brahms's Wiegenlied to finish the song)",
+        "loreNote": "",
+        "lyrics": "",
         "audioUrl": "",
         "vttUrl": "",
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-8",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-8",
         "disc": 3,
         "track": 8,
         "title": "The Anchor's Hold",
@@ -4278,7 +4344,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-9",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-9",
         "disc": 3,
         "track": 9,
         "title": "Flight 818",
@@ -4292,7 +4358,7 @@
         "isPlayable": false
       },
       {
-        "id": "the-winter-palace-2007-tales-from-the-solstice-3-10",
+        "id": "the-arctic-symphony-project-2007-tales-from-the-solstice-3-10",
         "disc": 3,
         "track": 10,
         "title": "The Polaris Dawn (Finale)",
