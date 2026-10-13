@@ -22,6 +22,38 @@
 	let isScrubbing = $state(false);
 	let scrubTime = $state(0);
 
+	// Synchronized WebVTT lyrics scroll container and tracking
+	let lyricsContainer = $state(/** @type {HTMLElement | null} */ (null));
+	let lastActiveIndex = -1;
+
+	// Automatically scroll the synchronized lyrics container to keep the active cue in view
+	$effect(() => {
+		if (!player.isExpanded || player.drawerTab !== 'lyrics-lore') {
+			lastActiveIndex = -1;
+			return;
+		}
+
+		const currentCue = player.activeCue;
+		if (!currentCue || !lyricsContainer) return;
+
+		const activeIndex = player.cues.indexOf(currentCue);
+		if (activeIndex !== -1 && activeIndex !== lastActiveIndex) {
+			lastActiveIndex = activeIndex;
+			const activeEl = lyricsContainer.querySelector(`#lyric-cue-${activeIndex}`);
+			if (activeEl instanceof HTMLElement) {
+				const containerHeight = lyricsContainer.clientHeight;
+				const elTop = activeEl.offsetTop;
+				const elHeight = activeEl.clientHeight;
+				const targetScrollTop = elTop - containerHeight / 2 + elHeight / 2;
+
+				lyricsContainer.scrollTo({
+					top: Math.max(0, targetScrollTop),
+					behavior: 'smooth'
+				});
+			}
+		}
+	});
+
 	// Synchronize audio element playback state with player store
 	$effect(() => {
 		if (!audioElement || !player.currentTrack.audioUrl) return;
@@ -289,43 +321,45 @@
 				<div
 					class="flex flex-col items-center text-center md:col-span-5 md:items-start md:text-left"
 				>
-					<div class="group relative">
-						{#if player.currentTrack.artwork}
-							<img
-								src={player.currentTrack.artwork}
-								alt="Cover artwork for {player.currentTrack.album}"
-								class="h-64 w-64 rounded-2xl border border-slate-800 object-cover shadow-2xl transition-transform md:h-80 md:w-80 {player.isPlaying
-									? 'shadow-blue-500/10'
-									: ''}"
-							/>
-						{:else}
-							<div
-								class="flex h-64 w-64 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-slate-600 md:h-80 md:w-80"
-							>
-								<span class="text-5xl">♫</span>
-							</div>
-						{/if}
+					<div class="flex w-full justify-center">
+						<div class="group relative">
+							{#if player.currentTrack.artwork}
+								<img
+									src={player.currentTrack.artwork}
+									alt="Cover artwork for {player.currentTrack.album}"
+									class="h-64 w-64 rounded-2xl border border-slate-800 object-cover shadow-2xl transition-transform md:h-80 md:w-80 {player.isPlaying
+										? 'shadow-blue-500/10'
+										: ''}"
+								/>
+							{:else}
+								<div
+									class="flex h-64 w-64 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-slate-600 md:h-80 md:w-80"
+								>
+									<span class="text-5xl">♫</span>
+								</div>
+							{/if}
 
-						<!-- Equalizer visualizer badge overlay -->
-						{#if player.isPlaying}
-							<div
-								class="absolute right-3 bottom-3 flex items-end gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 backdrop-blur-md"
-							>
-								<span class="h-4 w-1 animate-pulse rounded bg-blue-400"></span>
-								<span
-									class="h-6 w-1 animate-pulse rounded bg-indigo-400"
-									style="animation-delay: 150ms;"
-								></span>
-								<span
-									class="h-3 w-1 animate-pulse rounded bg-blue-300"
-									style="animation-delay: 300ms;"
-								></span>
-								<span
-									class="h-5 w-1 animate-pulse rounded bg-purple-400"
-									style="animation-delay: 450ms;"
-								></span>
-							</div>
-						{/if}
+							<!-- Equalizer visualizer badge overlay -->
+							{#if player.isPlaying}
+								<div
+									class="absolute right-3 bottom-3 flex items-end gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 backdrop-blur-md"
+								>
+									<span class="h-4 w-1 animate-pulse rounded bg-blue-400"></span>
+									<span
+										class="h-6 w-1 animate-pulse rounded bg-indigo-400"
+										style="animation-delay: 150ms;"
+									></span>
+									<span
+										class="h-3 w-1 animate-pulse rounded bg-blue-300"
+										style="animation-delay: 300ms;"
+									></span>
+									<span
+										class="h-5 w-1 animate-pulse rounded bg-purple-400"
+										style="animation-delay: 450ms;"
+									></span>
+								</div>
+							{/if}
+						</div>
 					</div>
 
 					<div class="mt-5 w-full">
@@ -552,16 +586,27 @@
 										Live Karaoke Sync
 									</span>
 								</div>
-								<div class="max-h-72 space-y-2.5 overflow-y-auto pr-2">
-									{#each player.cues as cue (cue.start + cue.text)}
-										<p
-											class="text-sm transition-all duration-200 {player.currentTime >= cue.start &&
-											player.currentTime <= cue.end
-												? 'scale-102 border-l-3 border-blue-500 pl-3 text-base font-bold text-white'
-												: 'text-slate-500'}"
+								<div
+									bind:this={lyricsContainer}
+									class="relative max-h-72 space-y-2.5 overflow-y-auto pr-2 scroll-smooth"
+								>
+									{#each player.cues as cue, idx (cue.start + '-' + idx)}
+										{@const isActive =
+											player.currentTime >= cue.start && player.currentTime <= cue.end}
+										<button
+											type="button"
+											id="lyric-cue-{idx}"
+											onclick={() => {
+												player.seek(cue.start);
+												if (audioElement) audioElement.currentTime = cue.start;
+											}}
+											class="block w-full text-left rounded-lg px-3 py-2 text-sm transition-all duration-200 cursor-pointer hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {isActive
+												? 'scale-102 border-l-4 border-blue-500 bg-blue-950/30 pl-3 text-base font-bold text-white shadow-sm'
+												: 'text-slate-400 hover:text-slate-200'}"
+											aria-current={isActive ? 'true' : undefined}
 										>
 											{cue.text}
-										</p>
+										</button>
 									{/each}
 								</div>
 							</div>
