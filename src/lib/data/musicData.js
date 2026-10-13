@@ -50,6 +50,9 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [datePublished]
  * @property {string} genre
  * @property {boolean} isRockOpera
+ * @property {string} [albumType]
+ * @property {string} [albumTypeLabel]
+ * @property {string | null} [artistLogo]
  * @property {string} status
  * @property {string} statusLabel
  * @property {number} playableTrackCount
@@ -64,6 +67,7 @@ import rawCatalog from './musicCatalog.json';
  * @typedef {Object} ArtistSummary
  * @property {string} slug
  * @property {string} name
+ * @property {string|null} [logo]
  * @property {number} albumCount
  * @property {number} trackCount
  */
@@ -86,7 +90,7 @@ export const featuredAlbums = allAlbums;
  * @type {ArtistSummary[]}
  */
 export const allArtists = (() => {
-	/** @type {Map<string, { slug: string, name: string, albumCount: number, trackCount: number }>} */
+	/** @type {Map<string, { slug: string, name: string, logo: string | null, albumCount: number, trackCount: number }>} */
 	const artistMap = new Map();
 
 	for (const album of allAlbums) {
@@ -94,10 +98,14 @@ export const allArtists = (() => {
 		if (existing) {
 			existing.albumCount += 1;
 			existing.trackCount += album.tracks.length;
+			if (!existing.logo && album.artistLogo) {
+				existing.logo = album.artistLogo;
+			}
 		} else {
 			artistMap.set(album.artistSlug, {
 				slug: album.artistSlug,
 				name: album.artist,
+				logo: album.artistLogo || null,
 				albumCount: 1,
 				trackCount: album.tracks.length
 			});

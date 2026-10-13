@@ -119,6 +119,13 @@ function buildCatalog() {
 		else if (artistSlug === 'firelight') artistName = 'Firelight';
 		else if (artistSlug === 'steel-horizon') artistName = 'Steel Horizon';
 
+		// Resolve artist logo if band-logo.png or band-logo.jpg exists
+		const artistLogo = fs.existsSync(path.join(artistDir, 'band-logo.png'))
+			? `${CDN_BASE}/${artistSlug}/band-logo.png`
+			: fs.existsSync(path.join(artistDir, 'band-logo.jpg'))
+				? `${CDN_BASE}/${artistSlug}/band-logo.jpg`
+				: null;
+
 		// Discover all potential album directories for this artist
 		const albumFolders = fs
 			.readdirSync(artistDir)
@@ -210,6 +217,22 @@ function buildCatalog() {
 				albumTitle.toLowerCase().includes('book 1') ||
 				albumTitle.toLowerCase().includes('book 2') ||
 				albumTitle.toLowerCase().includes('book 3');
+
+			// Resolve album production type (StudioAlbum, LiveAlbum, CompilationAlbum)
+			const rawProdType = albumData.albumProductionType || 'StudioAlbum';
+			let albumType = 'studio';
+			let albumTypeLabel = 'Studio Album';
+
+			if (rawProdType === 'LiveAlbum' || albumSlug.includes('live-in-chicago')) {
+				albumType = 'live';
+				albumTypeLabel = 'Live Album';
+			} else if (rawProdType === 'CompilationAlbum' || albumSlug.includes('war-chest')) {
+				albumType = 'compilation';
+				albumTypeLabel = 'Compilation';
+			} else if (rawProdType === 'SoundtrackAlbum') {
+				albumType = 'soundtrack';
+				albumTypeLabel = 'Soundtrack';
+			}
 
 			// Resolve cover artwork URL (1:1 square master)
 			let artwork = `${CDN_BASE}/${artistSlug}/${albumSlug}/album-art.jpg`;
@@ -329,11 +352,14 @@ function buildCatalog() {
 				title: albumTitle,
 				artist: artistName,
 				artistSlug,
+				artistLogo,
 				year,
 				temporalCoverage,
 				datePublished,
 				genre,
 				isRockOpera,
+				albumType,
+				albumTypeLabel,
 				status,
 				statusLabel,
 				playableTrackCount,

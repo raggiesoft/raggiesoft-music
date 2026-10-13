@@ -40,11 +40,29 @@
 	let currentCatalog = $state(allAlbums);
 	let activeFilter = $state('all');
 	let activeStatusFilter = $state('all');
+	let activeTypeFilter = $state('all');
 	let searchQuery = $state('');
 	let expandedAlbumId = $state(/** @type {string | null} */ (null));
 
 	// Saved local playback session for "Jump Back In" shelf
 	let savedSession = $state(/** @type {any} */ (null));
+
+	// Transparency & Dual Timeline notice state (persisted via localStorage)
+	let showTransparencyNotice = $state(false);
+
+	/**
+	 * Dismisses the Transparency & Dual Timeline notice and persists preference.
+	 */
+	function dismissTransparencyNotice() {
+		showTransparencyNotice = false;
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.setItem('raggiesoft_music_transparency_dismissed', 'true');
+			} catch {
+				// Silently catch quota or privacy restriction errors
+			}
+		}
+	}
 
 	// Dynamic time-of-day greeting (Welcome, Listener)
 	let timeGreeting = $derived.by(() => {
@@ -89,6 +107,15 @@
 		// Check for previous session to populate Jump Back In shelf
 		savedSession = player.checkSavedSession();
 
+		// Check if user previously dismissed the Transparency & Dual Timeline notice
+		try {
+			if (localStorage.getItem('raggiesoft_music_transparency_dismissed') !== 'true') {
+				showTransparencyNotice = true;
+			}
+		} catch {
+			showTransparencyNotice = true;
+		}
+
 		fetch('https://assets.raggiesoft.com/engine-room-records/catalog.json')
 			.then((res) => (res.ok ? res.json() : null))
 			.then((remoteData) => {
@@ -103,16 +130,20 @@
 
 	// Dynamically derived list of unique artists from active catalog
 	let dynamicArtists = $derived.by(() => {
-		/** @type {Record<string, { slug: string, name: string, albumCount: number, trackCount: number }>} */
+		/** @type {Record<string, { slug: string, name: string, logo: string | null, albumCount: number, trackCount: number }>} */
 		const map = {};
 		for (const alb of currentCatalog) {
 			if (map[alb.artistSlug]) {
 				map[alb.artistSlug].albumCount += 1;
 				map[alb.artistSlug].trackCount += alb.tracks.length;
+				if (!map[alb.artistSlug].logo && alb.artistLogo) {
+					map[alb.artistSlug].logo = alb.artistLogo;
+				}
 			} else {
 				map[alb.artistSlug] = {
 					slug: alb.artistSlug,
 					name: alb.artist,
+					logo: alb.artistLogo || null,
 					albumCount: 1,
 					trackCount: alb.tracks.length
 				};
@@ -121,7 +152,7 @@
 		return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
 	});
 
-	// Derived filtered album collection based on category filter, status filter, and search
+	// Derived filtered album collection based on category filter, status filter, type filter, and search
 	let filteredAlbums = $derived(
 		currentCatalog.filter((album) => {
 			// 1. Status Filter (Released vs In Production vs Coming Soon)
@@ -131,7 +162,12 @@
 				if (activeStatusFilter === 'coming-soon' && album.status !== 'coming-soon') return false;
 			}
 
-			// 2. Primary Category Filter
+			// 2. Album Production Type Filter (Studio vs Live vs Compilation vs Soundtrack)
+			if (activeTypeFilter !== 'all') {
+				if ((album.albumType || 'studio') !== activeTypeFilter) return false;
+			}
+
+			// 3. Primary Category Filter
 			if (activeFilter !== 'all') {
 				if (activeFilter === 'rock-opera') {
 					if (!album.isRockOpera) return false;
@@ -140,7 +176,7 @@
 				}
 			}
 
-			// 3. Live Search Query
+			// 4. Live Search Query
 			if (searchQuery.trim()) {
 				const q = searchQuery.toLowerCase().trim();
 				const matchAlbum =
@@ -164,6 +200,62 @@
 			return true;
 		})
 	);
+
+	// Production type counts for filter buttons
+	let typeCounts = $derived.by(() => {
+		/** @type {Record<string, number>} */
+		const counts = { all: currentCatalog.length, studio: 0, live: 0, compilation: 0, soundtrack: 0 };
+		for (const alb of currentCatalog) {
+			const t = alb.albumType || 'studio';
+			if (counts[t] !== undefined) counts[t]++;
+		}
+		return counts;
+	});
+
+	// Canonical definitions for grouping album releases by production category
+	const albumTypeDefinitions = [
+		{
+			id: 'studio',
+			title: 'Studio Albums',
+			icon: '🎙️',
+			badgeClass: 'border-blue-700/50 bg-blue-950/80 text-blue-300',
+			description: 'Original studio concept albums, rock operas, and narrative audio journeys.'
+		},
+		{
+			id: 'live',
+			title: 'Live Concert Recordings',
+			icon: '⚡',
+			badgeClass: 'border-rose-600/50 bg-rose-950/80 text-rose-300',
+			description: 'High-energy live performances captured in concert arenas and legendary venues.'
+		},
+		{
+			id: 'compilation',
+			title: 'Compilations & Anthologies',
+			icon: '💿',
+			badgeClass: 'border-purple-600/50 bg-purple-950/80 text-purple-300',
+			description: 'Curated war chests, greatest hits collections, and archival anthologies.'
+		},
+		{
+			id: 'soundtrack',
+			title: 'Soundtracks & Cinematic Scores',
+			icon: '🎬',
+			badgeClass: 'border-teal-600/50 bg-teal-950/80 text-teal-300',
+			description: 'Original motion picture and video game soundtracks produced across the label.'
+		}
+	];
+
+	// Group filtered albums by album type for structured section views
+	let groupedAlbumSections = $derived.by(() => {
+		return albumTypeDefinitions
+			.map((def) => {
+				const albums = filteredAlbums.filter((a) => (a.albumType || 'studio') === def.id);
+				return {
+					...def,
+					albums
+				};
+			})
+			.filter((sec) => sec.albums.length > 0);
+	});
 
 	/**
 	 * Plays an entire album sequentially.
@@ -425,6 +517,90 @@
 <!-- ======================================================================= -->
 {#if activeTab === 'home'}
 	<div class="space-y-10">
+		<!-- 0. TRANSPARENCY & DUAL TIMELINE NOTICE (Front & Center, Dismissible) -->
+		{#if showTransparencyNotice}
+			<section
+				class="relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-slate-900/95 via-cyan-950/25 to-slate-900/95 p-5 shadow-2xl backdrop-blur-md sm:p-6"
+				aria-label="Transparency and Timeline Notice"
+			>
+				<div class="flex items-start justify-between gap-4">
+					<div class="flex items-start gap-3.5 sm:gap-4">
+						<div
+							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/60 text-cyan-400 shadow-md"
+						>
+							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+								/>
+							</svg>
+						</div>
+
+						<div class="space-y-2.5">
+							<div class="flex flex-wrap items-center gap-2">
+								<span
+									class="rounded border border-cyan-500/30 bg-cyan-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-cyan-300 uppercase"
+								>
+									Transparency & Timeline Notice
+								</span>
+							</div>
+
+							<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
+								<strong class="text-white">Engine Room Records</strong> is a multimedia storytelling and world-building music project within the RaggieSoft universe. The music is generated using a commercial Suno license, with conceptual lore, characters, and lyrics co-written by human direction and Gemini.
+							</p>
+
+							<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
+								<strong class="text-white">Dual Timelines:</strong> To maintain our immersive fictional universe while strictly complying with modern digital distribution standards, our catalog features two timelines: a fictional <strong class="text-white">Narrative Era</strong> (e.g., 1983–2008) tied to the artists' in-universe lore, and a real-world <strong class="text-white">Actual Release Date</strong> (e.g., 2026) reflecting when the audio was officially distributed to streaming platforms.
+							</p>
+
+							<div class="flex flex-wrap items-center gap-4 pt-1">
+								<a
+									href="https://raggiesoft.com/about/ai-disclaimer"
+									target="_blank"
+									rel="noopener noreferrer nofollow"
+									class="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 underline decoration-cyan-500/50 underline-offset-4 transition-colors hover:text-cyan-300 hover:decoration-cyan-400 sm:text-sm"
+								>
+									Read the full AI Disclaimer
+									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+										/>
+									</svg>
+								</a>
+
+								<button
+									onclick={dismissTransparencyNotice}
+									class="rounded-md border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+								>
+									Dismiss
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<button
+						onclick={dismissTransparencyNotice}
+						class="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+						aria-label="Dismiss transparency notice"
+					>
+						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					</button>
+				</div>
+			</section>
+		{/if}
+
 		<!-- 1. JUMP BACK IN SHELF (Session Persistence) -->
 		{#if savedSession && savedSession.track && savedSession.track.audioUrl}
 			<section
@@ -687,11 +863,19 @@
 						class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 					>
 						<div class="flex items-center gap-3">
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md"
-							>
-								{artist.name.charAt(0)}
-							</div>
+							{#if artist.logo}
+								<img
+									src={artist.logo}
+									alt="{artist.name} Logo"
+									class="h-10 w-10 shrink-0 rounded-lg object-contain bg-slate-950 border border-slate-800 p-0.5 shadow-md"
+								/>
+							{:else}
+								<div
+									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md"
+								>
+									{artist.name.charAt(0)}
+								</div>
+							{/if}
 							<div>
 								<h3 class="text-sm font-bold text-white">{artist.name}</h3>
 								<p class="text-xs text-slate-400">
@@ -737,9 +921,9 @@
 				<h3 class="text-xl font-bold text-white sm:text-2xl">Music & Narrative Intertwined</h3>
 				<p class="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
 					Engine Room Records represents the musical heartbeat of the RaggieSoft universe. Founded
-					in Williamsport, Maryland by Rhys Manning, the label provided sanctuary for independent
-					artists reclaiming their masters, creating concept rock operas, and preserving memories
-					across four decades of storytelling.
+					by Michael Ragsdale as an independent label within RaggieSoft Media, the platform provides
+					sanctuary for independent artists reclaiming their masters, creating concept rock operas,
+					and preserving memories across four decades of storytelling.
 				</p>
 				<div class="mt-5 flex items-center gap-4">
 					<a
@@ -791,6 +975,57 @@
 					</button>
 				{/if}
 			</div>
+		</div>
+
+		<!-- Album Type Filters (All vs Studio vs Live vs Compilation vs Soundtrack) -->
+		<div class="mb-3 flex flex-wrap items-center justify-center gap-2">
+			<button
+				onclick={() => (activeTypeFilter = 'all')}
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeTypeFilter ===
+				'all'
+					? 'bg-slate-700 text-white shadow-sm'
+					: 'text-slate-400 hover:text-slate-200'}"
+			>
+				All Types ({typeCounts.all})
+			</button>
+			<button
+				onclick={() => (activeTypeFilter = 'studio')}
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeTypeFilter ===
+				'studio'
+					? 'bg-blue-600 text-white shadow-sm'
+					: 'text-slate-400 hover:text-slate-200'}"
+			>
+				Studio Albums ({typeCounts.studio})
+			</button>
+			<button
+				onclick={() => (activeTypeFilter = 'live')}
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeTypeFilter ===
+				'live'
+					? 'bg-rose-600 text-white shadow-sm'
+					: 'text-slate-400 hover:text-slate-200'}"
+			>
+				Live Albums ({typeCounts.live})
+			</button>
+			<button
+				onclick={() => (activeTypeFilter = 'compilation')}
+				class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeTypeFilter ===
+				'compilation'
+					? 'bg-purple-600 text-white shadow-sm'
+					: 'text-slate-400 hover:text-slate-200'}"
+			>
+				Compilations ({typeCounts.compilation})
+			</button>
+			{#if typeCounts.soundtrack > 0}
+				<button
+					onclick={() => (activeTypeFilter = 'soundtrack')}
+					class="rounded-lg px-3 py-1 text-xs font-semibold transition-all {activeTypeFilter ===
+					'soundtrack'
+						? 'bg-teal-600 text-white shadow-sm'
+						: 'text-slate-400 hover:text-slate-200'}"
+				>
+					Soundtracks ({typeCounts.soundtrack})
+				</button>
+			{/if}
 		</div>
 
 		<!-- Status Filters (All vs Released vs In Production vs Coming Soon) -->
@@ -867,27 +1102,47 @@
 			{/each}
 		</div>
 
-		<!-- Albums Grid -->
-		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-			{#if filteredAlbums.length === 0}
-				<div
-					class="col-span-full rounded-2xl border border-dashed border-slate-800 p-12 text-center"
+		<!-- Albums Sections Grouped by Production Type -->
+		{#if filteredAlbums.length === 0}
+			<div
+				class="rounded-2xl border border-dashed border-slate-800 p-12 text-center"
+			>
+				<p class="text-base text-slate-400">No releases found matching your filter or search.</p>
+				<button
+					onclick={() => {
+						searchQuery = '';
+						activeFilter = 'all';
+						activeStatusFilter = 'all';
+						activeTypeFilter = 'all';
+					}}
+					class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
 				>
-					<p class="text-base text-slate-400">No releases found matching your filter or search.</p>
-					<button
-						onclick={() => {
-							searchQuery = '';
-							activeFilter = 'all';
-							activeStatusFilter = 'all';
-						}}
-						class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
-					>
-						Reset Search & Filters
-					</button>
-				</div>
-			{/if}
+					Reset Search & Filters
+				</button>
+			</div>
+		{:else}
+			<div class="space-y-12">
+				{#each groupedAlbumSections as section (section.id)}
+					<section class="space-y-5">
+						<div class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
+							<div>
+								<div class="flex items-center gap-2">
+									<span class="text-xl">{section.icon}</span>
+									<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+										{section.title}
+									</h2>
+									<span class="rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-300">
+										{section.albums.length} {section.albums.length === 1 ? 'Release' : 'Releases'}
+									</span>
+								</div>
+								<p class="mt-1 text-xs text-slate-400 sm:text-sm">
+									{section.description}
+								</p>
+							</div>
+						</div>
 
-			{#each filteredAlbums as album (album.id)}
+						<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+							{#each section.albums as album (album.id)}
 				<div
 					id={album.id}
 					class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
@@ -941,6 +1196,25 @@
 											class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-indigo-300 uppercase"
 										>
 											Rock Opera
+										</span>
+									{/if}
+									{#if album.albumType === 'live'}
+										<span
+											class="rounded border border-rose-600/50 bg-rose-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-rose-300 uppercase"
+										>
+											Live Album ⚡
+										</span>
+									{:else if album.albumType === 'compilation'}
+										<span
+											class="rounded border border-purple-600/50 bg-purple-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-purple-300 uppercase"
+										>
+											Compilation 💿
+										</span>
+									{:else if album.albumType === 'soundtrack'}
+										<span
+											class="rounded border border-teal-600/50 bg-teal-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-teal-300 uppercase"
+										>
+											Soundtrack 🎬
 										</span>
 									{/if}
 									{#if album.status === 'coming-soon'}
@@ -1187,7 +1461,11 @@
 						</div>
 					{/if}
 				</div>
-			{/each}
-		</div>
+							{/each}
+						</div>
+					</section>
+				{/each}
+			</div>
+		{/if}
 	</div>
 {/if}

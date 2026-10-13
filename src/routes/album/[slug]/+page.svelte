@@ -41,6 +41,14 @@
 				name: album.artist
 			},
 			genre: album.genre,
+			albumProductionType:
+				album.albumType === 'live'
+					? 'https://schema.org/LiveAlbum'
+					: album.albumType === 'compilation'
+						? 'https://schema.org/CompilationAlbum'
+						: album.albumType === 'soundtrack'
+							? 'https://schema.org/SoundtrackAlbum'
+							: 'https://schema.org/StudioAlbum',
 			image: album.artwork,
 			datePublished: album.datePublished || album.temporalCoverage || album.year,
 			temporalCoverage: album.temporalCoverage,
@@ -303,6 +311,31 @@
 								class="rounded-md border border-indigo-700/50 bg-indigo-900/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-indigo-300 uppercase shadow-sm"
 							>
 								Rock Opera ⚡
+							</span>
+						{/if}
+						{#if album.albumType === 'live'}
+							<span
+								class="rounded-md border border-rose-600/50 bg-rose-950/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-rose-300 uppercase shadow-sm"
+							>
+								Live Album ⚡
+							</span>
+						{:else if album.albumType === 'compilation'}
+							<span
+								class="rounded-md border border-purple-600/50 bg-purple-950/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-purple-300 uppercase shadow-sm"
+							>
+								Compilation 💿
+							</span>
+						{:else if album.albumType === 'soundtrack'}
+							<span
+								class="rounded-md border border-teal-600/50 bg-teal-950/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-teal-300 uppercase shadow-sm"
+							>
+								Soundtrack 🎬
+							</span>
+						{:else}
+							<span
+								class="rounded-md border border-slate-700 bg-slate-800/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-slate-300 uppercase shadow-sm"
+							>
+								Studio Album 🎙️
 							</span>
 						{/if}
 						{#if album.status === 'coming-soon'}
