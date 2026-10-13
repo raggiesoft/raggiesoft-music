@@ -70,21 +70,13 @@
 				class="group flex items-center gap-3 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 			>
 				<div
-					class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20 transition-transform group-hover:scale-105"
+					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-lg shadow-black/40 transition-transform group-hover:scale-105"
 				>
-					<svg
-						class="h-5 w-5 text-white"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-						/>
-					</svg>
+					<img
+						src="/logos/engine-room-records-logo-white.png"
+						alt="Engine Room Records Logo"
+						class="h-full w-full object-contain"
+					/>
 				</div>
 				<div>
 					<span class="block text-base leading-tight font-extrabold tracking-tight text-white"
