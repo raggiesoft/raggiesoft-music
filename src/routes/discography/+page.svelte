@@ -379,7 +379,7 @@
 							{@const albumHasDspOrStore = hasAnyDsp(album) || hasFourthwallStore(album)}
 							<div
 								id={album.id}
-								class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
+								class="relative flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all focus-within:z-30 hover:z-20 hover:border-slate-700"
 							>
 								<div class="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
 									<!-- Cover Art (Links to /[artist]/[album]) -->
@@ -564,7 +564,7 @@
 
 								<!-- Collapsible Track List -->
 								{#if expandedAlbumId === album.id}
-									<div class="border-t border-slate-800 bg-slate-950/60 p-4 sm:p-6">
+									<div class="rounded-b-2xl border-t border-slate-800 bg-slate-950/60 p-4 sm:p-6">
 										<div class="divide-y divide-slate-800/60">
 											{#each album.tracks as track, tIdx (track.id || tIdx)}
 												<div

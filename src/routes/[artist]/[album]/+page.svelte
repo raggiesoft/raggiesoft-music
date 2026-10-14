@@ -216,7 +216,7 @@
 
 	<!-- Album Hero Showcase Area -->
 	<section
-		class="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
+		class="relative rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
 	>
 		<div class="flex flex-col gap-8 md:flex-row md:items-start lg:gap-12">
 			<!-- Artwork Container (with optional Play Overlay) -->

@@ -30,8 +30,39 @@
  */
 
 const STORAGE_KEY_DSP = 'user_preferred_dsp';
+const LEGACY_STORAGE_KEY_DSP = 'preferredMusicStore';
 const STORAGE_KEY_NUDGE_DISMISSALS = 'raggiesoft_listening_room_nudge_dismissals';
 export const MAX_NUDGE_DISMISSALS = 3;
+
+/**
+ * Detects the most natural default streaming platform for a first-time visitor
+ * based on their operating system / device ecosystem before they explicitly
+ * choose a global default:
+ * - Android & ChromeOS (`Android`, `CrOS`) -> `'youtube'` (YouTube / YouTube Music,
+ *   which is native to Google's ecosystem).
+ * - macOS, iOS, and iPadOS (`Mac`, `iPhone`, `iPad`, `iPod`) -> `'apple'` (Apple Music,
+ *   which is pre-installed natively on every Apple device).
+ * - Windows, Linux, and other desktop platforms -> `'spotify'`.
+ *
+ * Note: If a specific album is not yet on the detected default platform (e.g., a
+ * partial-DSP release where `youtubeId` is still empty), `resolveActiveDsp()`
+ * automatically falls back to the first available platform on that release.
+ *
+ * @returns {'spotify' | 'apple' | 'amazon' | 'youtube'}
+ */
+export function detectSystemDefaultDsp() {
+	if (typeof navigator === 'undefined') return 'spotify';
+	const ua = navigator.userAgent || '';
+	const platform = navigator.platform || '';
+	const combined = ua + ' ' + platform;
+	if (/Android|CrOS/i.test(combined)) {
+		return 'youtube';
+	}
+	if (/Macintosh|MacIntel|MacPPC|Mac68K|iPhone|iPad|iPod/i.test(combined)) {
+		return 'apple';
+	}
+	return 'spotify';
+}
 
 /**
  * Canonical configuration for each supported streaming platform.
@@ -105,13 +136,16 @@ class DspPreferenceManager {
 
 	/**
 	 * Hydrates preferred DSP and nudge dismissal count from `localStorage`.
+	 * If the visitor has never set a preference, defaults intelligently based
+	 * on their operating system (Apple Music on macOS/iOS/iPadOS; Spotify elsewhere).
 	 */
 	init() {
 		if (this.initialized || typeof window === 'undefined') return;
 		this.initialized = true;
 
 		try {
-			const savedDsp = localStorage.getItem(STORAGE_KEY_DSP);
+			const savedDsp =
+				localStorage.getItem(STORAGE_KEY_DSP) || localStorage.getItem(LEGACY_STORAGE_KEY_DSP);
 			if (
 				savedDsp === 'spotify' ||
 				savedDsp === 'apple' ||
@@ -119,6 +153,8 @@ class DspPreferenceManager {
 				savedDsp === 'youtube'
 			) {
 				this.preferredDsp = savedDsp;
+			} else {
+				this.preferredDsp = detectSystemDefaultDsp();
 			}
 
 			const savedDismissals = parseInt(
@@ -129,12 +165,13 @@ class DspPreferenceManager {
 				this.nudgeDismissCount = savedDismissals;
 			}
 		} catch {
-			// Ignore storage privacy restrictions
+			this.preferredDsp = detectSystemDefaultDsp();
 		}
 	}
 
 	/**
 	 * Sets the global preferred DSP and persists it to `localStorage`.
+	 * Synchronizes both `user_preferred_dsp` and `preferredMusicStore` (used on raggiesoft-hub).
 	 * @param {'spotify' | 'apple' | 'amazon' | 'youtube'} platform
 	 */
 	setPreferredDsp(platform) {
@@ -143,6 +180,7 @@ class DspPreferenceManager {
 		if (typeof window !== 'undefined') {
 			try {
 				localStorage.setItem(STORAGE_KEY_DSP, platform);
+				localStorage.setItem(LEGACY_STORAGE_KEY_DSP, platform);
 			} catch {
 				// Ignore storage errors
 			}

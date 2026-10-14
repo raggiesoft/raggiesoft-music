@@ -151,7 +151,10 @@
 <svelte:window onclick={handleWindowClick} />
 
 {#if activePlatform || (showFourthwall && (storeStandardUrl || storeAudiophileUrl || storefrontUrl))}
-	<div bind:this={containerEl} class="inline-flex flex-wrap items-center gap-2.5">
+	<div
+		bind:this={containerEl}
+		class="inline-flex flex-wrap items-center gap-2.5 {menuOpen ? 'relative z-40' : ''}"
+	>
 		<!-- 1. SPLIT DSP STREAMING BUTTON -->
 		{#if activePlatform}
 			<div class="relative inline-flex rounded-xl shadow-lg">
@@ -229,7 +232,7 @@
 
 					{#if menuOpen}
 						<div
-							class="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-900 shadow-2xl"
+							class="absolute left-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-900 shadow-2xl"
 							role="menu"
 						>
 							<div class="border-b border-slate-800 bg-slate-950/90 px-3.5 py-2.5">

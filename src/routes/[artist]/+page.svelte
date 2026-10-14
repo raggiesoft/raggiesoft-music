@@ -269,7 +269,7 @@
 	<!-- ARTIST HERO HEADER (Artist Name is the top <h1> heading)            -->
 	<!-- =================================================================== -->
 	<section
-		class="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
+		class="relative rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
 	>
 		<div class="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:gap-10 md:text-left">
 			<!-- Artist Crest / Emblem -->
@@ -484,7 +484,7 @@
 							{@const albumHasDspOrStore = hasAnyDsp(album) || hasFourthwallStore(album)}
 							<div
 								id={album.id}
-								class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
+								class="relative flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all focus-within:z-30 hover:z-20 hover:border-slate-700"
 							>
 								<div class="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
 									<!-- Album Cover Art (Links to /[artist]/[album]) -->
@@ -653,7 +653,7 @@
 
 								<!-- Expandable Tracklist Drawer -->
 								{#if expandedAlbumId === album.id}
-									<div class="border-t border-slate-800 bg-slate-950/60 p-4 sm:p-6">
+									<div class="rounded-b-2xl border-t border-slate-800 bg-slate-950/60 p-4 sm:p-6">
 										<div class="divide-y divide-slate-800/60">
 											{#each album.tracks as track, tIdx (track.id || tIdx)}
 												<div

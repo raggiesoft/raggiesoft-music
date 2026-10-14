@@ -442,14 +442,16 @@
 	<!-- 2. FEATURED ROCK OPERA SPOTLIGHT -->
 	{#if spotlightAlbum}
 		<section
-			class="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl"
+			class="relative rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl"
 		>
-			<div
-				class="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl"
-			></div>
-			<div
-				class="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-purple-600/10 blur-3xl"
-			></div>
+			<div class="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+				<div
+					class="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl"
+				></div>
+				<div
+					class="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-purple-600/10 blur-3xl"
+				></div>
+			</div>
 
 			<div class="relative z-10 flex flex-col gap-8 p-6 sm:p-10 lg:flex-row lg:items-center">
 				<!-- Cover Art -->
