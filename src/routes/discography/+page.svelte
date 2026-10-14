@@ -172,7 +172,7 @@
 			title: album.title,
 			subtitle: album.artist,
 			description: album.description,
-			url: `https://music.raggiesoft.com/album/${album.slug}`,
+			url: `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}`,
 			socialPreview: album.socialPreview
 		};
 	}
@@ -265,7 +265,7 @@
 		</div>
 	</section>
 
-	<!-- Quick Artist Direct Links Bar (Navigates to /artist/[slug]) -->
+	<!-- Quick Artist Direct Links Bar (Navigates to /[artist]) -->
 	<section
 		class="flex items-center gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3 scrollbar-thin"
 		aria-label="Artist Directory Links"
@@ -275,7 +275,7 @@
 		</span>
 		{#each allArtists as artist (artist.slug)}
 			<a
-				href={resolve('/artist/[slug]', { slug: artist.slug })}
+				href={resolve('/[artist]', { artist: artist.slug })}
 				class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:border-blue-500/60 hover:bg-slate-800 hover:text-white"
 			>
 				{#if artist.logo}
@@ -377,11 +377,17 @@
 								class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
 							>
 								<div class="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
-									<!-- Cover Art (Links to /album/[slug]) -->
+									<!-- Cover Art (Links to /[artist]/[album]) -->
 									<div
 										class="group relative h-40 w-40 shrink-0 self-center overflow-hidden rounded-xl border border-slate-800 shadow-lg sm:h-44 sm:w-44 sm:self-start"
 									>
-										<a href={resolve('/album/[slug]', { slug: album.slug })} class="block h-full w-full">
+										<a
+											href={resolve('/[artist]/[album]', {
+												artist: album.artistSlug,
+												album: album.slug
+											})}
+											class="block h-full w-full"
+										>
 											<img
 												src={album.artwork}
 												alt="Cover artwork for {album.title}"
@@ -439,7 +445,10 @@
 
 											<h3 class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl">
 												<a
-													href={resolve('/album/[slug]', { slug: album.slug })}
+													href={resolve('/[artist]/[album]', {
+														artist: album.artistSlug,
+														album: album.slug
+													})}
 													class="transition-colors hover:text-blue-400"
 												>
 													{album.title}
@@ -455,7 +464,7 @@
 													/>
 												{/if}
 												<a
-													href={resolve('/artist/[slug]', { slug: album.artistSlug })}
+													href={resolve('/[artist]', { artist: album.artistSlug })}
 													class="truncate text-sm font-semibold text-blue-400 hover:underline"
 												>
 													{album.artist}
@@ -512,7 +521,10 @@
 											</button>
 
 											<a
-												href={resolve('/album/[slug]', { slug: album.slug })}
+												href={resolve('/[artist]/[album]', {
+													artist: album.artistSlug,
+													album: album.slug
+												})}
 												class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-2.5 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
 											>
 												<span>Details</span>
@@ -603,3 +615,4 @@
 	url={shareModalData?.url || ''}
 	socialPreview={shareModalData?.socialPreview || ''}
 />
+

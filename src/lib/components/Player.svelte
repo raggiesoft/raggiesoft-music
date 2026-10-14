@@ -374,13 +374,26 @@
 									class="h-6 w-6 rounded-full object-cover border border-slate-700/80 shadow-sm bg-slate-950 shrink-0"
 								/>
 							{/if}
-							<p class="text-lg font-medium text-blue-400">
-								{player.currentTrack.artist || 'Select a track'}
-							</p>
+							{#if player.currentTrack.artistSlug}
+								<a
+									href={resolve('/[artist]', { artist: player.currentTrack.artistSlug })}
+									onclick={() => (player.isExpanded = false)}
+									class="text-lg font-medium text-blue-400 hover:underline"
+								>
+									{player.currentTrack.artist}
+								</a>
+							{:else}
+								<p class="text-lg font-medium text-blue-400">
+									{player.currentTrack.artist || 'Select a track'}
+								</p>
+							{/if}
 						</div>
-						{#if player.currentTrack.albumSlug}
+						{#if player.currentTrack.albumSlug && player.currentTrack.artistSlug}
 							<a
-								href={resolve('/album/[slug]', { slug: player.currentTrack.albumSlug })}
+								href={resolve('/[artist]/[album]', {
+									artist: player.currentTrack.artistSlug,
+									album: player.currentTrack.albumSlug
+								})}
 								onclick={() => (player.isExpanded = false)}
 								class="mt-0.5 inline-flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-blue-300 hover:underline"
 							>
@@ -736,10 +749,13 @@
 								</p>
 							</div>
 
-							{#if player.currentTrack.albumSlug}
+							{#if player.currentTrack.albumSlug && player.currentTrack.artistSlug}
 								<div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
 									<a
-										href={resolve('/album/[slug]', { slug: player.currentTrack.albumSlug })}
+										href={resolve('/[artist]/[album]', {
+											artist: player.currentTrack.artistSlug,
+											album: player.currentTrack.albumSlug
+										})}
 										onclick={() => (player.isExpanded = false)}
 										class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300"
 									>

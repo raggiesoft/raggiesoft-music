@@ -150,7 +150,7 @@
 			title: album.title,
 			subtitle: album.artist,
 			description: album.description,
-			url: `https://music.raggiesoft.com/album/${album.slug}`,
+			url: `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}`,
 			socialPreview: album.socialPreview
 		};
 	}
@@ -380,7 +380,7 @@
 						</h3>
 						{#if savedSession.track.artistSlug}
 							<a
-								href={resolve('/artist/[slug]', { slug: savedSession.track.artistSlug })}
+								href={resolve('/[artist]', { artist: savedSession.track.artistSlug })}
 								class="block truncate text-xs font-semibold text-blue-400 hover:underline sm:text-sm"
 							>
 								{savedSession.track.artist}
@@ -390,9 +390,12 @@
 								{savedSession.track.artist}
 							</p>
 						{/if}
-						{#if savedSession.track.albumSlug}
+						{#if savedSession.track.albumSlug && savedSession.track.artistSlug}
 							<a
-								href={resolve('/album/[slug]', { slug: savedSession.track.albumSlug })}
+								href={resolve('/[artist]/[album]', {
+									artist: savedSession.track.artistSlug,
+									album: savedSession.track.albumSlug
+								})}
 								class="block truncate text-xs text-slate-400 hover:text-white"
 							>
 								{savedSession.track.album}
@@ -436,7 +439,10 @@
 			<div class="relative z-10 flex flex-col gap-8 p-6 sm:p-10 lg:flex-row lg:items-center">
 				<!-- Cover Art -->
 				<a
-					href={resolve('/album/[slug]', { slug: spotlightAlbum.slug })}
+					href={resolve('/[artist]/[album]', {
+						artist: spotlightAlbum.artistSlug,
+						album: spotlightAlbum.slug
+					})}
 					class="group relative h-64 w-64 shrink-0 self-center overflow-hidden rounded-2xl border border-slate-700/80 shadow-2xl sm:h-72 sm:w-72 lg:self-start"
 				>
 					<img
@@ -477,7 +483,10 @@
 
 					<h2 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
 						<a
-							href={resolve('/album/[slug]', { slug: spotlightAlbum.slug })}
+							href={resolve('/[artist]/[album]', {
+								artist: spotlightAlbum.artistSlug,
+								album: spotlightAlbum.slug
+							})}
 							class="transition-colors hover:text-blue-400"
 						>
 							{spotlightAlbum.title}
@@ -492,7 +501,7 @@
 							/>
 						{/if}
 						<a
-							href={resolve('/artist/[slug]', { slug: spotlightAlbum.artistSlug })}
+							href={resolve('/[artist]', { artist: spotlightAlbum.artistSlug })}
 							class="text-lg font-bold text-blue-400 hover:underline"
 						>
 							{spotlightAlbum.artist}
@@ -516,7 +525,10 @@
 						</button>
 
 						<a
-							href={resolve('/album/[slug]', { slug: spotlightAlbum.slug })}
+							href={resolve('/[artist]/[album]', {
+								artist: spotlightAlbum.artistSlug,
+								album: spotlightAlbum.slug
+							})}
 							class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
 						>
 							View All Tracks ({spotlightAlbum.tracks.length}) &rarr;
@@ -572,7 +584,10 @@
 					class="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-all hover:border-slate-700 hover:shadow-lg"
 				>
 					<a
-						href={resolve('/album/[slug]', { slug: album.slug })}
+						href={resolve('/[artist]/[album]', {
+							artist: album.artistSlug,
+							album: album.slug
+						})}
 						class="relative aspect-square w-full overflow-hidden rounded-xl"
 					>
 						<img
@@ -599,7 +614,10 @@
 						<div>
 							<h3 class="truncate text-sm font-bold text-white" title={album.title}>
 								<a
-									href={resolve('/album/[slug]', { slug: album.slug })}
+									href={resolve('/[artist]/[album]', {
+										artist: album.artistSlug,
+										album: album.slug
+									})}
 									class="hover:text-blue-400"
 								>
 									{album.title}
@@ -614,7 +632,7 @@
 									/>
 								{/if}
 								<a
-									href={resolve('/artist/[slug]', { slug: album.artistSlug })}
+									href={resolve('/[artist]', { artist: album.artistSlug })}
 									class="truncate text-xs font-medium text-blue-400 hover:underline"
 								>
 									{album.artist}
@@ -649,7 +667,7 @@
 		</div>
 	</section>
 
-	<!-- 4. ARTIST ROSTER SHELF (Direct SEO Links to /artist/[slug]) -->
+	<!-- 4. ARTIST ROSTER SHELF (Direct SEO Links to /[artist]) -->
 	<section>
 		<div class="mb-4">
 			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
@@ -657,7 +675,7 @@
 			</h2>
 			<p class="text-xs text-slate-400 sm:text-sm">
 				Select any band to visit their dedicated profile (<code class="font-mono text-slate-300"
-					>/artist/[slug]</code
+					>/$artist-slug</code
 				>) with full biography, discography, and shareable links.
 			</p>
 		</div>
@@ -665,7 +683,7 @@
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each allArtists as artist (artist.slug)}
 				<a
-					href={resolve('/artist/[slug]', { slug: artist.slug })}
+					href={resolve('/[artist]', { artist: artist.slug })}
 					class="group flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 				>
 					<div class="flex items-center gap-3">

@@ -153,11 +153,8 @@
 
 				<a
 					href={resolve('/discography')}
-					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
-						'/discography'
-					) ||
-					currentPath.startsWith('/artist') ||
-					currentPath.startsWith('/album')
+					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
+						'/' && !currentPath.startsWith('/settings')
 						? 'bg-blue-600 text-white shadow-sm'
 						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 				>

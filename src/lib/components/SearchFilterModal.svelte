@@ -209,7 +209,10 @@
 							<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 								{#each quickMatches as match (match.id)}
 									<a
-										href={resolve('/album/[slug]', { slug: match.slug })}
+										href={resolve('/[artist]/[album]', {
+											artist: match.artistSlug,
+											album: match.slug
+										})}
 										onclick={() => onClose()}
 										class="flex items-center gap-3 rounded-lg border border-slate-800/80 bg-slate-900/90 p-2 transition-colors hover:border-blue-500/50 hover:bg-slate-800"
 									>
@@ -237,12 +240,12 @@
 						<span class="text-xs font-bold tracking-wider text-slate-300 uppercase">
 							Browse by Artist (Dedicated Pages)
 						</span>
-						<span class="text-[11px] text-slate-400">Changes URL to /artist/[slug]</span>
+						<span class="text-[11px] text-slate-400">Changes URL to /$artist-slug</span>
 					</div>
 					<div class="flex flex-wrap gap-2">
 						{#each allArtists as artist (artist.slug)}
 							<a
-								href={resolve('/artist/[slug]', { slug: artist.slug })}
+								href={resolve('/[artist]', { artist: artist.slug })}
 								onclick={() => onClose()}
 								class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:border-blue-500/60 hover:bg-slate-800 hover:text-white"
 							>
