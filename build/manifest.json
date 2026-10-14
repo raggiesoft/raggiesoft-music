@@ -7,20 +7,32 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#020617",
-  "theme_color": "#2563eb",
+  "theme_color": "#020617",
   "lang": "en",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["music", "entertainment", "audio"],
@@ -40,10 +52,10 @@
       ]
     },
     {
-      "name": "Rock Operas",
-      "short_name": "Rock Operas",
-      "description": "Stream continuous multi-disc rock operas",
-      "url": "/?filter=rock-opera",
+      "name": "Complete Discography",
+      "short_name": "Discography",
+      "description": "Browse the complete Engine Room Records catalog",
+      "url": "/discography",
       "icons": [
         {
           "src": "/icons/icon-192.png",
@@ -54,4 +66,3 @@
     }
   ]
 }
-

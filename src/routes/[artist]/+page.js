@@ -55,3 +55,4 @@ export function load({ params }) {
 		artistAlbums
 	};
 }
+
