@@ -170,3 +170,4 @@ print(f"Generated {len(splash_resolutions)} Light and {len(splash_resolutions)} 
 EOF
 
 echo "PWA assets generated successfully!"
+
