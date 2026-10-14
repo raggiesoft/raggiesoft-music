@@ -25,7 +25,7 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { formatAlbumQueue } from '#lib/data/musicData.js';
+	import { formatAlbumQueue, formatReleaseDate } from '#lib/data/musicData.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
 	let { data } = $props();
@@ -303,7 +303,7 @@
 							</span>
 						{/if}
 						<span class="font-mono text-xs font-semibold text-slate-400">
-							{album.temporalCoverage || album.year} • {album.genre}
+							{formatReleaseDate(album.temporalCoverage, album.year)} • {album.genre}
 						</span>
 					</div>
 
@@ -591,7 +591,7 @@
 								{rel.title}
 							</h3>
 							<p class="truncate text-[11px] text-slate-400">
-								{rel.temporalCoverage || rel.year} • {rel.tracks.length} tracks
+								{formatReleaseDate(rel.temporalCoverage, rel.year)} • {rel.tracks.length} tracks
 							</p>
 						</div>
 					</a>

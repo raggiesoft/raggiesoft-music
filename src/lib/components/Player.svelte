@@ -17,6 +17,7 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
+	import { formatReleaseDate } from '#lib/data/musicData.js';
 
 	let audioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
 	let isScrubbing = $state(false);
@@ -706,9 +707,10 @@
 										>In-Universe Release</span
 									>
 									<span class="mt-0.5 block font-semibold text-slate-200">
-										{player.currentTrack.temporalCoverage ||
-											player.currentTrack.year ||
-											'Unspecified'}
+										{formatReleaseDate(
+											player.currentTrack.temporalCoverage,
+											player.currentTrack.year
+										)}
 									</span>
 								</div>
 

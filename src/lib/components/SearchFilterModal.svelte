@@ -23,7 +23,7 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { allAlbums, allArtists, catalogStats } from '#lib/data/musicData.js';
+	import { allAlbums, allArtists, catalogStats, formatReleaseDate } from '#lib/data/musicData.js';
 
 	let {
 		isOpen = false,
@@ -52,12 +52,14 @@
 		if (!q) return [];
 		return allAlbums
 			.filter((album) => {
+				const formattedDate = formatReleaseDate(album.temporalCoverage, album.year).toLowerCase();
 				const matchAlbum =
 					album.title.toLowerCase().includes(q) ||
 					album.artist.toLowerCase().includes(q) ||
 					album.genre.toLowerCase().includes(q) ||
 					album.year.includes(q) ||
-					(album.temporalCoverage && album.temporalCoverage.includes(q));
+					(album.temporalCoverage && album.temporalCoverage.includes(q)) ||
+					formattedDate.includes(q);
 				const matchTrack = album.tracks.some(
 					(t) =>
 						t.title.toLowerCase().includes(q) ||
@@ -224,7 +226,7 @@
 										<div class="min-w-0 flex-1">
 											<div class="truncate text-xs font-bold text-white">{match.title}</div>
 											<div class="truncate text-[11px] text-slate-400">
-												{match.artist} &bull; {match.temporalCoverage || match.year}
+												{match.artist} &bull; {formatReleaseDate(match.temporalCoverage, match.year)}
 											</div>
 										</div>
 									</a>

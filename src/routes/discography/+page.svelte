@@ -29,7 +29,8 @@
 		allArtists,
 		albumTypeDefinitions,
 		catalogStats,
-		formatAlbumQueue
+		formatAlbumQueue,
+		formatReleaseDate
 	} from '#lib/data/musicData.js';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
@@ -439,7 +440,7 @@
 													</span>
 												{/if}
 												<span class="font-mono text-xs font-semibold text-slate-400">
-													{album.temporalCoverage || album.year} &bull; {album.genre}
+													{formatReleaseDate(album.temporalCoverage, album.year)} &bull; {album.genre}
 												</span>
 											</div>
 

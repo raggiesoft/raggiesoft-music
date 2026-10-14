@@ -22,7 +22,11 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { albumTypeDefinitions, formatAlbumQueue } from '#lib/data/musicData.js';
+	import {
+		albumTypeDefinitions,
+		formatAlbumQueue,
+		formatReleaseDate
+	} from '#lib/data/musicData.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
@@ -498,7 +502,7 @@
 													</span>
 												{/if}
 												<span class="font-mono text-xs font-semibold text-slate-400">
-													{album.temporalCoverage || album.year} &bull; {album.genre}
+													{formatReleaseDate(album.temporalCoverage, album.year)} &bull; {album.genre}
 												</span>
 											</div>
 

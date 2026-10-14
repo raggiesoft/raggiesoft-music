@@ -291,3 +291,67 @@ export function formatAlbumQueue(album) {
 			temporalCoverage: album.temporalCoverage
 		}));
 }
+
+/**
+ * Formats an in-universe release date string (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`)
+ * according to the user's operating system / browser locale (`Intl.DateTimeFormat(undefined, ...)`).
+ *
+ * CRITICAL ARCHITECTURAL RULE (ZERO TIMEZONE SHIFT):
+ * Never pass a bare ISO date string (`"1987-08-25"`) directly to `new Date("1987-08-25")`,
+ * because the ECMAScript specification parses date-only ISO strings as UTC midnight
+ * (`1987-08-25T00:00:00Z`), which shifts backward by one day (`August 24, 1987`) in
+ * Western Hemisphere timezones (e.g., EDT / EST / PDT).
+ *
+ * Instead, we split the integer year, month, and day components and construct a
+ * local calendar date `new Date(year, month - 1, day)` so that `"1987-08-25"` is
+ * unconditionally rendered as August 25, 1987 in the user's local OS date format.
+ *
+ * @param {string | undefined | null} rawDate - The raw `temporalCoverage` or `datePublished` string.
+ * @param {string | undefined | null} [fallbackYear] - Fallback 4-digit year if `rawDate` is empty.
+ * @param {'long' | 'medium' | 'short'} [style='long'] - Date formatting style (`'long'` -> "August 25, 1987" in en-US, "25 August 1987" in en-GB).
+ * @returns {string} The OS-localized calendar date string.
+ */
+export function formatReleaseDate(rawDate, fallbackYear = '', style = 'long') {
+	const value = (rawDate || fallbackYear || '').trim();
+	if (!value) return 'Unspecified';
+
+	// Match exact YYYY-MM-DD calendar date
+	const fullMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+	if (fullMatch) {
+		const year = parseInt(fullMatch[1], 10);
+		const monthIndex = parseInt(fullMatch[2], 10) - 1;
+		const day = parseInt(fullMatch[3], 10);
+		const localDate = new Date(year, monthIndex, day);
+
+		try {
+			return new Intl.DateTimeFormat(undefined, {
+				year: 'numeric',
+				month: style === 'short' ? 'short' : 'long',
+				day: 'numeric'
+			}).format(localDate);
+		} catch {
+			return value;
+		}
+	}
+
+	// Match YYYY-MM (Year and Month only)
+	const monthMatch = /^(\d{4})-(\d{2})$/.exec(value);
+	if (monthMatch) {
+		const year = parseInt(monthMatch[1], 10);
+		const monthIndex = parseInt(monthMatch[2], 10) - 1;
+		const localDate = new Date(year, monthIndex, 1);
+
+		try {
+			return new Intl.DateTimeFormat(undefined, {
+				year: 'numeric',
+				month: style === 'short' ? 'short' : 'long'
+			}).format(localDate);
+		} catch {
+			return value;
+		}
+	}
+
+	// Year-only ("2004") or custom range string: return as-is
+	return value;
+}
+

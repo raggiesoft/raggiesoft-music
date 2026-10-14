@@ -25,7 +25,12 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { allAlbums, allArtists, formatAlbumQueue } from '#lib/data/musicData.js';
+	import {
+		allAlbums,
+		allArtists,
+		formatAlbumQueue,
+		formatReleaseDate
+	} from '#lib/data/musicData.js';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
@@ -477,7 +482,7 @@
 						<span
 							class="rounded border border-blue-700/50 bg-blue-900/60 px-2 py-0.5 font-mono text-xs text-blue-300"
 						>
-							In-Universe: {spotlightAlbum.temporalCoverage || spotlightAlbum.year}
+							In-Universe: {formatReleaseDate(spotlightAlbum.temporalCoverage, spotlightAlbum.year)}
 						</span>
 					</div>
 
