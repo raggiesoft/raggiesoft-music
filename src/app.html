@@ -1,13 +1,42 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="studio" data-color-scheme="dark" data-color-mode="auto">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 
+		<!--
+			========================================================================
+			SYNCHRONOUS THEME & PREFERS-COLOR-SCHEME INITIALIZER (ZERO-FOUC)
+			========================================================================
+			Executes prior to first paint to read saved theme preferences from
+			localStorage (`engine_room_settings`) and resolve the active color scheme
+			against `window.matchMedia('(prefers-color-scheme: dark)')`.
+			========================================================================
+		-->
+		<script>
+			(function () {
+				try {
+					var raw = localStorage.getItem('engine_room_settings');
+					var parsed = raw ? JSON.parse(raw) : {};
+					var theme = parsed.theme || 'studio';
+					var colorMode = parsed.colorMode || 'auto';
+					var osDark =
+						window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+					var scheme =
+						colorMode === 'light' ? 'light' : colorMode === 'dark' ? 'dark' : osDark ? 'dark' : 'light';
+					var root = document.documentElement;
+					root.setAttribute('data-theme', theme);
+					root.setAttribute('data-color-scheme', scheme);
+					root.setAttribute('data-color-mode', colorMode);
+					root.style.colorScheme = scheme;
+				} catch (e) {}
+			})();
+		</script>
+
 		<!-- PWA Manifest & App Configuration -->
 		<link rel="manifest" href="/manifest.json" />
-		<meta name="theme-color" content="#2563eb" />
+		<meta name="theme-color" content="#020617" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Engine Room" />

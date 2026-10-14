@@ -1,13 +1,42 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="studio" data-color-scheme="dark" data-color-mode="auto">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 
+		<!--
+			========================================================================
+			SYNCHRONOUS THEME & PREFERS-COLOR-SCHEME INITIALIZER (ZERO-FOUC)
+			========================================================================
+			Executes prior to first paint to read saved theme preferences from
+			localStorage (`engine_room_settings`) and resolve the active color scheme
+			against `window.matchMedia('(prefers-color-scheme: dark)')`.
+			========================================================================
+		-->
+		<script>
+			(function () {
+				try {
+					var raw = localStorage.getItem('engine_room_settings');
+					var parsed = raw ? JSON.parse(raw) : {};
+					var theme = parsed.theme || 'studio';
+					var colorMode = parsed.colorMode || 'auto';
+					var osDark =
+						window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+					var scheme =
+						colorMode === 'light' ? 'light' : colorMode === 'dark' ? 'dark' : osDark ? 'dark' : 'light';
+					var root = document.documentElement;
+					root.setAttribute('data-theme', theme);
+					root.setAttribute('data-color-scheme', scheme);
+					root.setAttribute('data-color-mode', colorMode);
+					root.style.colorScheme = scheme;
+				} catch (e) {}
+			})();
+		</script>
+
 		<!-- PWA Manifest & App Configuration -->
 		<link rel="manifest" href="/manifest.json" />
-		<meta name="theme-color" content="#2563eb" />
+		<meta name="theme-color" content="#020617" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Engine Room" />
@@ -17,34 +46,39 @@
 		<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-		<link href="/_app/immutable/entry/start.RC9-PyNQ.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/start.CcyNcjFa.js" rel="modulepreload">
 		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CRzLMJPS.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cjr5alns.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BnQlfx-p.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C-yxeZgV.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/B_A4bTgE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CMtPnkmi.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/B9JdpxZq.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.ABWomDEw.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.CqXmO73X.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.D2Zg4azx.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.CNINLyBn.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CnwtILeS.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CnTDZ9Ln.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bv_KWmbt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B9JWhYiY.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/PLcCxIjY.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BOt8dRvw.js" rel="modulepreload">
 		
-		<link href="/_app/immutable/assets/0.BKNku-vR.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.Dl36_E1-.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_1kqcreh = {
+					__sveltekit_2awb26 = {
 						base: "",
-						version: "1791862175094"
+						version: "1791937978259"
 					};
 
 					const element = document.currentScript.parentElement;
 
-					import("/_app/immutable/entry/start.RC9-PyNQ.js").then(async (kit) => {
-						kit.init(__sveltekit_1kqcreh);
-						const app = await import("/_app/immutable/entry/app.ABWomDEw.js");
+					import("/_app/immutable/entry/start.CcyNcjFa.js").then(async (kit) => {
+						kit.init(__sveltekit_2awb26);
+						const app = await import("/_app/immutable/entry/app.D2Zg4azx.js");
 						kit.start(app, element);
 					});
 				}

@@ -5,21 +5,45 @@
 	 * +layout.svelte
 	 * ============================================================================
 	 * Root application layout for Engine Room Records (music.raggiesoft.com).
-	 * Renders global navigation header, PWA install prompt, dynamic route content,
-	 * and the persistent WCAG AA accessible audio player.
+	 *
+	 * Architectural Responsibilities:
+	 * 1. Adaptive Theme & OS Color Scheme Initialization:
+	 *    - Invokes `themeManager.init()` on mount to bind the OS
+	 *      `window.matchMedia('(prefers-color-scheme: dark)')` listener and sync
+	 *      with `localStorage` (`engine_room_settings`).
+	 * 2. Dual Logo Rendering (Light vs. Dark Mode):
+	 *    - Renders both `/logos/engine-room-records-logo.png` (pure black on
+	 *      transparent background for light mode, `.er-logo-light`) and
+	 *      `/logos/engine-room-records-logo-white.png` (pure white on transparent
+	 *      background for dark mode, `.er-logo-dark`). CSS rules in `app.css`
+	 *      toggle their visibility instantaneously with zero layout shift or FOUC.
+	 * 3. Global Navigation & Collapsible Search Menu:
+	 *    - Provides direct SEO links to Home (`/`), Discography (`/discography`),
+	 *      Settings (`/settings`), and Book Library, plus a global Search & Filter
+	 *      Menu trigger.
 	 * ============================================================================
 	 */
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { themeManager } from '#lib/theme.svelte.js';
 	import Player from '#lib/components/Player.svelte';
+	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 
 	let { children } = $props();
 
 	let deferredPrompt = $state(/** @type {any} */ (null));
 	let canInstall = $state(false);
+	let showGlobalSearch = $state(false);
+
+	// Track active route path for nav highlighting
+	let currentPath = $derived(page.url?.pathname || '/');
 
 	onMount(() => {
+		// Initialize adaptive theme manager & prefers-color-scheme listener
+		themeManager.init();
+
 		// Register Service Worker for PWA capabilities
 		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 			navigator.serviceWorker.register('/sw.js').catch((err) => {
@@ -62,23 +86,31 @@
 >
 	<!-- Primary Global Header -->
 	<header
-		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/80 px-4 py-3 backdrop-blur-md"
+		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-4 py-3 backdrop-blur-md"
 	>
-		<div class="mx-auto flex max-w-7xl items-center justify-between">
+		<div class="mx-auto flex max-w-7xl items-center justify-between gap-2">
+			<!-- Brand Logo & Home Link -->
 			<a
 				href={resolve('/')}
 				class="group flex items-center gap-3 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 			>
 				<div
-					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-lg shadow-black/40 transition-transform group-hover:scale-105"
+					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-md transition-transform group-hover:scale-105"
 				>
+					<!-- Light Mode Logo: Pure Black on Transparent Background -->
+					<img
+						src="/logos/engine-room-records-logo.png"
+						alt="Engine Room Records Logo"
+						class="er-logo-light h-full w-full object-contain"
+					/>
+					<!-- Dark Mode Logo: Pure White on Transparent Background -->
 					<img
 						src="/logos/engine-room-records-logo-white.png"
 						alt="Engine Room Records Logo"
-						class="h-full w-full object-contain"
+						class="er-logo-dark h-full w-full object-contain"
 					/>
 				</div>
-				<div>
+				<div class="hidden xs:block sm:block">
 					<span class="block text-base leading-tight font-extrabold tracking-tight text-white"
 						>Engine Room Records</span
 					>
@@ -88,11 +120,13 @@
 				</div>
 			</a>
 
-			<nav class="flex items-center gap-2 text-sm font-medium sm:gap-4">
+			<!-- Global Navigation Links & Action Controls -->
+			<nav class="flex items-center gap-1.5 text-xs font-semibold sm:gap-2.5 sm:text-sm" aria-label="Global Navigation">
 				{#if canInstall}
 					<button
+						type="button"
 						onclick={installApp}
-						class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+						class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 md:flex"
 						aria-label="Install Engine Room Records as an App"
 					>
 						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,17 +143,81 @@
 
 				<a
 					href={resolve('/')}
-					class="rounded-lg px-3 py-1.5 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath ===
+					'/'
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+				>
+					Home
+				</a>
+
+				<a
+					href={resolve('/discography')}
+					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						'/discography'
+					) ||
+					currentPath.startsWith('/artist') ||
+					currentPath.startsWith('/album')
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 				>
 					Discography
 				</a>
+
+				<!-- Global Search & Filter Menu Button -->
+				<button
+					type="button"
+					onclick={() => (showGlobalSearch = true)}
+					class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3"
+					aria-label="Open Search and Filter Menu"
+					title="Search & Filter Catalog"
+				>
+					<svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+						/>
+					</svg>
+					<span class="hidden sm:inline">Search</span>
+				</button>
+
+				<!-- Settings / Theme Picker Link -->
+				<a
+					href={resolve('/settings')}
+					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						'/settings'
+					)
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					aria-label="Theme and Preferences Settings"
+					title="Themes & Settings"
+				>
+					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+					</svg>
+					<span class="hidden md:inline">Settings</span>
+				</a>
+
 				<a
 					href="https://books.raggiesoft.com"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					class="hidden items-center gap-1 rounded-lg px-2.5 py-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:flex"
 				>
-					Book Library
+					<span>Books</span>
 					<svg class="h-3.5 w-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
 							stroke-linecap="round"
@@ -138,6 +236,13 @@
 		{@render children()}
 	</main>
 </div>
+
+<!-- Global Search & Filter Modal -->
+<SearchFilterModal
+	isOpen={showGlobalSearch}
+	onClose={() => (showGlobalSearch = false)}
+	isStandaloneGlobal={true}
+/>
 
 <!-- Persistent Global Audio Player -->
 <Player />

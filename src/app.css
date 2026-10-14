@@ -1,3 +1,319 @@
+/**
+ * ============================================================================
+ * ARCHITECTURE & DESIGN: Engine Room Records Global Theme & Stylesheet
+ * ============================================================================
+ * Purpose:
+ *   Configures Tailwind CSS v4 and implements a multi-palette adaptive theme
+ *   engine that respects OS `prefers-color-scheme` while allowing users to
+ *   select custom narrative palettes (Studio Cobalt, Engine Room Industrial,
+ *   Analog Vinyl Sepia, Stardust Violet, and Arctic Aurora) persisted via
+ *   `localStorage`.
+ *
+ * Design Principles:
+ *   1. Universal `prefers-color-scheme` Compliance:
+ *      Every selectable theme palette defines both a Light ("Day Shift") and
+ *      Dark ("Night Shift") token map. When `data-color-mode="auto"` is active,
+ *      the resolved `data-color-scheme` tracks the OS preference in real time.
+ *   2. WCAG 2.1 AA/AAA Contrast Enforcement:
+ *      In Light Mode (`html[data-color-scheme="light"]`), surface, text, border,
+ *      and semantic badge tokens automatically invert to high-contrast ink on
+ *      light surfaces, while solid action buttons retain crisp white labels.
+ *   3. Zero-Flicker Dual Logo Switching:
+ *      Pure CSS rules toggle `.er-logo-light` (black on transparent) and
+ *      `.er-logo-dark` (white on transparent) based on `data-color-scheme`.
+ * ============================================================================
+ */
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* ============================================================================
+ * 1. LOGO VISIBILITY RULES (LIGHT VS. DARK MODE)
+ * ============================================================================ */
+.er-logo-light {
+	display: none;
+}
+.er-logo-dark {
+	display: block;
+}
+
+html[data-color-scheme='light'] .er-logo-light {
+	display: block;
+}
+html[data-color-scheme='light'] .er-logo-dark {
+	display: none;
+}
+
+/* ============================================================================
+ * 2. BASE LIGHT MODE TOKEN REMAPPING (SHARED ACROSS ALL LIGHT PALETTES)
+ * ============================================================================
+ * Remaps Tailwind v4 slate and semantic badge tokens when `data-color-scheme="light"`
+ * is active so cards, headers, drawers, and status pills render with crisp
+ * WCAG AA/AAA contrast on light backgrounds.
+ */
+html[data-color-scheme='light'] {
+	color-scheme: light;
+
+	/* Default Light Mode Surfaces & Ink (Studio Cobalt Baseline) */
+	--er-heading-color: #0f172a;
+	--color-slate-950: #f1f5f9;
+	--color-slate-900: #ffffff;
+	--color-slate-800: #e2e8f0;
+	--color-slate-700: #cbd5e1;
+	--color-slate-600: #64748b;
+	--color-slate-500: #475569;
+	--color-slate-400: #334155;
+	--color-slate-300: #1e293b;
+	--color-slate-200: #0f172a;
+	--color-slate-100: #0f172a;
+
+	/* Primary Accent Tokens in Light Mode (High-Contrast Cobalt) */
+	--color-blue-950: #dbeafe;
+	--color-blue-900: #bfdbfe;
+	--color-blue-700: #93c5fd;
+	--color-blue-600: #2563eb;
+	--color-blue-500: #1d4ed8;
+	--color-blue-400: #1d4ed8;
+	--color-blue-300: #1e40af;
+
+	/* Semantic Status & Genre Badge Tokens for Light Mode (WCAG AAA Contrast) */
+	--color-emerald-950: #d1fae5;
+	--color-emerald-800: #6ee7b7;
+	--color-emerald-600: #059669;
+	--color-emerald-400: #047857;
+	--color-emerald-300: #065f46;
+
+	--color-rose-950: #ffe4e6;
+	--color-rose-600: #e11d48;
+	--color-rose-500: #f43f5e;
+	--color-rose-400: #be123c;
+	--color-rose-300: #9f1239;
+	--color-rose-200: #881337;
+
+	--color-amber-950: #fef3c7;
+	--color-amber-900: #fde68a;
+	--color-amber-800: #fcd34d;
+	--color-amber-600: #d97706;
+	--color-amber-400: #b45309;
+	--color-amber-300: #92400e;
+
+	--color-sky-950: #e0f2fe;
+	--color-sky-600: #0284c7;
+	--color-sky-300: #075985;
+
+	--color-indigo-950: #e0e7ff;
+	--color-indigo-900: #c7d2fe;
+	--color-indigo-700: #818cf8;
+	--color-indigo-600: #4f46e5;
+	--color-indigo-400: #3730a3;
+	--color-indigo-300: #312e81;
+
+	--color-purple-950: #f3e8ff;
+	--color-purple-600: #9333ea;
+	--color-purple-300: #581c87;
+
+	--color-teal-950: #ccfbf1;
+	--color-teal-600: #0d9488;
+	--color-teal-300: #115e59;
+
+	--color-cyan-950: #cffafe;
+	--color-cyan-500: #06b6d4;
+	--color-cyan-400: #0e7490;
+	--color-cyan-300: #155e75;
+}
+
+/*
+ * In Light Mode, elements using `.text-white` on page/card surfaces adapt to
+ * `--er-heading-color`, while solid colored buttons and dark image overlays
+ * retain pure white text (`#ffffff`) for legible contrast.
+ */
+html[data-color-scheme='light'] .text-white {
+	color: var(--er-heading-color, #0f172a);
+}
+
+html[data-color-scheme='light'] .bg-blue-600.text-white,
+html[data-color-scheme='light'] .bg-blue-600 .text-white,
+html[data-color-scheme='light'] .bg-blue-500.text-white,
+html[data-color-scheme='light'] .bg-indigo-600.text-white,
+html[data-color-scheme='light'] .bg-indigo-600\/80,
+html[data-color-scheme='light'] .bg-emerald-600.text-white,
+html[data-color-scheme='light'] .bg-rose-600.text-white,
+html[data-color-scheme='light'] .bg-purple-600.text-white,
+html[data-color-scheme='light'] .bg-teal-600.text-white,
+html[data-color-scheme='light'] .bg-amber-600.text-white,
+html[data-color-scheme='light'] .bg-sky-600.text-white,
+html[data-color-scheme='light'] .bg-slate-700.text-white,
+html[data-color-scheme='light'] .bg-black\/40 .text-white,
+html[data-color-scheme='light'] .bg-black\/60,
+html[data-color-scheme='light'] .bg-black\/70,
+html[data-color-scheme='light'] .text-white-force {
+	color: #ffffff !important;
+}
+
+html[data-color-scheme='light'] .bg-slate-700.text-white {
+	background-color: var(--color-blue-600);
+}
+
+/* ============================================================================
+ * 3. NARRATIVE THEME PALETTES (ALL RESPECT PREFERS-COLOR-SCHEME)
+ * ============================================================================ */
+
+/* --- PALETTE B: ENGINE ROOM INDUSTRIAL (THE FORTRESS) --- */
+html[data-theme='industrial'][data-color-scheme='light'] {
+	--er-heading-color: #141619;
+	--color-slate-950: #e9ecef; /* Poured Concrete */
+	--color-slate-900: #f8f9fa; /* Stamped Steel Panel */
+	--color-slate-800: #dee2e6;
+	--color-slate-700: #ced4da;
+	--color-slate-500: #495057;
+	--color-slate-400: #343a40;
+	--color-slate-300: #212529;
+	--color-slate-200: #141619;
+	--color-slate-100: #141619;
+
+	/* Industrial Hazard Red Accents */
+	--color-blue-950: #ffe3e3;
+	--color-blue-900: #ffc9c9;
+	--color-blue-700: #ffa8a8;
+	--color-blue-600: #c82333;
+	--color-blue-500: #a71d2a;
+	--color-blue-400: #b01e2c;
+	--color-blue-300: #841722;
+}
+
+html[data-theme='industrial'][data-color-scheme='dark'] {
+	--color-slate-950: #090b0e; /* Deep Gunmetal / Oily Black */
+	--color-slate-900: #12151a; /* Server Rack Containment */
+	--color-slate-800: #222730;
+	--color-slate-700: #343a46;
+
+	/* Glowing 'Red Pen' Accents */
+	--color-blue-950: #3b0a11;
+	--color-blue-900: #58111a;
+	--color-blue-700: #991b1b;
+	--color-blue-600: #dc2626;
+	--color-blue-500: #ef4444;
+	--color-blue-400: #ff6b6b;
+	--color-blue-300: #fca5a5;
+}
+
+/* --- PALETTE C: ANALOG VINYL (WARM SEPIA) --- */
+html[data-theme='sepia'][data-color-scheme='light'] {
+	--er-heading-color: #261c14;
+	--color-slate-950: #f4eee1; /* Warm Archival Parchment */
+	--color-slate-900: #fcf9f2; /* Soft Ivory Sleeve */
+	--color-slate-800: #e6dcc8;
+	--color-slate-700: #d5c7ad;
+	--color-slate-500: #5c4938;
+	--color-slate-400: #433427;
+	--color-slate-300: #2e2319;
+	--color-slate-200: #261c14;
+	--color-slate-100: #261c14;
+
+	/* Vintage Brass / Amber Accents */
+	--color-blue-950: #fef3c7;
+	--color-blue-900: #fde68a;
+	--color-blue-700: #f59e0b;
+	--color-blue-600: #b45309;
+	--color-blue-500: #92400e;
+	--color-blue-400: #92400e;
+	--color-blue-300: #78350f;
+}
+
+html[data-theme='sepia'][data-color-scheme='dark'] {
+	--color-slate-950: #120e0a; /* Dark Mahogany Studio */
+	--color-slate-900: #1c1610; /* Warm Walnut Console */
+	--color-slate-800: #2e241b;
+	--color-slate-700: #423529;
+	--color-slate-400: #b8a693;
+	--color-slate-300: #dfd3c3;
+	--color-slate-200: #f5ebe0;
+	--color-slate-100: #f5ebe0;
+
+	/* Vacuum-Tube Gold Accents */
+	--color-blue-950: #3b2106;
+	--color-blue-900: #57320a;
+	--color-blue-700: #b45309;
+	--color-blue-600: #d97706;
+	--color-blue-500: #f59e0b;
+	--color-blue-400: #fbbf24;
+	--color-blue-300: #fde68a;
+}
+
+/* --- PALETTE D: STARDUST VIOLET (PROGRESS STREET) --- */
+html[data-theme='stardust'][data-color-scheme='light'] {
+	--er-heading-color: #1e1b4b;
+	--color-slate-950: #f3f0ff; /* Soft Starlight Lavender */
+	--color-slate-900: #ffffff;
+	--color-slate-800: #e5dbff;
+	--color-slate-700: #d0bfff;
+	--color-slate-500: #4c3d75;
+	--color-slate-400: #3b2d63;
+	--color-slate-300: #281c4d;
+	--color-slate-200: #1e1b4b;
+	--color-slate-100: #1e1b4b;
+
+	/* Cosmic Violet Accents */
+	--color-blue-950: #ede9fe;
+	--color-blue-900: #ddd6fe;
+	--color-blue-700: #a78bfa;
+	--color-blue-600: #6d28d9;
+	--color-blue-500: #5b21b6;
+	--color-blue-400: #5b21b6;
+	--color-blue-300: #4c1d95;
+}
+
+html[data-theme='stardust'][data-color-scheme='dark'] {
+	--color-slate-950: #070412; /* Deep Nebula Obsidian */
+	--color-slate-900: #110a24; /* Cosmic Console */
+	--color-slate-800: #231742;
+	--color-slate-700: #362561;
+
+	/* Neon Violet Accents */
+	--color-blue-950: #2e1065;
+	--color-blue-900: #4c1d95;
+	--color-blue-700: #6d28d9;
+	--color-blue-600: #7c3aed;
+	--color-blue-500: #8b5cf6;
+	--color-blue-400: #a78bfa;
+	--color-blue-300: #c4b5fd;
+}
+
+/* --- PALETTE E: ARCTIC AURORA (SOLSTICE) --- */
+html[data-theme='solstice'][data-color-scheme='light'] {
+	--er-heading-color: #062c22;
+	--color-slate-950: #eefbf6; /* Glacial Frost */
+	--color-slate-900: #ffffff;
+	--color-slate-800: #d1f4e8;
+	--color-slate-700: #a7e8d2;
+	--color-slate-500: #29594b;
+	--color-slate-400: #184236;
+	--color-slate-300: #0c3328;
+	--color-slate-200: #062c22;
+	--color-slate-100: #062c22;
+
+	/* Borealis Emerald Accents */
+	--color-blue-950: #d1fae5;
+	--color-blue-900: #a7f3d0;
+	--color-blue-700: #34d399;
+	--color-blue-600: #047857;
+	--color-blue-500: #065f46;
+	--color-blue-400: #065f46;
+	--color-blue-300: #064e3b;
+}
+
+html[data-theme='solstice'][data-color-scheme='dark'] {
+	--color-slate-950: #03110e; /* Midnight Solstice */
+	--color-slate-900: #081c17; /* Winter Palace Stone */
+	--color-slate-800: #11332b;
+	--color-slate-700: #1c4a3f;
+
+	/* Aurora Emerald Accents */
+	--color-blue-950: #022c22;
+	--color-blue-900: #064e3b;
+	--color-blue-700: #047857;
+	--color-blue-600: #059669;
+	--color-blue-500: #10b981;
+	--color-blue-400: #34d399;
+	--color-blue-300: #6ee7b7;
+}

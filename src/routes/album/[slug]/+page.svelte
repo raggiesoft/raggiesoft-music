@@ -24,6 +24,7 @@
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
 	import { formatAlbumQueue } from '#lib/data/musicData.js';
+	import ShareSection from '#lib/components/ShareSection.svelte';
 
 	let { data } = $props();
 
@@ -241,7 +242,7 @@
 		aria-label="Breadcrumb"
 	>
 		<a
-			href={resolve('/')}
+			href={resolve('/discography')}
 			class="flex items-center gap-1.5 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 		>
 			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,7 +256,12 @@
 			Discography
 		</a>
 		<span class="text-slate-600">/</span>
-		<span class="text-slate-400">{album.artist}</span>
+		<a
+			href={resolve('/artist/[slug]', { slug: album.artistSlug })}
+			class="text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+		>
+			{album.artist}
+		</a>
 		<span class="text-slate-600">/</span>
 		<span class="truncate font-semibold text-slate-200">{album.title}</span>
 	</nav>
@@ -366,7 +372,10 @@
 						{album.title}
 					</h1>
 
-					<div class="mt-2.5 flex items-center gap-3">
+					<a
+						href={resolve('/artist/[slug]', { slug: album.artistSlug })}
+						class="mt-2.5 inline-flex items-center gap-3 group/artist"
+					>
 						{#if album.artistLogo}
 							<img
 								src={album.artistLogo}
@@ -374,10 +383,10 @@
 								class="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border border-slate-700/80 shadow-md bg-slate-950 shrink-0"
 							/>
 						{/if}
-						<p class="text-lg font-bold text-blue-400 sm:text-xl">
+						<span class="text-lg font-bold text-blue-400 group-hover/artist:underline sm:text-xl">
 							{album.artist}
-						</p>
-					</div>
+						</span>
+					</a>
 
 					<p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
 						{album.description}
@@ -423,10 +432,9 @@
 					{/if}
 
 					<!-- Share Album Button -->
-					<button
-						onclick={shareAlbum}
+					<a
+						href="#share-album-section"
 						class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/90 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-						aria-label="Share album link"
 					>
 						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path
@@ -437,14 +445,14 @@
 							/>
 						</svg>
 						Share Album
-					</button>
+					</a>
 
-					<!-- Link to Back to All Albums -->
+					<!-- Link to Artist Page -->
 					<a
-						href={resolve('/')}
-						class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+						href={resolve('/artist/[slug]', { slug: album.artistSlug })}
+						class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
 					>
-						Browse All Releases
+						{album.artist} Profile &rarr;
 					</a>
 				</div>
 			</div>
@@ -646,4 +654,16 @@
 			</div>
 		</section>
 	{/if}
+
+	<!-- Book-Reader Style Share Section for this Album -->
+	<div id="share-album-section" class="pt-4">
+		<ShareSection
+			title={album.title}
+			subtitle={album.artist}
+			description={album.description}
+			url="https://music.raggiesoft.com/album/{album.slug}"
+			socialPreview={album.socialPreview}
+			sharePrompt="Share this direct album link with friends. Social platforms will automatically display the custom 1200x630 OpenGraph preview card."
+		/>
+	</div>
 </div>
