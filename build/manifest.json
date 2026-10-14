@@ -1,7 +1,7 @@
 {
-  "name": "Engine Room Records",
-  "short_name": "Engine Room",
-  "description": "Persistent, WCAG AA compliant audio streaming platform for the RaggieSoft universe.",
+  "name": "The Listening Room — Engine Room Records",
+  "short_name": "Listening Room",
+  "description": "Official Music Discovery, Lyrics & Lore Hub by Engine Room Records.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -30,8 +30,11 @@
 		albumTypeDefinitions,
 		catalogStats,
 		formatAlbumQueue,
-		formatReleaseDate
+		formatReleaseDate,
+		hasAnyDsp,
+		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import StoreButton from '#lib/components/StoreButton.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
@@ -180,20 +183,20 @@
 </script>
 
 <svelte:head>
-	<title>{pageHeading} | Engine Room Records</title>
+	<title>{pageHeading} | The Listening Room (Engine Room Records)</title>
 	<meta
 		name="description"
-		content="Browse and stream the complete chronological discography of Engine Room Records across all 7 bands, studio albums, rock operas, live concerts, and soundtracks."
+		content="Explore the complete chronological discography of Engine Room Records in The Listening Room. Read full lyrics and lore, preview 128kbps streams, or listen in Lossless HD on your favorite streaming platform."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/discography" />
 
 	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content="Engine Room Records" />
+	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/discography" />
-	<meta property="og:title" content="{pageHeading} | Engine Room Records" />
+	<meta property="og:title" content="{pageHeading} | The Listening Room (Engine Room Records)" />
 	<meta
 		property="og:description"
-		content="Browse and stream the complete chronological discography of Engine Room Records across all 7 bands, studio albums, rock operas, live concerts, and soundtracks."
+		content="Explore the complete chronological discography of Engine Room Records in The Listening Room. Read full lyrics and lore, preview 128kbps streams, or listen in Lossless HD on your favorite streaming platform."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 </svelte:head>
@@ -207,7 +210,7 @@
 	>
 		<div>
 			<div class="flex items-center gap-2 text-xs font-bold tracking-widest text-blue-400 uppercase">
-				<span>Engine Room Records Archive</span>
+				<span>The Listening Room Archive</span>
 				<span>&bull;</span>
 				<span>{filteredAlbums.length} of {currentCatalog.length} Releases</span>
 			</div>
@@ -217,7 +220,7 @@
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
 				Sequenced by in-universe timeline (<span class="font-mono text-slate-300"
 					>temporalCoverage</span
-				>). {catalogStats.playableTracks} streamable tracks across {catalogStats.totalArtists} bands.
+				>). Stream in Lossless/High-Res on your favorite app to support <strong class="text-slate-200">Michael Ragsdale</strong> &amp; <strong class="text-slate-200">Engine Room Records</strong>, or enjoy free 128kbps previews right here.
 			</p>
 		</div>
 
@@ -373,6 +376,7 @@
 
 					<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 						{#each section.albums as album (album.id)}
+							{@const albumHasDspOrStore = hasAnyDsp(album) || hasFourthwallStore(album)}
 							<div
 								id={album.id}
 								class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
@@ -400,7 +404,7 @@
 												type="button"
 												onclick={() => playAlbum(album)}
 												class="absolute right-2.5 bottom-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/50 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-												aria-label="Play {album.title}"
+												aria-label="Preview {album.title} (128kbps stream)"
 											>
 												<svg class="h-5 w-5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
 													<path d="M8 5v14l11-7z" />
@@ -418,6 +422,13 @@
 														class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-indigo-300 uppercase"
 													>
 														Rock Opera
+													</span>
+												{/if}
+												{#if album.dspExempt}
+													<span
+														class="rounded border border-amber-600/50 bg-amber-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-amber-300 uppercase"
+													>
+														Vault Exclusive
 													</span>
 												{/if}
 												{#if album.status === 'coming-soon'}
@@ -477,20 +488,36 @@
 											</p>
 										</div>
 
-										<!-- Card Action Bar -->
+										<!-- Card Action Bar (DSP / Fourthwall + 128kbps Preview) -->
 										<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5">
+											<StoreButton
+												type="album"
+												size="small"
+												spotifyId={album.spotifyId}
+												appleId={album.appleId}
+												amazonId={album.amazonId}
+												youtubeId={album.youtubeId}
+												dspExempt={album.dspExempt}
+												storeStandardUrl={album.storeStandardUrl}
+												storeAudiophileUrl={album.storeAudiophileUrl}
+											/>
+
 											{#if album.status !== 'coming-soon'}
 												<button
 													type="button"
 													onclick={() => playAlbum(album)}
-													class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500"
+													class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {albumHasDspOrStore
+														? 'border border-blue-500/40 bg-slate-800/90 text-blue-200 hover:border-blue-400 hover:bg-slate-800 hover:text-white'
+														: 'bg-blue-600 text-white shadow-md shadow-blue-600/20 hover:bg-blue-500'}"
 												>
 													<svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
 														<path d="M8 5v14l11-7z" />
 													</svg>
-													{album.status === 'in-progress'
-														? `Play Preview (${album.playableTrackCount})`
-														: 'Play Album'}
+													<span>
+														{album.status === 'in-progress'
+															? `Preview (${album.playableTrackCount})`
+															: 'Preview (128k)'}
+													</span>
 												</button>
 											{/if}
 
@@ -528,7 +555,7 @@
 												})}
 												class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-2.5 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
 											>
-												<span>Details</span>
+												<span>Lyrics &amp; Lore</span>
 												<span>&rarr;</span>
 											</a>
 										</div>
@@ -553,7 +580,7 @@
 																type="button"
 																onclick={() => playTrack(album, track)}
 																class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white"
-																aria-label="Play {track.title}"
+																aria-label="Preview {track.title}"
 															>
 																<svg class="h-3.5 w-3.5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
 																	<path d="M8 5v14l11-7z" />
@@ -588,8 +615,8 @@
 	<div class="pt-4">
 		<ShareSection
 			title={pageHeading}
-			subtitle="Engine Room Records Catalog"
-			description="Explore the complete narrative discography of Engine Room Records across all 7 bands."
+			subtitle="The Listening Room — Engine Room Records"
+			description="Explore the complete narrative discography, lyrics, and lore of Engine Room Records across all 7 bands."
 			url="https://music.raggiesoft.com/discography"
 			socialPreview="https://music.raggiesoft.com/og-image.jpg"
 		/>

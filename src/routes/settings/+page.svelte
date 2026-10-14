@@ -28,6 +28,12 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { themeManager, THEME_PALETTES } from '#lib/theme.svelte.js';
+	import {
+		dspManager,
+		DSP_PLATFORMS,
+		DSP_ORDER,
+		MAX_NUDGE_DISMISSALS
+	} from '#lib/dspPreference.svelte.js';
 
 	const COLOR_MODES = [
 		{
@@ -87,6 +93,24 @@
 	}
 
 	/**
+	 * Selects the listener's global preferred streaming platform.
+	 * @param {'spotify' | 'apple' | 'amazon' | 'youtube'} platformId
+	 * @param {string} name
+	 */
+	function selectPreferredDsp(platformId, name) {
+		dspManager.setPreferredDsp(platformId);
+		notifyChange(`Global preferred streaming service set to "${name}".`);
+	}
+
+	/**
+	 * Resets the end-of-track DSP support reminder counter.
+	 */
+	function restoreStreamingNudges() {
+		dspManager.resetPlayerNudges();
+		notifyChange('End-of-track streaming support reminders restored.');
+	}
+
+	/**
 	 * Clears the saved "Jump Back In" playback session from `localStorage`.
 	 */
 	function clearPlaybackHistory() {
@@ -126,10 +150,10 @@
 </script>
 
 <svelte:head>
-	<title>Preferences &amp; Theme Settings | Engine Room Records</title>
+	<title>Preferences &amp; Theme Settings | The Listening Room (Engine Room Records)</title>
 	<meta
 		name="description"
-		content="Customize your visual theme palette, OS color scheme behavior, and audio preferences on Engine Room Records."
+		content="Customize your preferred streaming service, visual theme palette, OS color scheme behavior, and audio preferences in The Listening Room."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/settings" />
 </svelte:head>
@@ -140,15 +164,13 @@
 		<div class="flex flex-wrap items-center justify-between gap-4">
 			<div>
 				<span class="text-xs font-bold tracking-widest text-blue-400 uppercase">
-					Listener Preferences
+					The Listening Room Preferences
 				</span>
 				<h1 class="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
-					Settings &amp; Themes
+					Settings, Streaming &amp; Themes
 				</h1>
 				<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-					All themes respect your operating system’s <code class="font-mono text-slate-300"
-						>prefers-color-scheme</code
-					> setting and persist automatically in browser local storage.
+					Configure your default streaming app, adaptive theme palette, and local session preferences.
 				</p>
 			</div>
 
@@ -156,7 +178,7 @@
 				href={resolve('/')}
 				class="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white sm:text-sm"
 			>
-				&larr; Back to Player
+				&larr; Back to The Listening Room
 			</a>
 		</div>
 
@@ -173,17 +195,94 @@
 	</section>
 
 	<!-- =================================================================== -->
-	<!-- 1. APPEARANCE MODE (MATCH OS / LIGHT / DARK)                        -->
+	<!-- 1. PREFERRED STREAMING PLATFORM (GLOBAL DEFAULT DSP)                -->
 	<!-- =================================================================== -->
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<div class="mb-5">
 			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-				1. Color Scheme Mode (<code class="font-mono text-base text-blue-400"
+				1. Preferred Streaming Platform (Global Default)
+			</h2>
+			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
+				Select your primary music service. Every <strong class="text-slate-200"
+					>Stream in High-Res / Lossless</strong
+				> button across The Listening Room will automatically default to this platform when available.
+			</p>
+		</div>
+
+		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+			{#each DSP_ORDER as platformId (platformId)}
+				{@const platform = DSP_PLATFORMS[platformId]}
+				{@const isSelected = dspManager.preferredDsp === platformId}
+				<button
+					type="button"
+					onclick={() => selectPreferredDsp(platformId, platform.name)}
+					class="flex flex-col justify-between rounded-2xl border p-4 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {isSelected
+						? 'border-blue-500 bg-blue-950/30 shadow-lg ring-1 ring-blue-500'
+						: 'border-slate-800 bg-slate-950/70 hover:border-slate-700 hover:bg-slate-900'}"
+					aria-pressed={isSelected}
+				>
+					<div class="flex items-center justify-between gap-2">
+						<span
+							class="inline-block h-3.5 w-3.5 rounded-full"
+							style="background-color: {platform.brandHex};"
+						></span>
+						{#if isSelected}
+							<span
+								class="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-white uppercase"
+							>
+								Default
+							</span>
+						{/if}
+					</div>
+					<div class="mt-3">
+						<h3 class="text-sm font-bold text-white">{platform.name}</h3>
+						<p class="mt-1 text-[11px] leading-snug text-slate-400">
+							{platform.upgradeLabel}
+						</p>
+					</div>
+				</button>
+			{/each}
+		</div>
+
+		<div
+			class="mt-5 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:flex-row sm:items-center"
+		>
+			<div>
+				<div class="text-xs font-bold text-slate-200">
+					Respectful Support Reminders ({dspManager.nudgeDismissCount} / {MAX_NUDGE_DISMISSALS} Dismissals)
+				</div>
+				<p class="mt-0.5 text-xs text-slate-400">
+					{#if dspManager.canShowPlayerNudge}
+						Gentle end-of-track streaming upgrade reminders are currently enabled.
+					{:else}
+						You have dismissed the end-of-track streaming reminder—we’ve permanently hidden it so you can enjoy 128kbps web playback uninterrupted.
+					{/if}
+				</p>
+			</div>
+			{#if dspManager.nudgeDismissCount > 0}
+				<button
+					type="button"
+					onclick={restoreStreamingNudges}
+					class="shrink-0 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+				>
+					Restore Streaming Reminders
+				</button>
+			{/if}
+		</div>
+	</section>
+
+	<!-- =================================================================== -->
+	<!-- 2. APPEARANCE MODE (MATCH OS / LIGHT / DARK)                        -->
+	<!-- =================================================================== -->
+	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
+		<div class="mb-5">
+			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+				2. Color Scheme Mode (<code class="font-mono text-base text-blue-400"
 					>prefers-color-scheme</code
 				>)
 			</h2>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-				Choose whether Engine Room Records automatically follows your device’s system light/dark
+				Choose whether The Listening Room automatically follows your device’s system light/dark
 				schedule or stays locked to a specific brightness mode.
 			</p>
 		</div>
@@ -256,12 +355,12 @@
 	</section>
 
 	<!-- =================================================================== -->
-	<!-- 2. USER-SELECTABLE ADAPTIVE THEME PALETTES                          -->
+	<!-- 3. USER-SELECTABLE ADAPTIVE THEME PALETTES                          -->
 	<!-- =================================================================== -->
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<div class="mb-5">
 			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-				2. Select Theme Palette
+				3. Select Theme Palette
 			</h2>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
 				Every theme below includes both a daylight-balanced Light Mode and a studio-calibrated Dark
@@ -342,11 +441,11 @@
 	</section>
 
 	<!-- =================================================================== -->
-	<!-- 3. PLAYBACK & LOCAL STORAGE CONTROLS                                -->
+	<!-- 4. PLAYBACK & LOCAL STORAGE CONTROLS                                -->
 	<!-- =================================================================== -->
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-			3. Playback &amp; Storage Controls
+			4. Playback &amp; Storage Controls
 		</h2>
 		<p class="mt-1 text-xs text-slate-400 sm:text-sm">
 			Manage your locally stored listening session and interface notices. All data is stored
@@ -368,6 +467,14 @@
 				class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white sm:text-sm"
 			>
 				Restore Transparency Notice Banner
+			</button>
+
+			<button
+				type="button"
+				onclick={restoreStreamingNudges}
+				class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white sm:text-sm"
+			>
+				Restore Streaming Support Reminders
 			</button>
 
 			<button

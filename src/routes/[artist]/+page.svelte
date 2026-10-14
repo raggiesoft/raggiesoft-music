@@ -25,8 +25,11 @@
 	import {
 		albumTypeDefinitions,
 		formatAlbumQueue,
-		formatReleaseDate
+		formatReleaseDate,
+		hasAnyDsp,
+		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import StoreButton from '#lib/components/StoreButton.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
@@ -35,6 +38,9 @@
 
 	let artist = $derived(data.artist);
 	let artistAlbums = $derived(data.artistAlbums);
+	let artistHasDspOrStore = $derived(
+		hasAnyDsp(artist) || Boolean(artist.storefrontUrl)
+	);
 
 	// Optional local filter within this artist's catalog (populated via collapsible menu)
 	let searchQuery = $state('');
@@ -97,7 +103,7 @@
 			name: artist.name,
 			description: artist.description,
 			genre: artist.genres,
-			image: artist.logo || artist.socialPreview,
+			image: artist.socialPreview || artist.logo,
 			url: `https://music.raggiesoft.com/${artist.slug}`,
 			album: artistAlbums.map((a) => ({
 				'@type': 'MusicAlbum',
@@ -173,26 +179,38 @@
 </script>
 
 <svelte:head>
-	<title>{artist.name} | Discography &amp; Lore | Engine Room Records</title>
-	<meta name="title" content="{artist.name} | Discography & Lore | Engine Room Records" />
+	<title>{artist.name} | Discography &amp; Lore | The Listening Room (Engine Room Records)</title>
+	<meta
+		name="title"
+		content="{artist.name} | Discography & Lore | The Listening Room (Engine Room Records)"
+	/>
 	<meta name="description" content={artist.description} />
 	<link rel="canonical" href="https://music.raggiesoft.com/{artist.slug}" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="profile" />
-	<meta property="og:site_name" content="Engine Room Records" />
+	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/{artist.slug}" />
-	<meta property="og:title" content="{artist.name} — Official Discography | Engine Room Records" />
+	<meta
+		property="og:title"
+		content="{artist.name} — Official Discography | The Listening Room"
+	/>
 	<meta property="og:description" content={artist.description} />
 	<meta property="og:image" content={artist.socialPreview} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
-	<meta property="og:image:alt" content="{artist.name} - Engine Room Records" />
+	<meta
+		property="og:image:alt"
+		content="{artist.name} - The Listening Room by Engine Room Records"
+	/>
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:url" content="https://music.raggiesoft.com/{artist.slug}" />
-	<meta name="twitter:title" content="{artist.name} — Official Discography | Engine Room Records" />
+	<meta
+		name="twitter:title"
+		content="{artist.name} — Official Discography | The Listening Room"
+	/>
 	<meta name="twitter:description" content={artist.description} />
 	<meta name="twitter:image" content={artist.socialPreview} />
 
@@ -313,44 +331,72 @@
 					</p>
 				</div>
 
-				<!-- Hero Action Buttons -->
-				<div
-					class="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-slate-800/80 pt-5 md:justify-start"
-				>
-					{#if artist.playableTrackCount > 0}
-						<button
-							type="button"
-							onclick={playArtistCatalog}
-							class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-						>
-							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							Play Artist Catalog ({artist.playableTrackCount} Songs)
-						</button>
+				<!-- Hero Action Buttons & Support Microcopy -->
+				<div class="mt-6 border-t border-slate-800/80 pt-5">
+					{#if artistHasDspOrStore}
+						<p class="mb-3 text-xs leading-relaxed text-slate-300">
+							<strong class="text-blue-400">Support {artist.name}:</strong> Streaming in Lossless/High-Res
+							on your favorite app or purchasing digital masters directly supports
+							<strong class="text-white">Michael Ragsdale</strong> &amp;
+							<strong class="text-white">Engine Room Records</strong>.
+						</p>
 					{/if}
 
-					<a
-						href="#share-artist-section"
-						class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/90 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
-					>
-						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-							/>
-						</svg>
-						Share Artist Profile
-					</a>
+					<div class="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+						<!-- Primary Upgrade Action: Official DSP & Fourthwall Storefront -->
+						<StoreButton
+							type={artist.dspTargetType || 'artist'}
+							size="large"
+							spotifyId={artist.spotifyId}
+							appleId={artist.appleId}
+							amazonId={artist.amazonId}
+							youtubeId={artist.youtubeId}
+							storefrontUrl={artist.storefrontUrl}
+						/>
 
-					<a
-						href={resolve('/discography')}
-						class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-					>
-						All Label Artists &rarr;
-					</a>
+						<!-- Secondary Free Onsite Preview Stream -->
+						{#if artist.playableTrackCount > 0}
+							<button
+								type="button"
+								onclick={playArtistCatalog}
+								class="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 {artistHasDspOrStore
+									? 'border border-blue-500/50 bg-slate-900/90 text-blue-200 hover:border-blue-400 hover:bg-slate-800 hover:text-white'
+									: 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500'}"
+							>
+								<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								<span>Preview Catalog ({artist.playableTrackCount} Songs)</span>
+								<span
+									class="rounded bg-slate-800/90 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-300"
+								>
+									128kbps
+								</span>
+							</button>
+						{/if}
+
+						<a
+							href="#share-artist-section"
+							class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/90 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+						>
+							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+								/>
+							</svg>
+							Share Profile
+						</a>
+
+						<a
+							href={resolve('/discography')}
+							class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+						>
+							All Label Artists &rarr;
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -435,6 +481,7 @@
 
 					<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 						{#each section.albums as album (album.id)}
+							{@const albumHasDspOrStore = hasAnyDsp(album) || hasFourthwallStore(album)}
 							<div
 								id={album.id}
 								class="flex flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl transition-all hover:border-slate-700"
@@ -462,7 +509,7 @@
 												type="button"
 												onclick={() => playAlbum(album)}
 												class="absolute right-2.5 bottom-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/50 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-												aria-label="Play {album.title}"
+												aria-label="Preview {album.title} (128kbps stream)"
 											>
 												<svg class="h-5 w-5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
 													<path d="M8 5v14l11-7z" />
@@ -480,6 +527,13 @@
 														class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-indigo-300 uppercase"
 													>
 														Rock Opera
+													</span>
+												{/if}
+												{#if album.dspExempt}
+													<span
+														class="rounded border border-amber-600/50 bg-amber-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-amber-300 uppercase"
+													>
+														Vault Exclusive
 													</span>
 												{/if}
 												{#if album.status === 'coming-soon'}
@@ -523,20 +577,36 @@
 											</p>
 										</div>
 
-										<!-- Action Buttons -->
+										<!-- Action Buttons (DSP / Fourthwall + 128kbps Preview) -->
 										<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5">
+											<StoreButton
+												type="album"
+												size="small"
+												spotifyId={album.spotifyId}
+												appleId={album.appleId}
+												amazonId={album.amazonId}
+												youtubeId={album.youtubeId}
+												dspExempt={album.dspExempt}
+												storeStandardUrl={album.storeStandardUrl}
+												storeAudiophileUrl={album.storeAudiophileUrl}
+											/>
+
 											{#if album.status !== 'coming-soon'}
 												<button
 													type="button"
 													onclick={() => playAlbum(album)}
-													class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-colors hover:bg-blue-500"
+													class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {albumHasDspOrStore
+														? 'border border-blue-500/40 bg-slate-800/90 text-blue-200 hover:border-blue-400 hover:bg-slate-800 hover:text-white'
+														: 'bg-blue-600 text-white shadow-md shadow-blue-600/20 hover:bg-blue-500'}"
 												>
 													<svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
 														<path d="M8 5v14l11-7z" />
 													</svg>
-													{album.status === 'in-progress'
-														? `Play Preview (${album.playableTrackCount})`
-														: 'Play Album'}
+													<span>
+														{album.status === 'in-progress'
+															? `Preview (${album.playableTrackCount})`
+															: 'Preview (128k)'}
+													</span>
 												</button>
 											{/if}
 
@@ -574,7 +644,7 @@
 												})}
 												class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 px-2.5 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
 											>
-												<span>Album Page</span>
+												<span>Lyrics &amp; Lore</span>
 												<span>&rarr;</span>
 											</a>
 										</div>
@@ -599,7 +669,7 @@
 																type="button"
 																onclick={() => playTrack(album, track)}
 																class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white"
-																aria-label="Play {track.title}"
+																aria-label="Preview {track.title}"
 															>
 																<svg class="h-3.5 w-3.5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
 																	<path d="M8 5v14l11-7z" />
@@ -636,11 +706,11 @@
 	<div id="share-artist-section" class="pt-4">
 		<ShareSection
 			title={artist.name}
-			subtitle="Engine Room Records Artist Profile"
+			subtitle="The Listening Room — Engine Room Records"
 			description={artist.description}
 			url="https://music.raggiesoft.com/{artist.slug}"
 			socialPreview={artist.socialPreview}
-			sharePrompt="Share {artist.name}'s complete discography and narrative lore with friends."
+			sharePrompt="Share {artist.name}'s complete discography, lyrics, and narrative lore with friends."
 		/>
 	</div>
 </div>

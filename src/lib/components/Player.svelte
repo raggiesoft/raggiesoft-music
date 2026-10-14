@@ -18,6 +18,7 @@
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
 	import { formatReleaseDate } from '#lib/data/musicData.js';
+	import StoreButton from '#lib/components/StoreButton.svelte';
 
 	let audioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
 	let isScrubbing = $state(false);
@@ -364,8 +365,16 @@
 					</div>
 
 					<div class="mt-5 w-full">
+						<div class="mb-1.5 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-slate-300 uppercase"
+							>
+								<span>🎧</span>
+								<span>128kbps Preview Stream</span>
+							</span>
+						</div>
 						<h2 class="text-2xl font-bold tracking-tight text-white">
-							{player.currentTrack.title || 'Engine Room Records'}
+							{player.currentTrack.title || 'The Listening Room'}
 						</h2>
 						<div class="mt-1 flex items-center justify-center md:justify-start gap-2">
 							{#if player.currentTrack.artistLogo}
@@ -415,6 +424,30 @@
 							</a>
 						{:else}
 							<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
+						{/if}
+
+						{#if player.hasActiveExternalSupportLinks(player.currentTrack)}
+							<div
+								class="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 text-left shadow-inner"
+							>
+								<p class="mb-2.5 text-[11px] leading-relaxed text-slate-300">
+									<strong class="text-white">Enjoying the preview?</strong> Listening in lossless/high-res
+									on your favorite streaming app or purchasing the digital archive on Fourthwall directly
+									supports <strong class="text-blue-300">Michael Ragsdale</strong> &amp;
+									<strong class="text-blue-300">Engine Room Records</strong>.
+								</p>
+								<StoreButton
+									type="album"
+									size="small"
+									spotifyId={player.currentTrack.spotifyId}
+									appleId={player.currentTrack.appleId}
+									amazonId={player.currentTrack.amazonId}
+									youtubeId={player.currentTrack.youtubeId}
+									dspExempt={player.currentTrack.dspExempt}
+									storeStandardUrl={player.currentTrack.storeStandardUrl}
+									storeAudiophileUrl={player.currentTrack.storeAudiophileUrl}
+								/>
+							</div>
 						{/if}
 
 						<!-- In-Drawer Progress Scrubber -->
@@ -743,11 +776,15 @@
 							<div
 								class="rounded-lg border border-slate-800/60 bg-slate-900/30 p-3.5 text-xs leading-relaxed text-slate-400"
 							>
-								<p class="font-semibold text-slate-300">Streaming Specification:</p>
+								<p class="font-semibold text-slate-300">The Listening Room • Preview Specification:</p>
 								<p class="mt-1">
-									Audio streams served via <code class="text-blue-400">assets.raggiesoft.com</code> web-mp3
-									samples (free public tier). Master high-resolution WAV/FLAC archives remain securely
-									stored in the private master vaults.
+									Onsite audio is served via <code class="text-blue-400">assets.raggiesoft.com</code>
+									as a free <strong>128kbps MP3 Preview Stream</strong> for exploring lyrics and canonical
+									lore. To experience full lossless/high-res audio and support
+									<strong class="text-slate-200">Michael Ragsdale</strong> &amp;
+									<strong class="text-slate-200">Engine Room Records</strong>, stream on your
+									preferred DSP or purchase the DRM-free digital archive (High-Quality MP3/OGG or
+									Premium WAV/FLAC) on Fourthwall.
 								</p>
 							</div>
 
@@ -779,6 +816,71 @@
 			</div>
 		</div>
 	</div>
+{/if}
+
+<!-- ======================================================================= -->
+<!-- GENTLE OPTION-B END-OF-TRACK DSP & FOURTHWALL NUDGE BANNER              -->
+<!-- ======================================================================= -->
+{#if player.showDspNudgeBanner && player.hasActiveExternalSupportLinks(player.currentTrack)}
+	<aside
+		class="fixed right-4 bottom-24 left-4 z-40 mx-auto max-w-4xl rounded-2xl border border-blue-500/40 bg-slate-900/95 p-4 text-xs text-slate-200 shadow-2xl backdrop-blur-xl transition-all duration-300"
+		role="region"
+		aria-label="Support the Artist on Streaming or Fourthwall"
+	>
+		<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+			<div class="space-y-1">
+				<div class="flex flex-wrap items-center gap-2">
+					<span
+						class="rounded-full border border-blue-500/40 bg-blue-950/80 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-blue-300 uppercase"
+					>
+						Support the Artist
+					</span>
+					<span class="font-bold text-white">
+						Enjoying <em>{player.currentTrack.album}</em>?
+					</span>
+				</div>
+				<p class="text-[11px] leading-relaxed text-slate-300 sm:text-xs">
+					We’re keeping the free <strong>128kbps preview stream</strong> playing for you! If you use a
+					streaming app—or want to own the High-Quality MP3/OGG or Studio Master WAV/FLAC via Fourthwall—listening
+					there upgrades your audio and directly supports
+					<strong class="text-white">Michael Ragsdale</strong> &amp;
+					<strong class="text-white">Engine Room Records</strong>.
+				</p>
+			</div>
+
+			<div class="flex flex-wrap items-center gap-2 shrink-0">
+				<StoreButton
+					type="album"
+					size="small"
+					spotifyId={player.currentTrack.spotifyId}
+					appleId={player.currentTrack.appleId}
+					amazonId={player.currentTrack.amazonId}
+					youtubeId={player.currentTrack.youtubeId}
+					dspExempt={player.currentTrack.dspExempt}
+					storeStandardUrl={player.currentTrack.storeStandardUrl}
+					storeAudiophileUrl={player.currentTrack.storeAudiophileUrl}
+				/>
+
+				<button
+					type="button"
+					onclick={() => player.dismissDspNudge(false)}
+					class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+					title="Keep listening to the 128kbps preview stream"
+				>
+					Keep Previewing
+				</button>
+
+				<button
+					type="button"
+					onclick={() => player.dismissDspNudge(true)}
+					class="px-1.5 py-1 text-[11px] font-medium text-slate-400 underline decoration-slate-600 underline-offset-2 transition-colors hover:text-slate-200"
+					title="Don't show this reminder again"
+				>
+					Don’t remind me
+				</button>
+			</div>
+		</div>
+	</aside>
 {/if}
 
 <!-- ======================================================================= -->
@@ -897,9 +999,19 @@
 			</button>
 
 			<div class="truncate text-left min-w-0">
-				<h3 class="truncate text-sm leading-snug font-bold text-white">
-					{player.currentTrack.title || 'Engine Room Records'}
-				</h3>
+				<div class="flex items-center gap-1.5 truncate">
+					<h3 class="truncate text-sm leading-snug font-bold text-white">
+						{player.currentTrack.title || 'The Listening Room'}
+					</h3>
+					{#if player.currentTrack.audioUrl}
+						<span
+							class="hidden shrink-0 rounded border border-slate-700 bg-slate-800/90 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-400 uppercase sm:inline-block"
+							title="Free 128kbps Discovery Preview Stream"
+						>
+							128k Preview
+						</span>
+					{/if}
+				</div>
 				<div class="mt-0.5 flex items-center gap-1.5 truncate">
 					{#if player.currentTrack.artistLogo}
 						<img
@@ -909,7 +1021,7 @@
 						/>
 					{/if}
 					<p class="truncate text-xs text-slate-400">
-						{player.currentTrack.artist || 'Select a track to start'}
+						{player.currentTrack.artist || 'Select a track to preview (128kbps)'}
 					</p>
 				</div>
 			</div>
@@ -1026,8 +1138,24 @@
 			</div>
 		</div>
 
-		<!-- 3. RIGHT: Lore/Lyrics Drawer Toggle & Volume Slider -->
-		<div class="flex w-1/4 min-w-[200px] items-center justify-end gap-3">
+		<!-- 3. RIGHT: DSP Upgrade Pill, Lore/Lyrics Drawer Toggle & Volume Slider -->
+		<div class="flex w-1/4 min-w-[200px] items-center justify-end gap-2.5">
+			{#if player.hasActiveExternalSupportLinks(player.currentTrack)}
+				<div class="hidden lg:block">
+					<StoreButton
+						type="album"
+						size="small"
+						compactLabel={true}
+						showFourthwall={false}
+						spotifyId={player.currentTrack.spotifyId}
+						appleId={player.currentTrack.appleId}
+						amazonId={player.currentTrack.amazonId}
+						youtubeId={player.currentTrack.youtubeId}
+						dspExempt={player.currentTrack.dspExempt}
+					/>
+				</div>
+			{/if}
+
 			<!-- Lore / Lyrics Drawer Toggle Button -->
 			<button
 				onclick={() => player.toggleExpanded()}

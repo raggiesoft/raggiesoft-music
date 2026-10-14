@@ -25,8 +25,14 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { formatAlbumQueue, formatReleaseDate } from '#lib/data/musicData.js';
+	import {
+		formatAlbumQueue,
+		formatReleaseDate,
+		hasAnyDsp,
+		hasFourthwallStore
+	} from '#lib/data/musicData.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
+	import StoreButton from '#lib/components/StoreButton.svelte';
 
 	let { data } = $props();
 
@@ -143,14 +149,17 @@
 
 <svelte:head>
 	<!-- Primary Meta Tags -->
-	<title>{album.title} by {album.artist} | Engine Room Records</title>
-	<meta name="title" content="{album.title} by {album.artist} | Engine Room Records" />
+	<title>{album.title} by {album.artist} | The Listening Room — Engine Room Records</title>
+	<meta
+		name="title"
+		content="{album.title} by {album.artist} | The Listening Room — Engine Room Records"
+	/>
 	<meta name="description" content={album.description} />
 	<link rel="canonical" href={canonicalUrl} />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="music.album" />
-	<meta property="og:site_name" content="Engine Room Records" />
+	<meta property="og:site_name" content="The Listening Room | Engine Room Records" />
 	<meta property="og:url" content={canonicalUrl} />
 	<meta property="og:title" content="{album.title} — {album.artist}" />
 	<meta property="og:description" content={album.description} />
@@ -224,7 +233,7 @@
 					<button
 						onclick={playAlbum}
 						class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500"
-						aria-label="Play {album.title}"
+						aria-label="Play 128kbps Preview of {album.title}"
 					>
 						<span
 							class="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/50 transition-transform hover:scale-110"
@@ -332,67 +341,133 @@
 					</p>
 				</div>
 
-				<!-- Action Buttons Row -->
-				<div class="mt-8 flex flex-wrap items-center gap-3 border-t border-slate-800/80 pt-6">
-					{#if album.status === 'coming-soon'}
-						<span
-							class="flex cursor-not-allowed items-center gap-2 rounded-xl border border-amber-800/60 bg-amber-950/40 px-5 py-3 text-sm font-semibold text-amber-300 select-none"
+				<!-- Action Buttons & Discovery Hub Upgrade Row -->
+				<div class="mt-8 space-y-4 border-t border-slate-800/80 pt-6">
+					{#if album.dspExempt && album.dspNotice}
+						<div
+							class="rounded-xl border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-xs leading-relaxed text-amber-200"
+						>
+							<strong class="font-extrabold uppercase tracking-wider text-amber-300">
+								Vault Exclusive:
+							</strong>
+							{album.dspNotice}
+						</div>
+					{/if}
+
+					<div class="flex flex-wrap items-center gap-3">
+						<!-- 1. Primary External DSP & Fourthwall Storefront Buttons (when available) -->
+						<StoreButton
+							type="album"
+							size="large"
+							spotifyId={album.spotifyId}
+							appleId={album.appleId}
+							amazonId={album.amazonId}
+							youtubeId={album.youtubeId}
+							dspExempt={album.dspExempt}
+							storeStandardUrl={album.storeStandardUrl}
+							storeAudiophileUrl={album.storeAudiophileUrl}
+						/>
+
+						<!-- 2. Built-In 128kbps Preview Stream Button -->
+						{#if album.status === 'coming-soon'}
+							<span
+								class="flex cursor-not-allowed items-center gap-2 rounded-xl border border-amber-800/60 bg-amber-950/40 px-5 py-3 text-sm font-semibold text-amber-300 select-none"
+							>
+								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+								In Production / Studio
+							</span>
+						{:else if album.status === 'in-progress'}
+							<button
+								onclick={playAlbum}
+								class="flex items-center gap-2.5 rounded-xl border border-sky-500/60 bg-sky-950/60 px-5 py-3 text-sm font-semibold text-sky-200 shadow-md transition-all hover:bg-sky-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+							>
+								<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Preview Stream (128kbps • {album.playableTrackCount} Songs)
+							</button>
+						{:else if hasAnyDsp(album) || hasFourthwallStore(album)}
+							<!-- Outlined / Muted Secondary Hierarchy when DSP or Fourthwall is present -->
+							<button
+								onclick={playAlbum}
+								class="flex items-center gap-2.5 rounded-xl border border-slate-600/90 bg-slate-900/80 px-5 py-3 text-sm font-semibold text-slate-200 transition-all hover:border-blue-400 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+								title="Stream free 128kbps web preview while reading lyrics & lore"
+							>
+								<svg class="h-4 w-4 fill-current text-blue-400" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Preview Stream (128kbps MP3)
+							</button>
+						{:else}
+							<!-- Primary button when album is not yet on DSPs or Fourthwall -->
+							<button
+								onclick={playAlbum}
+								class="flex items-center gap-2.5 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+							>
+								<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Preview Stream (128kbps • {album.totalTracksCount} Songs)
+							</button>
+						{/if}
+
+						<!-- Share Album Button -->
+						<a
+							href="#share-album-section"
+							class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/90 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 						>
 							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+									d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
 								/>
 							</svg>
-							In Production / Studio
-						</span>
-					{:else if album.status === 'in-progress'}
-						<button
-							onclick={playAlbum}
-							class="flex items-center gap-2.5 rounded-xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-600/30 transition-all hover:bg-sky-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+							Share Album
+						</a>
+
+						<!-- Link to Artist Page -->
+						<a
+							href={resolve('/[artist]', { artist: album.artistSlug })}
+							class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
 						>
-							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							Play Available Preview ({album.playableTrackCount} Songs)
-						</button>
-					{:else}
-						<button
-							onclick={playAlbum}
-							class="flex items-center gap-2.5 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+							{album.artist} Profile &rarr;
+						</a>
+					</div>
+
+					<!-- Transparent "Support the Artist" Microcopy (Only shown when DSP or Fourthwall links exist) -->
+					{#if hasAnyDsp(album) || hasFourthwallStore(album)}
+						<div
+							class="rounded-2xl border border-slate-800/90 bg-slate-950/70 px-4 py-3 text-xs leading-relaxed text-slate-300 shadow-inner"
 						>
-							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							Play Album ({album.totalTracksCount} Songs)
-						</button>
+							<p>
+								<span class="mr-1" aria-hidden="true">💛</span>
+								<strong class="text-white">Enjoying the tracks?</strong> The built-in player streams free
+								<strong>128kbps web previews</strong> so you can explore the lyrics and lore.
+								{#if hasAnyDsp(album)}
+									Listening in lossless or high-res on your favorite streaming app—or saving this
+									album to your library for offline listening—directly supports
+								{:else}
+									Purchasing the digital archive directly on Fourthwall supports
+								{/if}
+								<strong class="text-blue-300">Michael Ragsdale</strong> and helps fund the next
+								<strong class="text-blue-300">Engine Room Records</strong> release.
+								{#if hasFourthwallStore(album)}
+									You can also own the DRM-free digital release on Fourthwall in
+									<strong class="text-cyan-300">High-Quality MP3/OGG</strong> or
+									<strong class="text-amber-300">Premium WAV/FLAC</strong>.
+								{/if}
+							</p>
+						</div>
 					{/if}
-
-					<!-- Share Album Button -->
-					<a
-						href="#share-album-section"
-						class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/90 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-					>
-						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-							/>
-						</svg>
-						Share Album
-					</a>
-
-					<!-- Link to Artist Page -->
-					<a
-						href={resolve('/[artist]', { artist: album.artistSlug })}
-						class="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-					>
-						{album.artist} Profile &rarr;
-					</a>
 				</div>
 			</div>
 		</div>
@@ -402,9 +477,12 @@
 	<section class="space-y-6">
 		<div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
 			<div>
-				<h2 class="text-2xl font-bold tracking-tight text-white">Tracklist</h2>
+				<h2 class="text-2xl font-bold tracking-tight text-white">
+					Tracklist, Lyrics &amp; Canonical Lore
+				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					{album.totalTracksCount} tracks • {album.playableTrackCount} streamable from Engine Room CDN
+					{album.totalTracksCount} tracks • {album.playableTrackCount} available as 128kbps web preview
+					streams
 				</p>
 			</div>
 		</div>

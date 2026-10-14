@@ -28,6 +28,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { themeManager } from '#lib/theme.svelte.js';
+	import { dspManager } from '#lib/dspPreference.svelte.js';
 	import Player from '#lib/components/Player.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 
@@ -43,6 +44,7 @@
 	onMount(() => {
 		// Initialize adaptive theme manager & prefers-color-scheme listener
 		themeManager.init();
+		dspManager.init();
 
 		// Register Service Worker for PWA capabilities
 		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
@@ -112,10 +114,10 @@
 				</div>
 				<div class="hidden xs:block sm:block">
 					<span class="block text-base leading-tight font-extrabold tracking-tight text-white"
-						>Engine Room Records</span
+						>The Listening Room</span
 					>
-					<span class="text-xs font-medium tracking-wider text-blue-400 uppercase"
-						>Official Audio Platform</span
+					<span class="text-[11px] font-semibold tracking-wider text-blue-400 uppercase"
+						>by Engine Room Records</span
 					>
 				</div>
 			</a>

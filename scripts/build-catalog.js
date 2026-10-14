@@ -126,6 +126,39 @@ function buildCatalog() {
 				? `${CDN_BASE}/${artistSlug}/band-logo.jpg`
 				: null;
 
+		// Resolve artist-level Open Graph 16:9 social preview banner if present
+		const artistSocialPreview = fs.existsSync(path.join(artistDir, 'social-preview.jpg'))
+			? `${CDN_BASE}/${artistSlug}/social-preview.jpg`
+			: fs.existsSync(path.join(artistDir, 'discography-social-preview.jpg'))
+				? `${CDN_BASE}/${artistSlug}/discography-social-preview.jpg`
+				: null;
+
+		// Parse artist-level albums.json for DSP IDs (Spotify, Apple, Amazon, YouTube)
+		// and Fourthwall direct storefront URLs (Standard MP3/OGG & Audiophile WAV/FLAC)
+		/** @type {Array<any>} */
+		const artistAlbumsManifest = [];
+		const artistAlbumsFile = path.join(artistDir, 'albums.json');
+		if (fs.existsSync(artistAlbumsFile)) {
+			try {
+				const rawManifest = JSON.parse(fs.readFileSync(artistAlbumsFile, 'utf-8'));
+				if (Array.isArray(rawManifest.eras)) {
+					for (const era of rawManifest.eras) {
+						if (Array.isArray(era.albums)) {
+							artistAlbumsManifest.push(...era.albums);
+						}
+					}
+				} else if (rawManifest && typeof rawManifest === 'object') {
+					for (const era of Object.values(rawManifest)) {
+						if (era && typeof era === 'object' && Array.isArray(era.albums)) {
+							artistAlbumsManifest.push(...era.albums);
+						}
+					}
+				}
+			} catch (err) {
+				console.warn(`⚠️  Failed to parse albums.json for ${artistSlug}:`, err);
+			}
+		}
+
 		// Discover all potential album directories for this artist
 		const albumFolders = fs
 			.readdirSync(artistDir)
@@ -346,6 +379,40 @@ function buildCatalog() {
 				statusLabel = 'In Production';
 			}
 
+			// Match album against artist's albums.json manifest for DSP & Fourthwall store metadata
+			const matchedManifestAlbum =
+				artistAlbumsManifest.find((entry) => {
+					if (entry.folder && entry.folder === albumSlug) return true;
+					if (entry.slug && entry.slug === albumSlug) return true;
+					if (entry.url && path.basename(entry.url) === albumSlug) return true;
+					if (entry.img && String(entry.img).includes(`/${albumSlug}/`)) return true;
+					if (
+						entry.title &&
+						String(entry.title).trim().toLowerCase() === albumTitle.trim().toLowerCase()
+					) {
+						return true;
+					}
+					return false;
+				}) || {};
+
+			const spotifyId = String(matchedManifestAlbum.spotifyId || albumData.spotifyId || '').trim();
+			const appleId = String(matchedManifestAlbum.appleId || albumData.appleId || '').trim();
+			const amazonId = String(matchedManifestAlbum.amazonId || albumData.amazonId || '').trim();
+			// Clean any accidental trailing '&' on youtubeId
+			const youtubeId = String(matchedManifestAlbum.youtubeId || albumData.youtubeId || '')
+				.trim()
+				.replace(/&+$/, '');
+
+			const storeStandardUrl = String(
+				matchedManifestAlbum.storeStandardUrl || albumData.storeStandardUrl || ''
+			).trim();
+			const storeAudiophileUrl = String(
+				matchedManifestAlbum.storeAudiophileUrl || albumData.storeAudiophileUrl || ''
+			).trim();
+
+			const dspExempt = Boolean(matchedManifestAlbum.dspExempt || albumData.dspExempt || false);
+			const dspNotice = String(matchedManifestAlbum.dspNotice || albumData.dspNotice || '').trim();
+
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
 				slug: albumSlug,
@@ -353,6 +420,7 @@ function buildCatalog() {
 				artist: artistName,
 				artistSlug,
 				artistLogo,
+				artistSocialPreview,
 				year,
 				temporalCoverage,
 				datePublished,
@@ -367,6 +435,14 @@ function buildCatalog() {
 				artwork,
 				socialPreview,
 				description,
+				spotifyId,
+				appleId,
+				amazonId,
+				youtubeId,
+				storeStandardUrl,
+				storeAudiophileUrl,
+				dspExempt,
+				dspNotice,
 				tracks: formattedTracks
 			});
 		}

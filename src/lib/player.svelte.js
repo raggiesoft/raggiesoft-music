@@ -20,6 +20,8 @@
  * ============================================================================
  */
 
+import { dspManager } from './dspPreference.svelte.js';
+
 export class AudioPlayer {
 	// Primary playback state
 	isPlaying = $state(false);
@@ -53,6 +55,9 @@ export class AudioPlayer {
 	);
 	_isrcNoticeTimeout = /** @type {any} */ (null);
 
+	// Gentle Option-B DSP / Fourthwall Nudge Banner (shown when a track finishes if DSP/Store links exist)
+	showDspNudgeBanner = $state(false);
+
 	// Active track entity
 	currentTrack = $state({
 		id: '',
@@ -74,7 +79,15 @@ export class AudioPlayer {
 		track: 1,
 		duration: '',
 		isrc: '',
-		legacyTier: ''
+		legacyTier: '',
+		spotifyId: '',
+		appleId: '',
+		amazonId: '',
+		youtubeId: '',
+		storeStandardUrl: '',
+		storeAudiophileUrl: '',
+		dspExempt: false,
+		dspNotice: ''
 	});
 
 	// Active playback queue for seamless album / rock opera sequencing
@@ -261,6 +274,18 @@ export class AudioPlayer {
 			this.currentTrack.lyrics = track.lyrics || this.currentTrack.lyrics;
 			this.currentTrack.isrc = targetIsrc;
 			this.currentTrack.legacyTier = track.legacyTier || this.currentTrack.legacyTier;
+			this.currentTrack.spotifyId = track.spotifyId || '';
+			this.currentTrack.appleId = track.appleId || '';
+			this.currentTrack.amazonId = track.amazonId || '';
+			this.currentTrack.youtubeId = track.youtubeId || '';
+			this.currentTrack.storeStandardUrl = track.storeStandardUrl || '';
+			this.currentTrack.storeAudiophileUrl = track.storeAudiophileUrl || '';
+			this.currentTrack.dspExempt = Boolean(track.dspExempt);
+			this.currentTrack.dspNotice = track.dspNotice || '';
+
+			if (!this.hasActiveExternalSupportLinks(this.currentTrack)) {
+				this.showDspNudgeBanner = false;
+			}
 
 			// If current track lacked audioUrl, fall back to target's url
 			if (!this.currentTrack.audioUrl && track.audioUrl) {
@@ -308,8 +333,20 @@ export class AudioPlayer {
 			track: track.track || 1,
 			duration: track.duration || '',
 			isrc: track.isrc || '',
-			legacyTier: track.legacyTier || ''
+			legacyTier: track.legacyTier || '',
+			spotifyId: track.spotifyId || '',
+			appleId: track.appleId || '',
+			amazonId: track.amazonId || '',
+			youtubeId: track.youtubeId || '',
+			storeStandardUrl: track.storeStandardUrl || '',
+			storeAudiophileUrl: track.storeAudiophileUrl || '',
+			dspExempt: Boolean(track.dspExempt),
+			dspNotice: track.dspNotice || ''
 		};
+
+		if (!this.hasActiveExternalSupportLinks(this.currentTrack)) {
+			this.showDspNudgeBanner = false;
+		}
 
 		this.currentTime = 0;
 		this.duration = 0;
@@ -325,6 +362,39 @@ export class AudioPlayer {
 		}
 
 		this.saveSession();
+	}
+
+	/**
+	 * Checks whether a track's parent album has active DSP streaming links
+	 * (and is not DSP-exempt) or direct Fourthwall digital archive links.
+	 * @param {any} track
+	 * @returns {boolean}
+	 */
+	hasActiveExternalSupportLinks(track = this.currentTrack) {
+		if (!track) return false;
+		const hasDsp =
+			!track.dspExempt &&
+			Boolean(
+				(track.spotifyId && track.spotifyId.trim()) ||
+					(track.appleId && track.appleId.trim()) ||
+					(track.amazonId && track.amazonId.trim()) ||
+					(track.youtubeId && track.youtubeId.trim())
+			);
+		const hasStore = Boolean(
+			(track.storeStandardUrl && track.storeStandardUrl.trim()) ||
+				(track.storeAudiophileUrl && track.storeAudiophileUrl.trim())
+		);
+		return hasDsp || hasStore;
+	}
+
+	/**
+	 * Dismisses the gentle DSP / Fourthwall support nudge banner and records
+	 * the user's preference so we respect their decision after 3 dismissals.
+	 * @param {boolean} [permanent=false]
+	 */
+	dismissDspNudge(permanent = false) {
+		this.showDspNudgeBanner = false;
+		dspManager.dismissPlayerNudge(permanent);
 	}
 
 	/**
@@ -377,10 +447,17 @@ export class AudioPlayer {
 
 	/**
 	 * Called automatically when the HTML audio element triggers 'ended'.
-	 * Flawlessly enables gapless/continuous playback for multi-part rock operas
-	 * and honors single-track / queue repeat modes.
+	 * Option B Discovery Hub Behavior:
+	 * 1. Keeps the 128kbps web preview playing continuously to the next track in
+	 *    the queue so listeners without a commercial DSP are never cut off.
+	 * 2. If the album has active DSP or Fourthwall store links (and the user hasn't
+	 *    dismissed the nudge 3 times), gently displays the non-intrusive support banner.
 	 */
 	onTrackEnded() {
+		if (this.hasActiveExternalSupportLinks(this.currentTrack) && dspManager.canShowPlayerNudge) {
+			this.showDspNudgeBanner = true;
+		}
+
 		if (this.repeatMode === 'one') {
 			this.seek(0);
 			this.play();

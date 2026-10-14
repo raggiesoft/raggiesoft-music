@@ -29,8 +29,11 @@
 		allAlbums,
 		allArtists,
 		formatAlbumQueue,
-		formatReleaseDate
+		formatReleaseDate,
+		hasAnyDsp,
+		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import StoreButton from '#lib/components/StoreButton.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
@@ -162,26 +165,32 @@
 </script>
 
 <svelte:head>
-	<title>Engine Room Records | Official Music &amp; Discography Platform</title>
+	<title>The Listening Room | Music Discovery, Lyrics &amp; Lore by Engine Room Records</title>
 	<meta
 		name="description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
+		content="Welcome to The Listening Room by Engine Room Records. Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content="Engine Room Records" />
+	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/" />
-	<meta property="og:title" content="Engine Room Records | Official Music & Discography Platform" />
+	<meta
+		property="og:title"
+		content="The Listening Room | Music Discovery, Lyrics & Lore by Engine Room Records"
+	/>
 	<meta
 		property="og:description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
+		content="Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
-	<meta property="og:image:width" content="1376" />
-	<meta property="og:image:height" content="768" />
-	<meta property="og:image:alt" content="Engine Room Records - Official Music Platform" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta
+		property="og:image:alt"
+		content="The Listening Room — Music Discovery Hub by Engine Room Records"
+	/>
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
@@ -189,11 +198,11 @@
 	<meta name="twitter:url" content="https://music.raggiesoft.com/" />
 	<meta
 		name="twitter:title"
-		content="Engine Room Records | Official Music & Discography Platform"
+		content="The Listening Room | Music Discovery, Lyrics & Lore by Engine Room Records"
 	/>
 	<meta
 		name="twitter:description"
-		content="Official streaming catalog and narrative discography for Engine Room Records. Stream complete albums, rock operas, synchronized lyrics, and in-universe lore across the artist roster."
+		content="Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
 </svelte:head>
@@ -209,12 +218,13 @@
 			{timeGreeting}
 		</p>
 		<h1 class="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
-			Engine Room Records
+			The Listening Room
 		</h1>
 		<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-			Autonomous audio sanctuary. Streaming directly from <span class="font-mono text-slate-300"
-				>assets.raggiesoft.com</span
-			>.
+			Official Music Discovery, Lyrics &amp; Lore Hub by <strong class="text-slate-200"
+				>Engine Room Records</strong
+			>. Enjoy free 128kbps previews or stream in Lossless HD on your favorite app to support
+			<strong class="text-slate-200">Michael Ragsdale</strong>.
 		</p>
 	</div>
 
@@ -517,16 +527,44 @@
 						{spotlightAlbum.description}
 					</p>
 
-					<div class="mt-6 flex flex-wrap items-center gap-3">
+					{#if hasAnyDsp(spotlightAlbum) || hasFourthwallStore(spotlightAlbum)}
+						<p class="mt-4 text-xs leading-relaxed text-slate-300">
+							<strong class="text-blue-400">Enjoying the rock opera?</strong> Streaming on your favorite
+							app or buying the digital archive directly supports
+							<strong class="text-white">Michael Ragsdale</strong> &amp; funds the next
+							<strong class="text-white">Engine Room Records</strong> release.
+						</p>
+					{/if}
+
+					<div class="mt-4 flex flex-wrap items-center gap-3">
+						<!-- Primary Upgrade Action: Official DSP & Fourthwall Storefront -->
+						<StoreButton
+							type="album"
+							size="large"
+							spotifyId={spotlightAlbum.spotifyId}
+							appleId={spotlightAlbum.appleId}
+							amazonId={spotlightAlbum.amazonId}
+							youtubeId={spotlightAlbum.youtubeId}
+							dspExempt={spotlightAlbum.dspExempt}
+							storeStandardUrl={spotlightAlbum.storeStandardUrl}
+							storeAudiophileUrl={spotlightAlbum.storeAudiophileUrl}
+						/>
+
+						<!-- Secondary Free Onsite 128kbps Preview Stream -->
 						<button
 							type="button"
 							onclick={() => playAlbum(spotlightAlbum)}
-							class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400"
+							class="flex items-center gap-2 rounded-xl border border-blue-500/50 bg-slate-900/90 px-5 py-3 text-sm font-bold text-blue-200 transition-all hover:border-blue-400 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
 						>
 							<svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
 								<path d="M8 5v14l11-7z" />
 							</svg>
-							Play Continuous Rock Opera
+							<span>Preview Rock Opera</span>
+							<span
+								class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-300"
+							>
+								128kbps
+							</span>
 						</button>
 
 						<a
@@ -536,7 +574,7 @@
 							})}
 							class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
 						>
-							View All Tracks ({spotlightAlbum.tracks.length}) &rarr;
+							Lyrics &amp; Lore ({spotlightAlbum.tracks.length} Tracks) &rarr;
 						</a>
 
 						<button
@@ -649,14 +687,14 @@
 							class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5"
 						>
 							<span class="font-mono text-[11px] text-slate-500">
-								{album.playableTrackCount} Playable
+								{album.playableTrackCount} Playable (128k)
 							</span>
 							{#if album.status !== 'coming-soon'}
 								<button
 									type="button"
 									onclick={() => playAlbum(album)}
 									class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md shadow-blue-600/30 transition-transform hover:scale-110"
-									aria-label="Play {album.title}"
+									aria-label="Preview {album.title} (128kbps stream)"
 								>
 									<svg class="h-3.5 w-3.5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
 										<path d="M8 5v14l11-7z" />
@@ -681,7 +719,7 @@
 			<p class="text-xs text-slate-400 sm:text-sm">
 				Select any band to visit their dedicated profile (<code class="font-mono text-slate-300"
 					>/$artist-slug</code
-				>) with full biography, discography, and shareable links.
+				>) with full biography, discography, streaming links, and shareable cards.
 			</p>
 		</div>
 
@@ -760,14 +798,16 @@
 						d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
 					/>
 				</svg>
-				The Engine Room Sanctuary
+				The Listening Room Sanctuary
 			</div>
-			<h3 class="text-xl font-bold text-white sm:text-2xl">Music &amp; Narrative Intertwined</h3>
+			<h3 class="text-xl font-bold text-white sm:text-2xl">Music, Lyrics &amp; Narrative Intertwined</h3>
 			<p class="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
-				Engine Room Records represents the musical heartbeat of the RaggieSoft universe. Founded by
-				Michael Ragsdale as an independent label within RaggieSoft Media, the platform provides
-				sanctuary for independent artists reclaiming their masters, creating concept rock operas,
-				and preserving memories across four decades of storytelling.
+				The Listening Room is the official music discovery, lyrics, and lore companion for
+				<strong class="text-white">Engine Room Records</strong>, founded by
+				<strong class="text-white">Michael Ragsdale</strong> within RaggieSoft Media. Read complete
+				liner notes and synchronized lyrics while previewing our 128kbps web streams for free—or
+				listen in Lossless/High-Res on Spotify, Apple Music, Amazon Music, YouTube, or Fourthwall to
+				directly support the music.
 			</p>
 
 			<!-- Closed-System Policy & Exchange Transport Notice -->
@@ -805,6 +845,14 @@
 
 			<div class="mt-5 flex flex-wrap items-center gap-4">
 				<a
+					href="https://engineroom-records.com"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300"
+				>
+					Visit Official Engine Room Records Label Portal &rarr;
+				</a>
+				<a
 					href="https://books.raggiesoft.com"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -818,9 +866,9 @@
 
 	<!-- 6. BOOK-READER STYLE SHARE SECTION -->
 	<ShareSection
-		title="Engine Room Records"
-		subtitle="Official Music & Discography Platform"
-		description="Stream complete albums, concept rock operas, synchronized lyrics, and four decades of in-universe lore across the Engine Room Records roster."
+		title="The Listening Room"
+		subtitle="Music Discovery, Lyrics & Lore by Engine Room Records"
+		description="Explore complete albums, concept rock operas, synchronized lyrics, and four decades of in-universe lore across the Engine Room Records roster."
 		url="https://music.raggiesoft.com/"
 		socialPreview="https://music.raggiesoft.com/og-image.jpg"
 	/>
