@@ -497,30 +497,39 @@
 						<!-- Playback Action Controls Row -->
 						<div class="mt-5 flex items-center justify-center gap-3 md:justify-start">
 							<!-- Shuffle Toggle -->
+							<!-- Shuffle Toggle (Criss-Crossing Arrows + Explicit Label) -->
 							<button
+								type="button"
 								onclick={() => player.toggleShuffle()}
-								class="rounded-full p-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.isShuffle
-									? 'bg-blue-600/30 text-blue-400'
-									: 'text-slate-400 hover:text-white'}"
-								title={player.isShuffle ? 'Shuffle: On' : 'Shuffle: Off'}
-								aria-label="Toggle shuffle"
+								class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.isShuffle
+									? 'border-blue-500/60 bg-blue-600/25 text-blue-300 shadow-sm'
+									: 'border-slate-700/80 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-white'}"
+								title={player.isShuffle
+									? 'Shuffle is ON: Playing queue in random order (Click to turn off)'
+									: 'Shuffle is OFF: Playing queue in track order (Click to shuffle)'}
+								aria-label={player.isShuffle ? 'Shuffle is on' : 'Shuffle is off'}
+								aria-pressed={player.isShuffle}
 							>
-								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<!-- Criss-Crossing Shuffle Arrows Icon -->
+								<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"
 									/>
 								</svg>
+								<span>{player.isShuffle ? 'Shuffle: On' : 'Shuffle'}</span>
 							</button>
 
 							<!-- Previous Track -->
 							<button
+								type="button"
 								onclick={() => player.prev()}
 								disabled={!player.currentTrack.audioUrl}
 								class="rounded-full p-2.5 text-slate-300 hover:text-white disabled:opacity-40"
 								aria-label="Previous track"
+								title="Previous Track"
 							>
 								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
 									<path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
@@ -529,6 +538,7 @@
 
 							<!-- Large Play/Pause Toggle -->
 							<button
+								type="button"
 								onclick={() => player.togglePlay()}
 								disabled={!player.currentTrack.audioUrl}
 								class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/40 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 disabled:opacity-40"
@@ -547,40 +557,49 @@
 
 							<!-- Next Track -->
 							<button
+								type="button"
 								onclick={() => player.next()}
 								disabled={!player.hasNext && !player.isShuffle}
 								class="rounded-full p-2.5 text-slate-300 hover:text-white disabled:opacity-40"
 								aria-label="Next track"
+								title="Next Track"
 							>
 								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
 									<path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
 								</svg>
 							</button>
 
-							<!-- Repeat Toggle -->
+							<!-- Repeat Mode Cycle Button (Off -> Repeat Queue -> Repeat 1 Song) -->
 							<button
+								type="button"
 								onclick={() => player.toggleRepeat()}
-								class="relative rounded-full p-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.repeatMode !==
+								class="relative flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {player.repeatMode !==
 								'none'
-									? 'bg-blue-600/30 text-blue-400'
-									: 'text-slate-400 hover:text-white'}"
-								title="Repeat: {player.repeatMode}"
-								aria-label="Toggle repeat mode"
+									? 'border-blue-500/60 bg-blue-600/25 text-blue-300 shadow-sm'
+									: 'border-slate-700/80 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-white'}"
+								title={player.repeatMode === 'none'
+									? 'Repeat is OFF: Play queue once (Click to Repeat Entire Queue)'
+									: player.repeatMode === 'all'
+										? 'Repeat Queue (All): Looping entire album/playlist (Click to Repeat Single Song)'
+										: 'Repeat 1 Song: Looping current track continuously (Click to turn Repeat Off)'}
+								aria-label="Toggle repeat mode (currently {player.repeatMode})"
 							>
-								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<!-- Rectangular Loop Icon -->
+								<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4m14 1v2a4 4 0 01-4 4H3"
 									/>
 								</svg>
-								{#if player.repeatMode === 'one'}
-									<span
-										class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
-										>1</span
-									>
-								{/if}
+								<span>
+									{player.repeatMode === 'none'
+										? 'Repeat: Off'
+										: player.repeatMode === 'all'
+											? 'Repeat: Queue'
+											: 'Repeat: 1 Song'}
+								</span>
 							</button>
 						</div>
 
@@ -1065,31 +1084,38 @@
 
 		<!-- 2. CENTER: Playback Controls & Timestamp Display -->
 		<div class="flex shrink-0 flex-col items-center justify-center">
-			<div class="flex items-center gap-3 sm:gap-4">
-				<!-- Shuffle Toggle (Desktop) -->
+			<div class="flex items-center gap-2 sm:gap-3">
+				<!-- Shuffle Toggle (Desktop — Criss-Crossing Arrows + Explicit Label) -->
 				<button
+					type="button"
 					onclick={() => player.toggleShuffle()}
-					class="hidden rounded-full p-2 transition-colors sm:block {player.isShuffle
-						? 'text-blue-400'
-						: 'text-slate-500 hover:text-white'}"
-					aria-label="Toggle shuffle"
-					title={player.isShuffle ? 'Shuffle: On' : 'Shuffle: Off'}
+					class="hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition-all sm:flex {player.isShuffle
+						? 'border-blue-500/60 bg-blue-600/20 text-blue-300 shadow-sm'
+						: 'border-slate-700/80 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-white'}"
+					aria-label={player.isShuffle ? 'Shuffle is on' : 'Shuffle is off'}
+					aria-pressed={player.isShuffle}
+					title={player.isShuffle
+						? 'Shuffle is ON: Playing queue in random order (Click to turn off)'
+						: 'Shuffle is OFF: Playing queue in track order (Click to shuffle)'}
 				>
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"
 						/>
 					</svg>
+					<span>{player.isShuffle ? 'Shuffle: On' : 'Shuffle'}</span>
 				</button>
 
 				<!-- Step Backward / Previous Track -->
 				<button
+					type="button"
 					onclick={() => player.prev()}
 					disabled={!player.currentTrack.audioUrl}
 					aria-label="Previous track"
+					title="Previous Track"
 					class="rounded-full p-2 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -1099,6 +1125,7 @@
 
 				<!-- Primary Play / Pause Toggle -->
 				<button
+					type="button"
 					onclick={() => player.togglePlay()}
 					disabled={!player.currentTrack.audioUrl}
 					aria-label={player.isPlaying ? 'Pause' : 'Play'}
@@ -1129,9 +1156,11 @@
 
 				<!-- Step Forward / Next Track -->
 				<button
+					type="button"
 					onclick={() => player.next()}
 					disabled={!player.hasNext && !player.isShuffle}
 					aria-label="Next track"
+					title="Next Track"
 					class="rounded-full p-2 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -1139,30 +1168,36 @@
 					</svg>
 				</button>
 
-				<!-- Repeat Toggle (Desktop) -->
+				<!-- Repeat Toggle (Desktop — Rectangular Loop Icon + Explicit Mode Pill) -->
 				<button
+					type="button"
 					onclick={() => player.toggleRepeat()}
-					class="relative hidden rounded-full p-2 transition-colors sm:block {player.repeatMode !==
+					class="relative hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition-all sm:flex {player.repeatMode !==
 					'none'
-						? 'text-blue-400'
-						: 'text-slate-500 hover:text-white'}"
-					aria-label="Toggle repeat"
-					title="Repeat: {player.repeatMode}"
+						? 'border-blue-500/60 bg-blue-600/20 text-blue-300 shadow-sm'
+						: 'border-slate-700/80 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-white'}"
+					aria-label="Toggle repeat mode (currently {player.repeatMode})"
+					title={player.repeatMode === 'none'
+						? 'Repeat is OFF: Play queue once and stop (Click to Repeat Entire Queue)'
+						: player.repeatMode === 'all'
+							? 'Repeat Queue: Looping entire album/playlist (Click to Repeat 1 Song)'
+							: 'Repeat 1 Song: Looping current track continuously (Click to turn Repeat Off)'}
 				>
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4m14 1v2a4 4 0 01-4 4H3"
 						/>
 					</svg>
-					{#if player.repeatMode === 'one'}
-						<span
-							class="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white"
-							>1</span
-						>
-					{/if}
+					<span>
+						{player.repeatMode === 'none'
+							? 'Repeat: Off'
+							: player.repeatMode === 'all'
+								? 'Repeat: Queue'
+								: 'Repeat: 1 Song'}
+					</span>
 				</button>
 			</div>
 
