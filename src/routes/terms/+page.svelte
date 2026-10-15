@@ -274,9 +274,14 @@
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				All bands, characters, biographies, universities (including
 				<strong class="text-white">Commonwealth Polytechnic Institute / CPI</strong>,
-				<strong class="text-white">The Forgers</strong>, and
-				<strong class="text-white">The Crucible</strong>), corporations (including
-				<strong class="text-white">OmniCorp</strong>, <strong class="text-white">Apex Records</strong>,
+				<strong class="text-white">The Forgers</strong>,
+				<strong class="text-white">The Ironheads</strong>,
+				<strong class="text-white">The Crucible</strong>,
+				<strong class="text-white">Virginia Dominion University / VDU</strong>,
+				<strong class="text-white">Piedmont Virginia University / PVU</strong>, and
+				<strong class="text-white">Monongahela State University / MSU</strong>), corporations
+				(including <strong class="text-white">OmniCorp</strong>,
+				<strong class="text-white">Apex Records</strong>,
 				<strong class="text-white">Prairie Coachworks</strong>, and
 				<strong class="text-white">Sainte-Claire</strong>), transit agencies (<strong
 					class="text-white">Blue Ridge Transit</strong

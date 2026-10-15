@@ -363,13 +363,17 @@
 			<h3 class="text-sm font-extrabold tracking-wide text-amber-300 uppercase">
 				Work of Fiction Disclaimer (All Persons, Bands &amp; Institutions Fictitious)
 			</h3>
-			<p class="mt-1.5 leading-relaxed text-amber-100/90">
+			<p class="mt-1.5 leading-relaxed text-amber-100">
 				All bands, musicians, characters, biographies, universities (including
-				<strong>Commonwealth Polytechnic Institute / CPI</strong>, <strong>The Forgers</strong>, and
-				<strong>The Crucible</strong>), corporations (including <strong>OmniCorp</strong>,
-				<strong>Apex Records</strong>, <strong>Prairie Coachworks</strong>, and
-				<strong>Sainte-Claire</strong>), transit agencies (<strong>Blue Ridge Transit</strong>),
-				legal contracts, trusts, and historical events depicted across Engine Room Records, The
+				<strong>Commonwealth Polytechnic Institute / CPI</strong>, <strong>The Forgers</strong>,
+				<strong>The Ironheads</strong>, <strong>The Crucible</strong>,
+				<strong>Virginia Dominion University / VDU</strong>,
+				<strong>Piedmont Virginia University / PVU</strong>, and
+				<strong>Monongahela State University / MSU</strong>), corporations (including
+				<strong>OmniCorp</strong>, <strong>Apex Records</strong>,
+				<strong>Prairie Coachworks</strong>, and <strong>Sainte-Claire</strong>), transit agencies (<strong
+					>Blue Ridge Transit</strong
+				>), legal contracts, trusts, and historical events depicted across Engine Room Records, The
 				Listening Room, and the RaggieSoft universe are entirely works of fiction. Any resemblance to
 				actual persons (living or dead), real-world businesses, academic institutions, or events is
 				purely coincidental.

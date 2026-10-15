@@ -877,14 +877,16 @@
 						<div class="mb-0.5 font-bold text-amber-300">
 							Work of Fiction &bull; All Persons, Bands &amp; Institutions Fictitious
 						</div>
-						<p class="leading-relaxed text-amber-100/90">
+						<p class="leading-relaxed text-amber-100">
 							Everything presented in The Listening Room and across the RaggieSoft network—including
 							all bands, musicians, biographies, universities (such as Commonwealth Polytechnic
-							Institute / CPI and The Crucible), corporations (such as OmniCorp, Apex Records,
-							Prairie Coachworks, and Sainte-Claire), transit agencies (Blue Ridge Transit), legal
-							filings, and historical timelines—is a work of creative fiction. Any resemblance to
-							actual persons, living or dead, real-world businesses, academic institutions, or
-							historical events is purely coincidental.
+							Institute / CPI, The Forgers, The Ironheads, The Crucible, Virginia Dominion
+							University / VDU, Piedmont Virginia University / PVU, and Monongahela State University
+							/ MSU), corporations (such as OmniCorp, Apex Records, Prairie Coachworks, and
+							Sainte-Claire), transit agencies (Blue Ridge Transit), legal filings, and historical
+							timelines—is a work of creative fiction. Any resemblance to actual persons, living or
+							dead, real-world businesses, academic institutions, or historical events is purely
+							coincidental.
 						</p>
 					</div>
 				</div>

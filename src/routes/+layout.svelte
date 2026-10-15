@@ -295,11 +295,13 @@
 						>Commercial License cleared by Michael Ragsdale / RaggieSoft Media ↗</a
 					>)
 				</p>
-				<p class="leading-relaxed text-slate-500">
-					<strong class="text-slate-400">Fictitious Disclaimer:</strong> All bands, characters,
-					universities (including Commonwealth Polytechnic Institute / CPI), corporations (including
-					OmniCorp, Apex Records, Prairie Coachworks, and Sainte-Claire), transit agencies, legal
-					contracts, and historical events depicted on this site are works of fiction. Any
+				<p class="leading-relaxed text-slate-400">
+					<strong class="text-slate-300">Fictitious Disclaimer:</strong> All bands, characters,
+					universities (including Commonwealth Polytechnic Institute / CPI, The Forgers, The
+					Ironheads, The Crucible, Virginia Dominion University / VDU, Piedmont Virginia University /
+					PVU, and Monongahela State University / MSU), corporations (including OmniCorp, Apex
+					Records, Prairie Coachworks, and Sainte-Claire), transit agencies (Blue Ridge Transit),
+					legal contracts, and historical events depicted on this site are works of fiction. Any
 					resemblance to actual persons, living or dead, businesses, institutions, or events is
 					purely coincidental.
 				</p>
