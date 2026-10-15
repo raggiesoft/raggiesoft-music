@@ -29,8 +29,10 @@
 	import { page } from '$app/state';
 	import { themeManager } from '#lib/theme.svelte.js';
 	import { dspManager } from '#lib/dspPreference.svelte.js';
+	import { playlistManager } from '#lib/playlists.svelte.js';
 	import Player from '#lib/components/Player.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
+	import AddToPlaylistModal from '#lib/components/AddToPlaylistModal.svelte';
 
 	let { children } = $props();
 
@@ -45,6 +47,7 @@
 		// Initialize adaptive theme manager & prefers-color-scheme listener
 		themeManager.init();
 		dspManager.init();
+		playlistManager.init();
 
 		// Register Service Worker for PWA capabilities
 		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
@@ -157,6 +160,7 @@
 					href={resolve('/discography')}
 					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
 						'/' &&
+					!currentPath.startsWith('/playlists') &&
 					!currentPath.startsWith('/settings') &&
 					!currentPath.startsWith('/radio') &&
 					!currentPath.startsWith('/behind-the-scenes') &&
@@ -166,6 +170,17 @@
 						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 				>
 					Discography
+				</a>
+
+				<a
+					href={resolve('/playlists')}
+					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						'/playlists'
+					)
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+				>
+					<span>Playlists</span>
 				</a>
 
 				<a
@@ -336,6 +351,9 @@
 	onClose={() => (showGlobalSearch = false)}
 	isStandaloneGlobal={true}
 />
+
+<!-- Global Add-to-Playlist Modal -->
+<AddToPlaylistModal />
 
 <!-- Persistent Global Audio Player -->
 <Player />

@@ -25,6 +25,7 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
+	import { playlistManager } from '#lib/playlists.svelte.js';
 	import {
 		formatAlbumQueue,
 		formatReleaseDate,
@@ -617,8 +618,28 @@
 										</div>
 									</div>
 
-									<div class="flex shrink-0 items-center gap-3">
+									<div class="flex shrink-0 items-center gap-2.5">
 										<span class="font-mono text-xs text-slate-400">{track.duration}</span>
+
+										{#if track.isPlayable && track.audioUrl}
+											<button
+												type="button"
+												onclick={() =>
+													playlistManager.openAddModal({
+														artistSlug: album.artistSlug,
+														albumSlug: album.slug,
+														trackId: track.id,
+														title: track.title,
+														artist: album.artist,
+														album: album.title,
+														artwork: album.artwork
+													})}
+												class="rounded-lg border border-slate-700/60 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 transition-colors hover:border-emerald-500/50 hover:bg-slate-700 hover:text-emerald-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+												title="Add {track.title} to a custom playlist"
+											>
+												+ Playlist
+											</button>
+										{/if}
 
 										{#if track.loreNote || track.lyrics}
 											<button

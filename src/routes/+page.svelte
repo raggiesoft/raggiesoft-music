@@ -33,12 +33,14 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import { getCuratedPlaylistBySlug } from '#lib/playlists.svelte.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
 	let currentCatalog = $state(allAlbums);
+	let featuredStoryPlaylist = $derived(getCuratedPlaylistBySlug('john-and-erin', currentCatalog));
 	let savedSession = $state(/** @type {any} */ (null));
 	let showTransparencyNotice = $state(false);
 	let showSearchModal = $state(false);
@@ -430,6 +432,98 @@
 						</svg>
 						Resume Playback
 					</button>
+				</div>
+			</div>
+		</section>
+	{/if}
+
+	<!-- 1B. FEATURED STORY PLAYLIST: BEFORE THE DISTANCE (JOHN & ERIN) -->
+	{#if featuredStoryPlaylist}
+		<section
+			class="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 p-6 shadow-2xl sm:p-8"
+		>
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-center">
+				<a
+					href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+					class="group relative h-52 w-52 shrink-0 self-center overflow-hidden rounded-2xl border border-amber-500/40 shadow-2xl sm:h-60 sm:w-60 lg:self-start"
+				>
+					<img
+						src={featuredStoryPlaylist.artwork}
+						alt={featuredStoryPlaylist.title}
+						class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+					/>
+				</a>
+
+				<div class="flex-1 space-y-3.5">
+					<div class="flex flex-wrap items-center gap-2">
+						<span
+							class="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
+						>
+							🎧 Featured Story Playlist &amp; Book Soundtrack
+						</span>
+						<span class="text-xs font-semibold text-slate-400">
+							{featuredStoryPlaylist.tracks.length} Songs &bull; {featuredStoryPlaylist.formattedDuration}
+						</span>
+					</div>
+
+					<div>
+						<h2 class="text-2xl font-extrabold text-white sm:text-3xl">
+							<a
+								href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+								class="transition-colors hover:text-amber-300"
+							>
+								{featuredStoryPlaylist.title}
+							</a>
+						</h2>
+						<p class="mt-0.5 text-sm font-semibold text-blue-400">
+							{featuredStoryPlaylist.subtitle} &bull; {featuredStoryPlaylist.curator}
+						</p>
+					</div>
+
+					<p class="text-sm leading-relaxed text-slate-300">
+						{featuredStoryPlaylist.description}
+					</p>
+
+					<div class="flex flex-wrap items-center gap-2.5 pt-1">
+						<button
+							type="button"
+							onclick={() => player.loadQueue(featuredStoryPlaylist.tracks, 0, true)}
+							class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500"
+						>
+							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+								<path d="M8 5v14l11-7z" />
+							</svg>
+							Play 5-Song Story Arc
+						</button>
+
+						<a
+							href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+							class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2.5 text-xs font-bold text-slate-100 transition-colors hover:border-blue-500/50 hover:text-white"
+						>
+							<span>Open Story Playlist</span>
+							<span>&rarr;</span>
+						</a>
+
+						<a
+							href={featuredStoryPlaylist.bookUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
+						>
+							<span>📖 Read Novel (books.raggiesoft.com/erin)</span>
+							<span>↗</span>
+						</a>
+
+						<a
+							href={featuredStoryPlaylist.loreUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/40 px-3.5 py-2.5 text-xs font-bold text-blue-300 transition-colors hover:bg-blue-900/50 hover:text-white"
+						>
+							<span>🎸 Stardust Engine Lore</span>
+							<span>↗</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</section>

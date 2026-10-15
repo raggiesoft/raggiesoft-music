@@ -1397,9 +1397,9 @@
     "rockOperaSetId": "",
     "albumType": "live",
     "albumTypeLabel": "Live Album",
-    "status": "released",
-    "statusLabel": "Released",
-    "playableTrackCount": 1,
+    "status": "coming-soon",
+    "statusLabel": "Coming Soon",
+    "playableTrackCount": 0,
     "totalTracksCount": 1,
     "artwork": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/1993-runebreaker-live/album-art.jpg",
     "socialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/1993-runebreaker-live/social-preview.jpg",
@@ -1418,14 +1418,14 @@
         "disc": 1,
         "track": 99,
         "title": "The Grand Decree (Live at Sanctuary Stadium)",
-        "duration": "5:04",
+        "duration": "In Studio",
         "isrc": "",
         "legacyTier": "",
         "loreNote": "This track captures the live arena performance of the villain's signature anthem, recorded at Sanctuary Stadium.",
         "lyrics": "[Style: 16-bit retro video game soundchip, 1980s arena rock progressive metal, sweeping chiptune power chords over distorted analog synth drone, heavy stadium drum beat, massive arena delay and crowd ambiance, long instrumental intro unfolding into a massive stadium anthem, villainous male vocal leading a stadium audience chant]\n\n[Extended Live Arena Intro]\n(Deep, echoing stadium ambiance...)\n(A single, ominous 16-bit synth drone vibrates the floor...)\n...\n(Scattered cheers and nervous anticipation from the crowd...)\n...\n(A massive, distorted chiptune guitar chord rings out...)\n...\n(A pocket of the crowd in the front row roars in sudden recognition!)\n...\n\n[Heavy Stadium Drum Fill]\n(The pulsing analog bass sequence fades in...)\n(A massive wave of cheering ripples through the entire stadium...)\n\n[Chiptune Guitar and Synth Call and Response]\n(A shredding 16-bit guitar plays the signature melody...)\n(A massive analog synthesizer answers the riff...)\n(The crowd is now deafening, chanting along with the pulse...)\n\n[Spoken Word]\n[Villainous Male Voice]\nCitizens of the Dream Kingdom... are you ready for perfect order?!\n\n[Massive Beat Drop]\n...\n(Tension reaches its peak...)\n...\n\n[Verse 1]\n[Villainous Male Voice]\nI was tired of the chaos, I was sick of all the noise\nThe messy little glitches of these human girls and boys\nBut a kingdom needs a ruler with an iron-coded fist\nTo systematically delete the names upon his list!\n\n[Pre-Chorus]\n[Heavy Distorted Power Chords]\n[Villainous Male Voice]\nNo more chaos, no more heroes, just a perfect silent code\nI am deleting every save file down this broken pixel road!\n\n[Chorus]\n[Villainous Male Voice and Stadium Audience Singing]\nBy the power of the Grand Decree!\nThe Dream Kingdom belongs to me!\nEvery pixel, every byte, will surrender to the night\nWhen I rewrite the entire directory!\nOh, bow to the Grand Decree!\n\n[Verse 2]\n[Villainous Male Voice]\nI have taken the apprentice, I have bent his little mind\nI've severed all the messy little ties he left behind\nWhen the ceremony finishes, the glitch will be erased\nAnd a perfect, flawless order will be finally embraced!\n\n[Pre-Chorus 2]\n[Shredding Chiptune Bassline]\n[Villainous Male Voice]\nThere is nowhere left to hide inside this crumbling domain\nI will format every memory and rule the silent rain!\n\n[Chorus]\n[Villainous Male Voice and Stadium Audience Singing]\nBy the power of the Grand Decree!\nThe Dream Kingdom belongs to me!\nEvery pixel, every byte, will surrender to the night\nWhen I rewrite the entire directory!\nOh, bow to the Grand Decree!\n\n[Verse 3]\n[Villainous Male Voice]\nLook at the peasants, trembling down below\nThey cling to the light, but the light has to go!\nTheir messy emotions, their analog tears\nWill be swept from the server and erased from the years!\n\n[Bridge]\n[Wall of 16-bit Synthesizers]\n[Villainous Male Voice]\nFools... they think a simple medallion can stop me?\n\n[Instrumental Break]\n[Virtuoso Chiptune Guitar Solo]\n[Heavy Stadium Drum Beat]\n(The crowd roaring at every peak)\n\n[Final Chorus]\n[Maximum Volume]\n[Villainous Male Voice and Stadium Audience Singing]\nBy the power of the Grand Decree!\nThe Dream Kingdom belongs to me!\nEvery pixel, every byte, will surrender to the night\nWhen I rewrite the entire directory!\nOH, BOW TO THE GRAND DECREE!\n\n[Outro]\n[Sudden Drum Stop]\n(The final massive power chord is held as it slowly decays into 16-bit static...)\n(One final, echoing maniacal laugh...)\n(Deafening stadium applause and standing ovation)\n[End]",
-        "audioUrl": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/1993-runebreaker-live/web-mp3/the-grand-decree-live.mp3",
+        "audioUrl": "",
         "vttUrl": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/1993-runebreaker-live/lyrics/the-grand-decree-live.vtt",
-        "isPlayable": true
+        "isPlayable": false
       }
     ]
   },
