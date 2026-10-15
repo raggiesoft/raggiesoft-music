@@ -165,8 +165,18 @@ function buildCatalog() {
 			.filter((name) => {
 				const p = path.join(artistDir, name);
 				if (!fs.statSync(p).isDirectory() || name.startsWith('.')) return false;
-				// Skip non-album directories and known typo folders
-				if (['master-wav', 'story', 'lyrics', 'christmas-album'].includes(name)) return false;
+				// Skip non-album directories, legacy unsplit duplicates, and known typo folders
+				if (
+					[
+						'master-wav',
+						'story',
+						'lyrics',
+						'christmas-album',
+						'2017-silver-gauntlet-of-aethel',
+						'2025-silver-gauntlet-of-aethel'
+					].includes(name)
+				)
+					return false;
 				if (name.includes('gaultlet')) return false; // Ignore typo folder
 				return true;
 			})
@@ -207,7 +217,7 @@ function buildCatalog() {
 			}
 
 			// Resolve album title
-			let albumTitle = albumData.name;
+			let albumTitle = albumData.name || albumData.albumName;
 			if (!albumTitle) {
 				// Derive title from directory slug (strip leading 4-digit year if present)
 				const cleanSlug = albumSlug.replace(/^\d{4}-/, '');
@@ -220,12 +230,16 @@ function buildCatalog() {
 			// Resolve temporalCoverage and datePublished (ISO 8601)
 			const temporalCoverage = albumData.temporalCoverage
 				? String(albumData.temporalCoverage).trim()
-				: '';
+				: albumData.narrativeReleaseDate
+					? String(albumData.narrativeReleaseDate).trim()
+					: '';
 			const datePublished = albumData.datePublished
 				? String(albumData.datePublished).trim()
 				: albumData.albumRelease?.datePublished
 					? String(albumData.albumRelease.datePublished).trim()
-					: '';
+					: albumData.realReleaseDate
+						? String(albumData.realReleaseDate).trim()
+						: '';
 
 			// Resolve narrative release year
 			let year = '';

@@ -823,32 +823,48 @@
 <!-- ======================================================================= -->
 {#if player.showDspNudgeBanner && player.hasActiveExternalSupportLinks(player.currentTrack)}
 	<aside
-		class="fixed right-4 bottom-24 left-4 z-40 mx-auto max-w-4xl rounded-2xl border border-blue-500/40 bg-slate-900/95 p-4 text-xs text-slate-200 shadow-2xl backdrop-blur-xl transition-all duration-300"
+		class="fixed right-4 bottom-24 left-4 z-40 mx-auto max-w-3xl rounded-2xl border border-blue-500/40 bg-slate-900/95 p-4 text-xs text-slate-200 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:p-5"
 		role="region"
 		aria-label="Support the Artist on Streaming or Fourthwall"
 	>
-		<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-			<div class="space-y-1">
+		<div class="flex flex-col gap-3">
+			<!-- Header Row: Badge + Album Title + Prominent &times; Close Button -->
+			<div class="flex items-start justify-between gap-3">
 				<div class="flex flex-wrap items-center gap-2">
 					<span
-						class="rounded-full border border-blue-500/40 bg-blue-950/80 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-blue-300 uppercase"
+						class="rounded-full border border-blue-500/40 bg-blue-950/80 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-blue-300 uppercase"
 					>
 						Support the Artist
 					</span>
-					<span class="font-bold text-white">
+					<span class="text-xs font-bold text-white sm:text-sm">
 						Enjoying <em>{player.currentTrack.album}</em>?
 					</span>
 				</div>
-				<p class="text-[11px] leading-relaxed text-slate-300 sm:text-xs">
-					We’re keeping the free <strong>128kbps preview stream</strong> playing for you! If you use a
-					streaming app—or want to own the High-Quality MP3/OGG or Studio Master WAV/FLAC via Fourthwall—listening
-					there upgrades your audio and directly supports
-					<strong class="text-white">Michael Ragsdale</strong> &amp;
-					<strong class="text-white">Engine Room Records</strong>.
-				</p>
+
+				<button
+					type="button"
+					onclick={() => player.dismissDspNudge(false)}
+					class="-mt-1 -mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-lg leading-none font-bold text-slate-300 transition-colors hover:border-slate-500 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+					aria-label="Close notification"
+					title="Dismiss notification"
+				>
+					&times;
+				</button>
 			</div>
 
-			<div class="flex flex-wrap items-center gap-2 shrink-0">
+			<!-- Full-Width Body Copy (Never Crushed by Action Buttons) -->
+			<p class="text-xs leading-relaxed text-slate-300">
+				We’re keeping the free <strong class="text-white">128kbps preview stream</strong> playing for
+				you! If you use a streaming app—or want to own the High-Quality MP3/OGG or Studio Master WAV/FLAC
+				via Fourthwall—listening there upgrades your audio and directly supports
+				<strong class="text-white">Michael Ragsdale</strong> &amp;
+				<strong class="text-white">Engine Room Records</strong>.
+			</p>
+
+			<!-- Bottom Action Row: Store / Streaming Links + Dismissal Options -->
+			<div
+				class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80 pt-3"
+			>
 				<StoreButton
 					type="album"
 					size="small"
@@ -861,23 +877,25 @@
 					storeAudiophileUrl={player.currentTrack.storeAudiophileUrl}
 				/>
 
-				<button
-					type="button"
-					onclick={() => player.dismissDspNudge(false)}
-					class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
-					title="Keep listening to the 128kbps preview stream"
-				>
-					Keep Previewing
-				</button>
+				<div class="flex flex-wrap items-center gap-2.5">
+					<button
+						type="button"
+						onclick={() => player.dismissDspNudge(false)}
+						class="whitespace-nowrap rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+						title="Keep listening to the 128kbps preview stream"
+					>
+						Keep Previewing
+					</button>
 
-				<button
-					type="button"
-					onclick={() => player.dismissDspNudge(true)}
-					class="px-1.5 py-1 text-[11px] font-medium text-slate-400 underline decoration-slate-600 underline-offset-2 transition-colors hover:text-slate-200"
-					title="Don't show this reminder again"
-				>
-					Don’t remind me
-				</button>
+					<button
+						type="button"
+						onclick={() => player.dismissDspNudge(true)}
+						class="whitespace-nowrap px-1.5 py-1 text-[11px] font-medium text-slate-400 underline decoration-slate-600 underline-offset-2 transition-colors hover:text-slate-200"
+						title="Don't show this reminder again"
+					>
+						Don’t remind me
+					</button>
+				</div>
 			</div>
 		</div>
 	</aside>
@@ -964,7 +982,7 @@
 	<!-- Controls & Metadata Grid -->
 	<div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
 		<!-- 1. LEFT: Album Art & Track Info -->
-		<div class="flex w-1/4 min-w-[200px] items-center gap-3.5">
+		<div class="flex min-w-0 flex-1 items-center gap-3.5">
 			<!-- Clickable thumbnail toggles Expanded Drawer -->
 			<button
 				onclick={() => player.toggleExpanded()}
@@ -1028,7 +1046,7 @@
 		</div>
 
 		<!-- 2. CENTER: Playback Controls & Timestamp Display -->
-		<div class="flex max-w-md flex-1 flex-col items-center justify-center">
+		<div class="flex shrink-0 flex-col items-center justify-center">
 			<div class="flex items-center gap-3 sm:gap-4">
 				<!-- Shuffle Toggle (Desktop) -->
 				<button
@@ -1139,9 +1157,9 @@
 		</div>
 
 		<!-- 3. RIGHT: DSP Upgrade Pill, Lore/Lyrics Drawer Toggle & Volume Slider -->
-		<div class="flex w-1/4 min-w-[200px] items-center justify-end gap-2.5">
+		<div class="flex flex-1 items-center justify-end gap-2.5">
 			{#if player.hasActiveExternalSupportLinks(player.currentTrack)}
-				<div class="hidden lg:block">
+				<div class="hidden shrink-0 lg:block">
 					<StoreButton
 						type="album"
 						size="small"

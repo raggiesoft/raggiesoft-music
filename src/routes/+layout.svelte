@@ -158,7 +158,10 @@
 					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
 						'/' &&
 					!currentPath.startsWith('/settings') &&
-					!currentPath.startsWith('/radio')
+					!currentPath.startsWith('/radio') &&
+					!currentPath.startsWith('/behind-the-scenes') &&
+					!currentPath.startsWith('/privacy') &&
+					!currentPath.startsWith('/terms')
 						? 'bg-blue-600 text-white shadow-sm'
 						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 				>
@@ -175,6 +178,18 @@
 				>
 					<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
 					<span>Radio</span>
+				</a>
+
+				<a
+					href={resolve('/behind-the-scenes')}
+					class="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 md:flex {currentPath.startsWith(
+						'/behind-the-scenes'
+					)
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					title="Behind the Scenes: AI & The Creative Process"
+				>
+					<span>Behind the Scenes</span>
 				</a>
 
 				<!-- Global Search & Filter Menu Button -->
@@ -248,6 +263,69 @@
 	<main class="mx-auto w-full max-w-7xl flex-grow px-4 py-8 sm:px-6 lg:px-8">
 		{@render children()}
 	</main>
+
+	<!-- ===================================================================== -->
+	<!-- GLOBAL FOOTER: BEHIND THE SCENES, LEGAL, & HYBRID LICENSING           -->
+	<!-- ===================================================================== -->
+	<footer class="mt-12 border-t border-slate-800/80 bg-slate-900/60 px-4 py-8 text-xs text-slate-400 sm:px-6 lg:px-8">
+		<div class="mx-auto flex max-w-7xl flex-col justify-between gap-6 lg:flex-row lg:items-center">
+			<div class="space-y-1.5">
+				<div class="flex flex-wrap items-center gap-2 font-bold text-slate-200">
+					<span>The Listening Room</span>
+					<span class="text-slate-600">&bull;</span>
+					<span class="text-blue-400">Engine Room Records</span>
+					<span class="text-slate-600">&bull;</span>
+					<span>A Division of RaggieSoft Media</span>
+				</div>
+				<p class="leading-relaxed text-slate-400">
+					<strong>Code:</strong> <a href={resolve('/terms')} class="text-slate-300 underline hover:text-white">MIT License</a> &bull;
+					<strong>Creative Content &amp; Music:</strong>
+					<a
+						href="https://creativecommons.org/licenses/by-sa/4.0/"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-slate-300 underline hover:text-white">CC BY-SA 4.0</a
+					>
+					(or applicable DSP License, or
+					<a
+						href="https://raggiesoft.com/raggiesoft-media/licensing/commercial"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-blue-400 underline hover:text-blue-300"
+						>Commercial License cleared by Michael Ragsdale / RaggieSoft Media ↗</a
+					>)
+				</p>
+				<p class="leading-relaxed text-slate-500">
+					<strong class="text-slate-400">Fictitious Disclaimer:</strong> All bands, characters,
+					universities (including Commonwealth Polytechnic Institute / CPI), corporations (including
+					OmniCorp, Apex Records, Prairie Coachworks, and Sainte-Claire), transit agencies, legal
+					contracts, and historical events depicted on this site are works of fiction. Any
+					resemblance to actual persons, living or dead, businesses, institutions, or events is
+					purely coincidental.
+				</p>
+			</div>
+
+			<nav class="flex flex-wrap items-center gap-x-5 gap-y-2 font-semibold text-slate-300" aria-label="Footer Legal and Behind the Scenes Links">
+				<a href={resolve('/behind-the-scenes')} class="transition-colors hover:text-blue-400">
+					Behind the Scenes (AI &amp; Process)
+				</a>
+				<a href={resolve('/terms')} class="transition-colors hover:text-blue-400">
+					Terms &amp; Licensing
+				</a>
+				<a href={resolve('/privacy')} class="transition-colors hover:text-blue-400">
+					Privacy Policy
+				</a>
+				<a
+					href="https://raggiesoft.com/raggiesoft-media/licensing/commercial"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-amber-300 transition-colors hover:text-amber-200"
+				>
+					Commercial Licensing ↗
+				</a>
+			</nav>
+		</div>
+	</footer>
 </div>
 
 <!-- Global Search & Filter Modal -->

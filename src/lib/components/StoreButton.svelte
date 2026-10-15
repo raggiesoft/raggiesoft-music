@@ -157,14 +157,14 @@
 	>
 		<!-- 1. SPLIT DSP STREAMING BUTTON -->
 		{#if activePlatform}
-			<div class="relative inline-flex rounded-xl shadow-lg">
+			<div class="relative inline-flex shrink-0 rounded-xl shadow-lg">
 				<!-- Main Action Link (Opens Preferred DSP in New Tab) -->
 				<a
 					href={activePlatform.url}
 					target="_blank"
 					rel="noopener noreferrer"
 					style="background-color: {activePlatform.config.brandHex}; color: #ffffff;"
-					class="inline-flex items-center gap-2 font-extrabold tracking-tight transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white {sizeClasses} {availablePlatforms.length >
+					class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap font-extrabold tracking-tight transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white {sizeClasses} {availablePlatforms.length >
 					1
 						? 'rounded-l-xl'
 						: 'rounded-xl'}"
@@ -292,7 +292,7 @@
 					href={storeStandardUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/50 bg-cyan-950/60 font-bold text-cyan-200 shadow-md transition-all hover:border-cyan-400 hover:bg-cyan-900/70 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-cyan-500/50 bg-cyan-950/60 font-bold text-cyan-200 shadow-md transition-all hover:border-cyan-400 hover:bg-cyan-900/70 hover:text-white {sizeClasses}"
 					title="Purchase DRM-Free High-Quality V0 MP3/OGG Archive directly via Fourthwall"
 				>
 					<span aria-hidden="true">🛍️</span>
@@ -308,7 +308,7 @@
 					href={storeAudiophileUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/60 bg-amber-950/60 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/70 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-amber-500/60 bg-amber-950/60 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/70 hover:text-white {sizeClasses}"
 					title="Purchase Uncompressed Studio Master WAV/FLAC Archive directly via Fourthwall"
 				>
 					<span aria-hidden="true">🎚️</span>
@@ -324,7 +324,7 @@
 					href={storefrontUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/50 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/60 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-amber-500/50 bg-amber-950/50 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/60 hover:text-white {sizeClasses}"
 					title="Visit Official Fourthwall Digital & Merch Storefront"
 				>
 					<span aria-hidden="true">🛍️</span>

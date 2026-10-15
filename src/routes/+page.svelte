@@ -75,26 +75,14 @@
 		);
 	});
 
-	// Key in-universe timeline milestones sorted chronologically
+	// Complete in-universe timeline sorted chronologically by full temporalCoverage (YYYY-MM-DD)
 	let timelineMilestones = $derived.by(() => {
-		const featuredSlugs = [
-			'1983-carnaby-street',
-			'2007-lost-sounds',
-			'1992-dream-kingdom-ost',
-			'1993-runebreaker-live',
-			'1996-julians-beacon',
-			'2000-guiding-stars',
-			'2001-static-and-silence-book-1',
-			'2004-progress-street',
-			'2008-our-own-frequency'
-		];
-		return currentCatalog
-			.filter((a) => featuredSlugs.includes(a.slug))
-			.sort((a, b) => {
-				const da = a.temporalCoverage || a.year || '9999';
-				const db = b.temporalCoverage || b.year || '9999';
-				return da.localeCompare(db);
-			});
+		return [...currentCatalog].sort((a, b) => {
+			const da = a.temporalCoverage || a.year || '9999';
+			const db = b.temporalCoverage || b.year || '9999';
+			if (da !== db) return da.localeCompare(db);
+			return a.slug.localeCompare(b.slug);
+		});
 	});
 
 	onMount(() => {
@@ -853,7 +841,50 @@
 				</div>
 			</div>
 
+			<!-- Work of Fiction / Fictitious Persons & Entities Disclaimer -->
+			<div
+				class="mt-3 rounded-xl border border-amber-500/30 bg-amber-950/30 p-4 text-xs text-amber-100 sm:text-sm"
+				role="note"
+				aria-label="Work of Fiction Disclaimer"
+			>
+				<div class="flex items-start gap-3">
+					<svg
+						class="mt-0.5 h-5 w-5 shrink-0 text-amber-400"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					<div>
+						<div class="mb-0.5 font-bold text-amber-300">
+							Work of Fiction &bull; All Persons, Bands &amp; Institutions Fictitious
+						</div>
+						<p class="leading-relaxed text-amber-100/90">
+							Everything presented in The Listening Room and across the RaggieSoft network—including
+							all bands, musicians, biographies, universities (such as Commonwealth Polytechnic
+							Institute / CPI and The Crucible), corporations (such as OmniCorp, Apex Records,
+							Prairie Coachworks, and Sainte-Claire), transit agencies (Blue Ridge Transit), legal
+							filings, and historical timelines—is a work of creative fiction. Any resemblance to
+							actual persons, living or dead, real-world businesses, academic institutions, or
+							historical events is purely coincidental.
+						</p>
+					</div>
+				</div>
+			</div>
+
 			<div class="mt-5 flex flex-wrap items-center gap-4">
+				<a
+					href={resolve('/behind-the-scenes')}
+					class="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300"
+				>
+					Peek Behind the Scenes (AI &amp; Creative Process) &rarr;
+				</a>
 				<a
 					href="https://engineroom-records.com"
 					target="_blank"
