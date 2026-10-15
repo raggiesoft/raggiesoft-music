@@ -95,14 +95,14 @@ export const curatedPlaylists = [
 		],
 		loreUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/john-and-erin',
 		bookUrl: 'https://books.raggiesoft.com/erin',
-		hubBookUrl: 'https://raggiesoft.com/raggiesoft-books/books/erin',
+		hubBookUrl: 'https://raggiesoft.com/raggiesoft-books/books',
 		crossUniverseLinks: [
 			{
 				label: 'The Rachel Narrative • Nov 2006',
 				title: "Jessica's Train Ride (Kent Station vs. The CPI Transit Center)",
 				description:
 					"When Jessica leaves her brother Michael on the platform at Kent Station and hears 'Before the Distance' on shuffle, she remembers reading The Stardust Engine's story of John and Erin—realizing in horror that unlike Erin at the CPI Transit Center, she let the steel doors close without pulling her brother aboard.",
-				url: 'https://books.raggiesoft.com/rachel/e017/c005/s006'
+				url: 'https://books.raggiesoft.com/rachel/book-17-a-few-small-repairs/chapter-5-the-weekend-shift/scene-6-the-pantry-algorithm'
 			},
 			{
 				label: 'CPI Campus Lore • Freddie & Paige',
@@ -119,7 +119,8 @@ export const curatedPlaylists = [
 				trackId: 'the-stardust-engine-2004-progress-street-1-3',
 				actLabel: 'Act I • Chapter 1, Scene 1',
 				chapterTitle: 'The Three-Minute Bell',
-				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c001/s001',
+				chapterUrl:
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-1-the-three-minute-bell',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
 					'At the Newman Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
@@ -130,7 +131,8 @@ export const curatedPlaylists = [
 				trackId: 'the-stardust-engine-2004-progress-street-1-4',
 				actLabel: 'Act II • Chapter 1, Scene 2',
 				chapterTitle: 'Table Four',
-				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c001/s002',
+				chapterUrl:
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-2-table-four',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
 					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
@@ -141,7 +143,8 @@ export const curatedPlaylists = [
 				trackId: 'the-stardust-engine-2004-progress-street-1-8',
 				actLabel: 'Act III • Chapter 2, Scenes 1–2',
 				chapterTitle: 'The Frayed Mask / When the Steel Doors Close',
-				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c002/s001',
+				chapterUrl:
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/before-the-distance/scene-1-the-frayed-mask',
 				pov: 'Erin (Cassidy O\'Connell)',
 				storySummary:
 					'Two months later at the rainy CPI Transit Center, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John\'s hand, and pulls him aboard with her.'
@@ -152,7 +155,8 @@ export const curatedPlaylists = [
 				trackId: 'the-stardust-engine-2007-lost-sounds-1-13',
 				actLabel: 'Act IV • Chapter 3, Scene 1',
 				chapterTitle: 'The Locked Perimeter',
-				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c003/s001',
+				chapterUrl:
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/sanctuary-in-the-storm/scene-1-the-locked-perimeter',
 				pov: 'John & Erin Duet',
 				storySummary:
 					'Twenty-four hours after their escape on the Blue Ridge Transit bus, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin\'s ground-floor apartment on Progress Street.'
@@ -163,7 +167,8 @@ export const curatedPlaylists = [
 				trackId: 'the-stardust-engine-2007-lost-sounds-1-14',
 				actLabel: 'Act V • Chapter 4, Scene 1',
 				chapterTitle: 'The Practiced Smile',
-				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c004/s001',
+				chapterUrl:
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/not-her/scene-1-the-practiced-smile',
 				pov: 'John & Erin Duet',
 				storySummary:
 					'The following spring, John spots a slick predator boxing Erin\'s power wheelchair into a recessed limestone alcove outside Newman Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him.'

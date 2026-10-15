@@ -233,7 +233,7 @@
 							rel="noopener noreferrer"
 							class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2.5 text-xs font-bold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
 						>
-							<span>RaggieSoft Hub Book Reader</span>
+							<span>Contemporary Library Index (raggiesoft.com)</span>
 							<span>↗</span>
 						</a>
 					</div>
