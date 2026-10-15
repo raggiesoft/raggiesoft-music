@@ -42,9 +42,22 @@ export class AudioPlayer {
 	sleepTimerEnd = $state(/** @type {number | null} */ (null));
 	_sleepTimeout = /** @type {any} */ (null);
 
+	// Direct reference to the mounted HTML5 <audio> element & reactive play trigger counter
+	_audioElement = /** @type {HTMLAudioElement | null} */ (null);
+	_playTrigger = $state(0);
+
 	// Queue playback modes
 	isShuffle = $state(false);
 	repeatMode = $state(/** @type {'none' | 'all' | 'one'} */ ('none'));
+
+	/**
+	 * Registers the underlying HTMLAudioElement from Player.svelte so seek/repeat/play
+	 * commands act directly and synchronously on the DOM audio engine.
+	 * @param {HTMLAudioElement | null} el
+	 */
+	setAudioElement(el) {
+		this._audioElement = el;
+	}
 
 	// Local session persistence flag
 	hasSavedSession = $state(false);
@@ -135,6 +148,20 @@ export class AudioPlayer {
 	play() {
 		if (this.currentTrack.audioUrl) {
 			this.isPlaying = true;
+			this._playTrigger += 1;
+			if (this._audioElement) {
+				if (this._audioElement.ended) {
+					this._audioElement.currentTime = 0;
+					this.currentTime = 0;
+				}
+				const playPromise = this._audioElement.play();
+				if (playPromise !== undefined) {
+					playPromise.catch((err) => {
+						console.warn('Playback intercepted by browser autoplay policy:', err);
+						this.isPlaying = false;
+					});
+				}
+			}
 		}
 	}
 
@@ -143,13 +170,16 @@ export class AudioPlayer {
 	 */
 	pause() {
 		this.isPlaying = false;
+		if (this._audioElement && !this._audioElement.paused) {
+			this._audioElement.pause();
+		}
 	}
 
 	/**
 	 * Toggles between playing and paused states.
 	 */
 	togglePlay() {
-		if (this.isPlaying) {
+		if (this.isPlaying && this._audioElement && !this._audioElement.paused) {
 			this.pause();
 		} else {
 			this.play();
@@ -161,8 +191,16 @@ export class AudioPlayer {
 	 * @param {number} time
 	 */
 	seek(time) {
-		const targetTime = Math.max(0, Math.min(this.duration || 0, time));
+		const maxDur =
+			this.duration ||
+			(this._audioElement && !isNaN(this._audioElement.duration)
+				? this._audioElement.duration
+				: 0);
+		const targetTime = maxDur > 0 ? Math.max(0, Math.min(maxDur, time)) : Math.max(0, time);
 		this.currentTime = targetTime;
+		if (this._audioElement) {
+			this._audioElement.currentTime = targetTime;
+		}
 	}
 
 	/**
@@ -234,22 +272,30 @@ export class AudioPlayer {
 	 *
 	 * ARCHITECTURAL RULE (ISRC as Absolute Source of Truth):
 	 * If the requested track has the identical ISRC code as the track currently loaded
-	 * or playing, the player MUST preserve continuous playback without resetting to 0:00,
-	 * without interrupting the audio stream, and gently informs the listener.
+	 * or playing (and `forceRestart` is false), the player preserves continuous playback
+	 * without resetting to 0:00, without interrupting the audio stream, and gently informs the listener.
 	 *
 	 * @param {any} track
 	 * @param {boolean} [autoPlay=true]
+	 * @param {boolean} [forceRestart=false]
 	 */
-	loadTrack(track, autoPlay = true) {
+	loadTrack(track, autoPlay = true, forceRestart = false) {
 		const currentIsrc = (this.currentTrack.isrc || '').trim().toUpperCase();
 		const targetIsrc = (track.isrc || '').trim().toUpperCase();
+		const isSameAudioUrl = Boolean(
+			this.currentTrack.audioUrl &&
+				track.audioUrl &&
+				this.currentTrack.audioUrl === track.audioUrl
+		);
 
 		// Check if target track has the identical ISRC and an existing audio stream is active/loaded
 		const isSameSongByIsrc = Boolean(
-			currentIsrc &&
-			targetIsrc &&
-			currentIsrc === targetIsrc &&
-			(this.currentTrack.audioUrl || this.currentTime > 0)
+			!forceRestart &&
+				currentIsrc &&
+				targetIsrc &&
+				currentIsrc === targetIsrc &&
+				(this.currentTrack.audioUrl || this.currentTime > 0) &&
+				!(this._audioElement && this._audioElement.ended)
 		);
 
 		if (isSameSongByIsrc) {
@@ -304,8 +350,8 @@ export class AudioPlayer {
 			}
 
 			// Ensure playing if autoPlay requested
-			if (autoPlay && !this.isPlaying) {
-				this.isPlaying = true;
+			if (autoPlay) {
+				this.play();
 			}
 
 			// Gently notify the listener that playback continues across releases
@@ -356,9 +402,15 @@ export class AudioPlayer {
 		}
 
 		this.currentTime = 0;
-		this.duration = 0;
+		if (!isSameAudioUrl) {
+			this.duration = 0;
+		}
 		this.error = null;
 		this.cues = [];
+
+		if (this._audioElement && isSameAudioUrl) {
+			this._audioElement.currentTime = 0;
+		}
 
 		if (track.vttUrl) {
 			this.fetchVttCues(track.vttUrl);
@@ -366,6 +418,16 @@ export class AudioPlayer {
 
 		if (autoPlay) {
 			this.isPlaying = true;
+			this._playTrigger += 1;
+			if (this._audioElement && isSameAudioUrl) {
+				const playPromise = this._audioElement.play();
+				if (playPromise !== undefined) {
+					playPromise.catch((err) => {
+						console.warn('Playback intercepted by browser autoplay policy:', err);
+						this.isPlaying = false;
+					});
+				}
+			}
 		}
 
 		this.saveSession();
@@ -428,13 +490,16 @@ export class AudioPlayer {
 				nextIdx = (this.currentIndex + 1) % this.queue.length;
 			}
 			this.currentIndex = nextIdx;
-			this.loadTrack(this.queue[this.currentIndex], true);
+			this.loadTrack(this.queue[this.currentIndex], true, true);
 		} else if (this.hasNext) {
 			this.currentIndex += 1;
-			this.loadTrack(this.queue[this.currentIndex], true);
+			this.loadTrack(this.queue[this.currentIndex], true, true);
 		} else if (this.repeatMode === 'all' && this.queue.length > 0) {
 			this.currentIndex = 0;
-			this.loadTrack(this.queue[0], true);
+			this.loadTrack(this.queue[0], true, true);
+		} else if (this.repeatMode === 'one' && this.currentTrack.audioUrl) {
+			this.seek(0);
+			this.play();
 		}
 	}
 
@@ -444,11 +509,17 @@ export class AudioPlayer {
 	prev() {
 		if (this.currentTime > 3) {
 			this.seek(0);
+			if (this.isPlaying) {
+				this.play();
+			}
 		} else if (this.hasPrevious) {
 			this.currentIndex -= 1;
-			this.loadTrack(this.queue[this.currentIndex], true);
+			this.loadTrack(this.queue[this.currentIndex], true, true);
 		} else {
 			this.seek(0);
+			if (this.isPlaying) {
+				this.play();
+			}
 		}
 	}
 
@@ -468,14 +539,17 @@ export class AudioPlayer {
 		if (this.repeatMode === 'one') {
 			this.seek(0);
 			this.play();
-		} else if (this.hasNext || this.isShuffle) {
+		} else if (this.hasNext || (this.isShuffle && this.queue.length > 1)) {
 			this.next();
 		} else if (this.repeatMode === 'all' && this.queue.length > 0) {
 			this.currentIndex = 0;
-			this.loadTrack(this.queue[0], true);
+			this.loadTrack(this.queue[0], true, true);
+		} else if (this.repeatMode === 'all' && this.currentTrack.audioUrl) {
+			this.seek(0);
+			this.play();
 		} else {
 			this.isPlaying = false;
-			this.currentTime = 0;
+			this.seek(0);
 		}
 	}
 
@@ -488,11 +562,23 @@ export class AudioPlayer {
 
 	/**
 	 * Cycles queue repeat mode: none -> all -> one -> none.
+	 * If a track had just finished playing (or was stuck paused at 0:00 while isPlaying was true)
+	 * and the listener turns on Repeat, immediately resume playback so they aren't left in silence.
 	 */
 	toggleRepeat() {
 		if (this.repeatMode === 'none') this.repeatMode = 'all';
 		else if (this.repeatMode === 'all') this.repeatMode = 'one';
 		else this.repeatMode = 'none';
+
+		if (
+			this.repeatMode !== 'none' &&
+			this.currentTrack.audioUrl &&
+			this._audioElement &&
+			(this._audioElement.ended || (this.isPlaying && this._audioElement.paused))
+		) {
+			this.seek(0);
+			this.play();
+		}
 	}
 
 	/**

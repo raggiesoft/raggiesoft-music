@@ -56,11 +56,20 @@
 		}
 	});
 
+	// Register the mounted HTML5 audio element with the global player store
+	$effect(() => {
+		player.setAudioElement(audioElement);
+		return () => player.setAudioElement(null);
+	});
+
 	// Synchronize audio element playback state with player store
 	$effect(() => {
-		if (!audioElement || !player.currentTrack.audioUrl) return;
+		const url = player.currentTrack.audioUrl;
+		const playing = player.isPlaying;
+		const trigger = player._playTrigger;
+		if (!audioElement || !url) return;
 
-		if (player.isPlaying) {
+		if (playing || trigger > 0 && player.isPlaying) {
 			const playPromise = audioElement.play();
 			if (playPromise !== undefined) {
 				playPromise.catch((err) => {
@@ -115,16 +124,13 @@
 		navigator.mediaSession.setActionHandler('seekto', (details) => {
 			if (details.seekTime !== undefined && details.seekTime !== null) {
 				player.seek(details.seekTime);
-				if (audioElement) audioElement.currentTime = details.seekTime;
 			}
 		});
 		navigator.mediaSession.setActionHandler('seekforward', () => {
 			player.seekRelative(10);
-			if (audioElement) audioElement.currentTime = player.currentTime;
 		});
 		navigator.mediaSession.setActionHandler('seekbackward', () => {
 			player.seekRelative(-10);
-			if (audioElement) audioElement.currentTime = player.currentTime;
 		});
 	});
 
@@ -145,12 +151,10 @@
 			event.preventDefault();
 			const newTime = Math.max(0, player.currentTime - 5);
 			player.seek(newTime);
-			if (audioElement) audioElement.currentTime = newTime;
 		} else if (event.code === 'ArrowRight') {
 			event.preventDefault();
 			const newTime = Math.min(player.duration, player.currentTime + 5);
 			player.seek(newTime);
-			if (audioElement) audioElement.currentTime = newTime;
 		} else if (event.key === 'm' || event.key === 'M') {
 			player.toggleMute();
 		} else if (event.code === 'Escape' && player.isExpanded) {
@@ -175,9 +179,6 @@
 		const targetTime = parseFloat(target.value);
 		isScrubbing = false;
 		player.seek(targetTime);
-		if (audioElement) {
-			audioElement.currentTime = targetTime;
-		}
 	}
 </script>
 
@@ -187,6 +188,7 @@
 <audio
 	bind:this={audioElement}
 	src={player.currentTrack.audioUrl}
+	loop={player.repeatMode === 'one'}
 	preload="auto"
 	ontimeupdate={() => {
 		if (!isScrubbing && audioElement) {

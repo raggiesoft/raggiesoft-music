@@ -116,10 +116,10 @@ export const curatedPlaylists = [
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2004-progress-street',
-				trackId: '1-03',
+				trackId: 'the-stardust-engine-2004-progress-street-1-3',
 				actLabel: 'Act I • Chapter 1, Scene 1',
 				chapterTitle: 'The Three-Minute Bell',
-				chapterUrl: 'https://books.raggiesoft.com/erin/e001/c001/s001',
+				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c001/s001',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
 					'At the Newman Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
@@ -127,10 +127,10 @@ export const curatedPlaylists = [
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2004-progress-street',
-				trackId: '1-04',
+				trackId: 'the-stardust-engine-2004-progress-street-1-4',
 				actLabel: 'Act II • Chapter 1, Scene 2',
 				chapterTitle: 'Table Four',
-				chapterUrl: 'https://books.raggiesoft.com/erin/e001/c001/s002',
+				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c001/s002',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
 					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
@@ -138,21 +138,21 @@ export const curatedPlaylists = [
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2004-progress-street',
-				trackId: '1-08',
+				trackId: 'the-stardust-engine-2004-progress-street-1-8',
 				actLabel: 'Act III • Chapter 2, Scenes 1–2',
 				chapterTitle: 'The Frayed Mask / When the Steel Doors Close',
-				chapterUrl: 'https://books.raggiesoft.com/erin/e001/c002/s001',
+				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c002/s001',
 				pov: 'Erin (Cassidy O\'Connell)',
 				storySummary:
-					'Two months later at the rainy CPI Transit Center, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the Blue Ridge Transit bus ramp, takes John\'s hand, and pulls him aboard with her.'
+					'Two months later at the rainy CPI Transit Center, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John\'s hand, and pulls him aboard with her.'
 			},
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2007-lost-sounds',
-				trackId: '1-13',
+				trackId: 'the-stardust-engine-2007-lost-sounds-1-13',
 				actLabel: 'Act IV • Chapter 3, Scene 1',
 				chapterTitle: 'The Locked Perimeter',
-				chapterUrl: 'https://books.raggiesoft.com/erin/e001/c003/s001',
+				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c003/s001',
 				pov: 'John & Erin Duet',
 				storySummary:
 					'Twenty-four hours after their escape on the Blue Ridge Transit bus, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin\'s ground-floor apartment on Progress Street.'
@@ -160,10 +160,10 @@ export const curatedPlaylists = [
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2007-lost-sounds',
-				trackId: '1-14',
+				trackId: 'the-stardust-engine-2007-lost-sounds-1-14',
 				actLabel: 'Act V • Chapter 4, Scene 1',
 				chapterTitle: 'The Practiced Smile',
-				chapterUrl: 'https://books.raggiesoft.com/erin/e001/c004/s001',
+				chapterUrl: 'https://books.raggiesoft.com/books/erin/e001/c004/s001',
 				pov: 'John & Erin Duet',
 				storySummary:
 					'The following spring, John spots a slick predator boxing Erin\'s power wheelchair into a recessed limestone alcove outside Newman Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him.'
@@ -171,6 +171,32 @@ export const curatedPlaylists = [
 		]
 	}
 ];
+
+/**
+ * Helper predicate that matches a catalog track against a `PlaylistTrackSpec.trackId`
+ * whether `trackId` is a full catalog ID (`'the-stardust-engine-2004-progress-street-1-3'`),
+ * an unpadded disc-track pair (`'1-3'`), or a zero-padded disc-track pair (`'1-03'`).
+ *
+ * @param {any} track
+ * @param {string} targetTrackId
+ * @param {any} album
+ * @returns {boolean}
+ */
+function matchesPlaylistTrackId(track, targetTrackId, album) {
+	if (!track || !targetTrackId) return false;
+	if (track.id === targetTrackId) return true;
+
+	const discNum = track.disc || 1;
+	const trackNum = Number(track.track);
+	const paddedTrack = String(track.track).padStart(2, '0');
+
+	if (`${discNum}-${trackNum}` === targetTrackId) return true;
+	if (`${discNum}-${paddedTrack}` === targetTrackId) return true;
+	if (`${album.artistSlug}-${album.slug}-${discNum}-${trackNum}` === targetTrackId) return true;
+	if (`${album.artistSlug}-${album.slug}-${discNum}-${paddedTrack}` === targetTrackId) return true;
+
+	return false;
+}
 
 /**
  * Resolves an array of `PlaylistTrackSpec` items into fully hydrated player queue
@@ -196,8 +222,8 @@ export function resolvePlaylistTracks(trackSpecs, catalog = allAlbums) {
 
 		const formattedAlbumTracks = formatAlbumQueue(album);
 		const matchedTrack =
-			formattedAlbumTracks.find((t) => t.id === spec.trackId) ||
-			album.tracks.find((t) => t.id === spec.trackId);
+			formattedAlbumTracks.find((t) => matchesPlaylistTrackId(t, spec.trackId, album)) ||
+			album.tracks.find((t) => matchesPlaylistTrackId(t, spec.trackId, album));
 
 		if (!matchedTrack) continue;
 
