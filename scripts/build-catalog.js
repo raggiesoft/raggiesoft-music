@@ -27,12 +27,20 @@ const __dirname = path.dirname(__filename);
 
 // Base CDN domain for all hosted audio streams and album artwork
 const CDN_BASE = 'https://assets.raggiesoft.com/engine-room-records/artists';
+const HUB_BASE = 'https://raggiesoft.com';
 
 // Potential candidate paths for the raggiesoft-assets repository
 const candidateAssetPaths = [
 	path.resolve(__dirname, '../../raggiesoft-assets/engine-room-records/artists'),
 	path.resolve(__dirname, '../../../raggiesoft-assets/engine-room-records/artists'),
 	'/var/www/raggiesoft-assets/engine-room-records/artists'
+];
+
+// Potential candidate paths for the raggiesoft-hub repository (to verify live lore pages)
+const candidateHubPaths = [
+	path.resolve(__dirname, '../../raggiesoft-hub'),
+	path.resolve(__dirname, '../../../raggiesoft-hub'),
+	'/var/www/raggiesoft-hub'
 ];
 
 /**
@@ -49,10 +57,87 @@ function resolveAssetsDirectory() {
 }
 
 /**
+ * Resolves the active raggiesoft-hub directory from candidate filesystem paths.
+ * @returns {string | null}
+ */
+function resolveHubDirectory() {
+	for (const candidate of candidateHubPaths) {
+		if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+			return candidate;
+		}
+	}
+	return null;
+}
+
+/**
+ * Recursively collects all `.json` files inside a directory.
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function walkJsonFiles(dir) {
+	if (!fs.existsSync(dir)) return [];
+	/** @type {string[]} */
+	const results = [];
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		if (entry.name.startsWith('.')) continue;
+		const fullPath = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			results.push(...walkJsonFiles(fullPath));
+		} else if (entry.isFile() && entry.name.endsWith('.json')) {
+			results.push(fullPath);
+		}
+	}
+	return results;
+}
+
+/**
+ * Scans `raggiesoft-hub/data/routes/**\/*.json` and verifies that each route's
+ * backing `.php` view file physically exists on disk. Returns a Set of verified
+ * route paths (e.g., `/engine-room/artists/stardust-engine/discography/2004-progress-street`).
+ *
+ * @returns {Set<string>}
+ */
+function loadVerifiedHubRoutes() {
+	/** @type {Set<string>} */
+	const verifiedRoutes = new Set();
+	const hubDir = resolveHubDirectory();
+	if (!hubDir) return verifiedRoutes;
+
+	const routesRoot = path.join(hubDir, 'data', 'routes');
+	const routeFiles = walkJsonFiles(routesRoot);
+
+	for (const file of routeFiles) {
+		try {
+			const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+			for (const [routeKey, routeConfig] of Object.entries(data)) {
+				if (!routeKey.startsWith('/') || !routeConfig || typeof routeConfig !== 'object') {
+					continue;
+				}
+				let viewRel = routeConfig.view || '';
+				if (!viewRel) continue;
+				if (!viewRel.endsWith('.php')) {
+					viewRel += '.php';
+				}
+				const fullPhpPath = path.join(hubDir, viewRel.replace(/^\/+/, ''));
+				if (fs.existsSync(fullPhpPath)) {
+					verifiedRoutes.add(routeKey);
+				}
+			}
+		} catch (err) {
+			console.warn(`⚠️  Failed to parse hub route file ${file}:`, err);
+		}
+	}
+
+	console.log(`🔗 Verified ${verifiedRoutes.size} live lore routes in raggiesoft-hub.`);
+	return verifiedRoutes;
+}
+
+/**
  * Builds the canonical catalog of all artists, albums, and tracks.
  */
 function buildCatalog() {
 	const assetsDir = resolveAssetsDirectory();
+	const verifiedHubRoutes = loadVerifiedHubRoutes();
 	const outputPath = path.resolve(__dirname, '../src/lib/data/musicCatalog.json');
 
 	if (!assetsDir) {
@@ -132,6 +217,20 @@ function buildCatalog() {
 			: fs.existsSync(path.join(artistDir, 'discography-social-preview.jpg'))
 				? `${CDN_BASE}/${artistSlug}/discography-social-preview.jpg`
 				: null;
+
+		// Resolve verified artist-level lore URL on raggiesoft.com (only if route + PHP view exist)
+		const hubArtistSlug = artistSlug === 'the-stardust-engine' ? 'stardust-engine' : artistSlug;
+		const candidateArtistRoutes = [
+			`/engine-room/artists/${hubArtistSlug}`,
+			`/engine-room/artists/${artistSlug}`
+		];
+		let artistLoreUrl = '';
+		for (const route of candidateArtistRoutes) {
+			if (verifiedHubRoutes.has(route)) {
+				artistLoreUrl = `${HUB_BASE}${route}`;
+				break;
+			}
+		}
 
 		// Parse artist-level albums.json for DSP IDs (Spotify, Apple, Amazon, YouTube)
 		// and Fourthwall direct storefront URLs (Standard MP3/OGG & Audiophile WAV/FLAC)
@@ -460,6 +559,43 @@ function buildCatalog() {
 				isRockOperaInitial || matchedManifestAlbum.isRockOpera || rockOperaSetId
 			);
 
+			// Resolve verified album-level lore URL on raggiesoft.com (only if route + PHP view exist)
+			const rawManifestUrl = String(
+				matchedManifestAlbum.url || albumData.loreUrl || ''
+			).trim();
+			const normalizedManifestRoute = rawManifestUrl.startsWith(HUB_BASE)
+				? rawManifestUrl.slice(HUB_BASE.length)
+				: rawManifestUrl;
+
+			const candidateAlbumRoutes = [
+				normalizedManifestRoute,
+				`/engine-room/artists/${hubArtistSlug}/discography/${albumSlug}`,
+				`/engine-room/artists/${artistSlug}/discography/${albumSlug}`,
+				albumSlug === '1996-ad-astra-single'
+					? '/engine-room/artists/stardust-engine/discography/1996-escape-velocity-ad-astra'
+					: '',
+				albumSlug === '2003-sanctuary-zero-g'
+					? '/engine-room/artists/stardust-engine/discography/2003-moon-1-sanctuary-zero-g'
+					: '',
+				albumSlug === '2003-mile-marker-98'
+					? '/engine-room/artists/stardust-engine/discography/2003-moon-2-mile-marker-98'
+					: '',
+				albumSlug.startsWith('2001-static-and-silence')
+					? '/engine-room/artists/the-paper-wall/discography/2001-static-and-silence'
+					: '',
+				albumSlug === '2007-tales-from-the-solstice'
+					? '/engine-room/artists/the-arctic-symphony-project/tales-of-the-solstice'
+					: ''
+			].filter(Boolean);
+
+			let loreUrl = '';
+			for (const route of candidateAlbumRoutes) {
+				if (verifiedHubRoutes.has(route)) {
+					loreUrl = `${HUB_BASE}${route}`;
+					break;
+				}
+			}
+
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
 				slug: albumSlug,
@@ -468,6 +604,8 @@ function buildCatalog() {
 				artistSlug,
 				artistLogo,
 				artistSocialPreview,
+				artistLoreUrl,
+				loreUrl,
 				year,
 				temporalCoverage,
 				datePublished,

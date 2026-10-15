@@ -65,8 +65,10 @@ export class AudioPlayer {
 		artist: '',
 		artistSlug: '',
 		artistLogo: '',
+		artistLoreUrl: '',
 		album: '',
 		albumSlug: '',
+		loreUrl: '',
 		artwork: '',
 		socialPreview: '',
 		audioUrl: '',
@@ -261,8 +263,11 @@ export class AudioPlayer {
 			this.currentTrack.artistSlug = track.artistSlug || this.currentTrack.artistSlug;
 			this.currentTrack.artistLogo =
 				track.artistLogo || this.currentTrack.artistLogo || '';
+			this.currentTrack.artistLoreUrl =
+				track.artistLoreUrl ?? this.currentTrack.artistLoreUrl ?? '';
 			this.currentTrack.album = track.album || this.currentTrack.album;
 			this.currentTrack.albumSlug = track.albumSlug || this.currentTrack.albumSlug;
+			this.currentTrack.loreUrl = track.loreUrl ?? '';
 			this.currentTrack.artwork = track.artwork || this.currentTrack.artwork;
 			this.currentTrack.socialPreview = track.socialPreview || this.currentTrack.socialPreview;
 			this.currentTrack.disc = track.disc || 1;
@@ -319,8 +324,10 @@ export class AudioPlayer {
 			artist: track.artist || 'Unknown Artist',
 			artistSlug: track.artistSlug || '',
 			artistLogo: track.artistLogo || '',
+			artistLoreUrl: track.artistLoreUrl || '',
 			album: track.album || 'Unknown Album',
 			albumSlug: track.albumSlug || '',
+			loreUrl: track.loreUrl || '',
 			artwork: track.artwork || '',
 			socialPreview: track.socialPreview || '',
 			audioUrl: track.audioUrl || '',

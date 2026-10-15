@@ -426,6 +426,24 @@
 							<p class="mt-0.5 text-sm text-slate-400">{player.currentTrack.album}</p>
 						{/if}
 
+						{#if player.currentTrack.loreUrl || player.currentTrack.artistLoreUrl}
+							<div class="mt-2">
+								<a
+									href={player.currentTrack.loreUrl || player.currentTrack.artistLoreUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-950/50 px-2.5 py-1 text-xs font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white"
+								>
+									<span>
+										{player.currentTrack.loreUrl
+											? 'Album Lore Archive (RaggieSoft.com)'
+											: `${player.currentTrack.artist} Lore Archive (RaggieSoft.com)`}
+									</span>
+									<span>&nearr;</span>
+								</a>
+							</div>
+						{/if}
+
 						{#if player.hasActiveExternalSupportLinks(player.currentTrack)}
 							<div
 								class="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 text-left shadow-inner"

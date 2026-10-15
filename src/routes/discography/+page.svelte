@@ -558,6 +558,19 @@
 												<span>Lyrics &amp; Lore</span>
 												<span>&rarr;</span>
 											</a>
+
+											{#if album.loreUrl}
+												<a
+													href={album.loreUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="flex items-center gap-1 rounded-lg border border-indigo-500/40 bg-indigo-950/50 px-2.5 py-1.5 text-xs font-medium text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white"
+													title="Read the official in-universe album lore archive on RaggieSoft.com"
+												>
+													<span>Lore Archive</span>
+													<span>&nearr;</span>
+												</a>
+											{/if}
 										</div>
 									</div>
 								</div>

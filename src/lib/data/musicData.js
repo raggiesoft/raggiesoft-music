@@ -50,6 +50,8 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} artistSlug
  * @property {string | null} [artistLogo]
  * @property {string | null} [artistSocialPreview]
+ * @property {string} [artistLoreUrl]
+ * @property {string} [loreUrl]
  * @property {string} year
  * @property {string} [temporalCoverage]
  * @property {string} [datePublished]
@@ -81,6 +83,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} slug
  * @property {string} name
  * @property {string|null} [logo]
+ * @property {string} [loreUrl]
  * @property {number} albumCount
  * @property {number} trackCount
  * @property {number} playableTrackCount
@@ -271,6 +274,9 @@ export const allArtists = (() => {
 			if (!existing.logo && album.artistLogo) {
 				existing.logo = album.artistLogo;
 			}
+			if (!existing.loreUrl && album.artistLoreUrl) {
+				existing.loreUrl = album.artistLoreUrl;
+			}
 			if (album.artistSocialPreview) {
 				existing.socialPreview = album.artistSocialPreview;
 			}
@@ -293,6 +299,7 @@ export const allArtists = (() => {
 				slug: album.artistSlug,
 				name: album.artist,
 				logo: album.artistLogo || null,
+				loreUrl: album.artistLoreUrl || '',
 				albumCount: 1,
 				trackCount: album.tracks.length,
 				playableTrackCount: album.playableTrackCount || 0,
@@ -342,6 +349,7 @@ export function getArtistBySlug(slug, catalog = allAlbums) {
 		slug,
 		name: first.artist,
 		logo: first.artistLogo || null,
+		loreUrl: first.artistLoreUrl || '',
 		albumCount: artistAlbums.length,
 		trackCount: artistAlbums.reduce((acc, a) => acc + a.tracks.length, 0),
 		playableTrackCount: artistAlbums.reduce((acc, a) => acc + (a.playableTrackCount || 0), 0),
@@ -380,7 +388,7 @@ export const catalogStats = {
  * Maps album-level metadata (including DSP and Fourthwall URLs) down to every individual track object.
  *
  * @param {Album} album
- * @returns {Array<Track & { album: string; albumSlug: string; artist: string; artistSlug: string; artistLogo: string | null; artwork: string; socialPreview: string; year: string; temporalCoverage?: string; spotifyId?: string; appleId?: string; amazonId?: string; youtubeId?: string; storeStandardUrl?: string; storeAudiophileUrl?: string; dspExempt?: boolean; dspNotice?: string }>}
+ * @returns {Array<Track & { album: string; albumSlug: string; artist: string; artistSlug: string; artistLogo: string | null; artistLoreUrl?: string; loreUrl?: string; artwork: string; socialPreview: string; year: string; temporalCoverage?: string; spotifyId?: string; appleId?: string; amazonId?: string; youtubeId?: string; storeStandardUrl?: string; storeAudiophileUrl?: string; dspExempt?: boolean; dspNotice?: string }>}
  */
 export function formatAlbumQueue(album) {
 	return album.tracks
@@ -392,6 +400,8 @@ export function formatAlbumQueue(album) {
 			artist: album.artist,
 			artistSlug: album.artistSlug,
 			artistLogo: album.artistLogo || null,
+			artistLoreUrl: album.artistLoreUrl || '',
+			loreUrl: album.loreUrl || '',
 			artwork: album.artwork,
 			socialPreview: album.socialPreview,
 			year: album.year,

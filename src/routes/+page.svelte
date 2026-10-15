@@ -575,6 +575,18 @@
 							Lyrics &amp; Lore ({spotlightAlbum.tracks.length} Tracks) &rarr;
 						</a>
 
+						{#if spotlightAlbum.loreUrl}
+							<a
+								href={spotlightAlbum.loreUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white"
+							>
+								<span>Official Lore Archive</span>
+								<span>&nearr;</span>
+							</a>
+						{/if}
+
 						<button
 							type="button"
 							onclick={() => openShareModal(spotlightAlbum)}
