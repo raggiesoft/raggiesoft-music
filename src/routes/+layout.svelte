@@ -156,11 +156,25 @@
 				<a
 					href={resolve('/discography')}
 					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
-						'/' && !currentPath.startsWith('/settings')
+						'/' &&
+					!currentPath.startsWith('/settings') &&
+					!currentPath.startsWith('/radio')
 						? 'bg-blue-600 text-white shadow-sm'
 						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 				>
 					Discography
+				</a>
+
+				<a
+					href={resolve('/radio')}
+					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						'/radio'
+					)
+						? 'bg-blue-600 text-white shadow-sm'
+						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+				>
+					<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+					<span>Radio</span>
 				</a>
 
 				<!-- Global Search & Filter Menu Button -->

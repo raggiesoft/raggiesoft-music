@@ -244,12 +244,14 @@ function buildCatalog() {
 				albumData.description || `Studio release by ${artistName} on Engine Room Records.`;
 
 			// Determine if release is an overarching rock opera
-			const isRockOpera =
-				genre.toLowerCase().includes('rock opera') ||
-				description.toLowerCase().includes('rock opera') ||
-				albumTitle.toLowerCase().includes('book 1') ||
-				albumTitle.toLowerCase().includes('book 2') ||
-				albumTitle.toLowerCase().includes('book 3');
+			const isRockOperaInitial = Boolean(
+				albumData.isRockOpera ||
+					genre.toLowerCase().includes('rock opera') ||
+					description.toLowerCase().includes('rock opera') ||
+					albumTitle.toLowerCase().includes('book 1') ||
+					albumTitle.toLowerCase().includes('book 2') ||
+					albumTitle.toLowerCase().includes('book 3')
+			);
 
 			// Resolve album production type (StudioAlbum, LiveAlbum, CompilationAlbum)
 			const rawProdType = albumData.albumProductionType || 'StudioAlbum';
@@ -293,9 +295,40 @@ function buildCatalog() {
 				const isrc = t.isrc || '';
 				const legacyTier = t.legacyTier || '';
 
-				// Extract lore note and lyrics from metadata.json or direct track definitions
+				// Resolve audio file name first so we can check per-track lyrics/*.md files
+				let fileName = t.fileName || '';
+				if (!fileName && t.masterWavPath) {
+					fileName = path.basename(t.masterWavPath);
+				}
+
+				// Extract lore note and lyrics from direct track definitions, per-album lyrics/*.md, or metadata.json
 				let loreNote = t.loreNote || '';
 				let lyrics = t.lyrics || '';
+
+				if ((!loreNote || !lyrics) && fileName) {
+					const trackMdPath = path.join(albumDir, 'lyrics', `${fileName}.md`);
+					if (fs.existsSync(trackMdPath)) {
+						try {
+							const mdRaw = fs.readFileSync(trackMdPath, 'utf-8');
+							if (mdRaw.includes('**LORE NOTE:**')) {
+								const parts = mdRaw.split('**LORE NOTE:**');
+								const loreSection = parts[1].split('**LYRICS:**')[0].trim();
+								if (!loreNote) {
+									loreNote = loreSection.replace(/\r\n/g, '\n');
+								}
+								if (parts[1].includes('**LYRICS:**') && !lyrics) {
+									lyrics = parts[1].split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
+								}
+							} else if (mdRaw.includes('**LYRICS:**') && !lyrics) {
+								lyrics = mdRaw.split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
+							} else if (!lyrics) {
+								lyrics = mdRaw.trim().replace(/\r\n/g, '\n');
+							}
+						} catch {
+							// Ignore unreadable markdown file
+						}
+					}
+				}
 
 				if (!loreNote || !lyrics) {
 					const lookupKey = `${artistName.toLowerCase()}:::${trackTitle.toLowerCase()}`;
@@ -312,12 +345,6 @@ function buildCatalog() {
 					} else if (narrative.includes('**LYRICS:**') && !lyrics) {
 						lyrics = narrative.split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
 					}
-				}
-
-				// Resolve audio file name and test physical presence on disk
-				let fileName = t.fileName || '';
-				if (!fileName && t.masterWavPath) {
-					fileName = path.basename(t.masterWavPath);
 				}
 
 				const hasPhysicalMp3 = Boolean(
@@ -412,6 +439,12 @@ function buildCatalog() {
 
 			const dspExempt = Boolean(matchedManifestAlbum.dspExempt || albumData.dspExempt || false);
 			const dspNotice = String(matchedManifestAlbum.dspNotice || albumData.dspNotice || '').trim();
+			const rockOperaSetId = String(
+				matchedManifestAlbum.rockOperaSetId || albumData.rockOperaSetId || ''
+			).trim();
+			const isRockOpera = Boolean(
+				isRockOperaInitial || matchedManifestAlbum.isRockOpera || rockOperaSetId
+			);
 
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
@@ -426,6 +459,7 @@ function buildCatalog() {
 				datePublished,
 				genre,
 				isRockOpera,
+				rockOperaSetId,
 				albumType,
 				albumTypeLabel,
 				status,

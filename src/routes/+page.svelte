@@ -247,6 +247,14 @@
 		</button>
 
 		<a
+			href={resolve('/radio')}
+			class="flex items-center gap-2 rounded-xl border border-red-500/40 bg-red-950/60 px-4 py-2.5 text-xs font-bold text-red-200 shadow-sm transition-all hover:border-red-400 hover:bg-red-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 sm:text-sm"
+		>
+			<span class="h-2 w-2 rounded-full bg-red-400"></span>
+			<span>Engine Room Radio</span>
+		</a>
+
+		<a
 			href={resolve('/discography')}
 			class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
 		>
