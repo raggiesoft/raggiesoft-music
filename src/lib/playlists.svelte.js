@@ -87,11 +87,11 @@ export const curatedPlaylists = [
 		socialPreview:
 			'https://assets.raggiesoft.com/engine-room-records/playlists/john-and-erin/social-preview.jpg',
 		description:
-			"Follow the complete five-song story of fraternal twins John and Erin (portrayed by Ryan and Cassidy O'Connell) across Commonwealth Polytechnic Institute's hilly Blacksburg campus—from a fatal CD track skip at a campus speed-dating event and an executive rescue at the CPI Transit Center to finding sanctuary and completing the circle of sibling protection.",
+			"Follow the complete five-song story of fraternal twins John and Erin (portrayed by Ryan and Cassidy O'Connell) across Commonwealth Polytechnic Institute's hilly Blacksburg campus—from a fatal CD track skip at a Kincaid Hall speed-dating event and an executive rescue in the chaotic bus lineup along Commonwealth Mall to finding sanctuary and completing the circle of sibling protection.",
 		storyParagraphs: [
-			"Originally published by Ryan and Cassidy O'Connell in the liner booklet of 2004's Progress Street and completed on 2007's archival compilation Lost Sounds, 'Before the Distance: The Story of John & Erin' is one of The Stardust Engine's most iconic pieces of in-universe fiction. Portrayed visually by Ryan and Cassidy themselves, fraternal twins John and Erin both use heavy-duty motorized power wheelchairs to navigate the steep, five-percent limestone grades of Commonwealth Polytechnic Institute (CPI) in Blacksburg, Virginia.",
-			"The five-song arc traces how a simple accident—a student organizer fat-fingering the skip button at a campus speed-dating mixer in Newman Hall, bypassing the gentle three-minute ballad 'Seconds Into Forever' and blasting the 150-BPM warning anthem 'Thunder in the Rain'—leads quiet, analytical John into the orbit of a manipulative abuser named Valerie.",
-			"When Erin meets a hollowed-out John in the freezing November rain at the CPI Transit Center ('Before the Distance'), she refuses to let the Blue Ridge Transit bus doors close between them—reversing her power wheelchair straight down the wet aluminum ramp to pull her brother aboard. After healing inside the locked perimeter of Erin's Progress Street apartment ('Sanctuary in the Storm'), John completes the circle the following spring ('Not Her'), recognizing a slick predator boxing Erin's wheelchair into a Newman Hall alcove and wedging his own chair between them."
+			"Originally published by Ryan and Cassidy O'Connell in the liner booklet of 2004's Progress Street and completed on 2007's archival compilation Lost Sounds, 'Before the Distance: The Story of John & Erin' is one of The Stardust Engine's most iconic pieces of in-universe fiction. Portrayed visually by Ryan and Cassidy themselves, fraternal twins John and Erin both use heavy-duty motorized power wheelchairs to navigate the steep, five-percent Ironstone grades of Commonwealth Polytechnic Institute (CPI) in Blacksburg, Virginia.",
+			"The five-song arc traces how a simple accident—a student organizer fat-fingering the skip button at a campus speed-dating mixer in Kincaid Hall, bypassing the gentle three-minute ballad 'Seconds Into Forever' and blasting the 150-BPM warning anthem 'Thunder in the Rain'—leads quiet, analytical John into the orbit of a manipulative abuser named Valerie.",
+			"When Erin meets a hollowed-out John in the freezing November 2004 rain along Commonwealth Mall beneath The Keystone Bridge—back before the CPI Transit Center was built, when every Blue Ridge Transit bus lined up bumper-to-bumper along the curb in a chaotic, diesel-choked gauntlet ('Before the Distance')—she refuses to let the steel bus doors close between them, reversing her power wheelchair straight down the wet aluminum front-door ramp to pull her brother aboard. After healing inside the locked perimeter of Erin's Progress Street apartment ('Sanctuary in the Storm'), John completes the circle the following spring ('Not Her'), recognizing a slick predator boxing Erin's wheelchair into a Kincaid Hall alcove and wedging his own chair between them."
 		],
 		loreUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/john-and-erin',
 		bookUrl: 'https://books.raggiesoft.com/erin',
@@ -99,16 +99,16 @@ export const curatedPlaylists = [
 		crossUniverseLinks: [
 			{
 				label: 'The Rachel Narrative • Nov 2006',
-				title: "Jessica's Train Ride (Kent Station vs. The CPI Transit Center)",
+				title: "Jessica's Train Ride (Kent Station vs. Commonwealth Mall)",
 				description:
-					"When Jessica leaves her brother Michael on the platform at Kent Station and hears 'Before the Distance' on shuffle, she remembers reading The Stardust Engine's story of John and Erin—realizing in horror that unlike Erin at the CPI Transit Center, she let the steel doors close without pulling her brother aboard.",
+					"When Jessica leaves her brother Michael on the platform at Kent Station and hears 'Before the Distance' on shuffle, she remembers reading The Stardust Engine's story of John and Erin—realizing in horror that unlike Erin along Commonwealth Mall, she let the steel doors close without pulling her brother aboard.",
 				url: 'https://books.raggiesoft.com/rachel/book-17-a-few-small-repairs/chapter-5-the-weekend-shift/scene-6-the-pantry-algorithm'
 			},
 			{
 				label: 'CPI Campus Lore • Freddie & Paige',
 				title: 'Why Freddie & Paige Recognize "Thunder in the Rain"',
 				description:
-					"Having read the Progress Street liner notes as CPI freshmen, Freddie and Paige wonder why they've heard 'Thunder in the Rain' before—until they connect the 150-BPM stadium anthem to John's speed-dating ambush.",
+					"Having read the Progress Street liner notes as CPI freshmen after seeing The Stardust Engine at Kincaid Hall, Freddie and Paige wonder why they've heard 'Thunder in the Rain' before—until they connect the 150-BPM stadium anthem to John's speed-dating ambush.",
 				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/crucible'
 			}
 		],
@@ -123,7 +123,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-1-the-three-minute-bell',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
-					'At the Newman Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
+					'At the Kincaid Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -135,7 +135,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-2-table-four',
 				pov: 'John (Ryan O\'Connell)',
 				storySummary:
-					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
+					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair in Kincaid Hall, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -147,7 +147,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/before-the-distance/scene-1-the-frayed-mask',
 				pov: 'Erin (Cassidy O\'Connell)',
 				storySummary:
-					'Two months later at the rainy CPI Transit Center, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John\'s hand, and pulls him aboard with her.'
+					'Two months later in the chaotic pre-Transit-Center curbside bus lineup along Commonwealth Mall beneath The Keystone Bridge, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John\'s hand, and pulls him aboard with her.'
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -159,7 +159,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/sanctuary-in-the-storm/scene-1-the-locked-perimeter',
 				pov: 'John & Erin Duet',
 				storySummary:
-					'Twenty-four hours after their escape on the Blue Ridge Transit bus, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin\'s ground-floor apartment on Progress Street.'
+					'Twenty-four hours after their escape on the Blue Ridge Transit bus from Commonwealth Mall, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin\'s ground-floor apartment on Progress Street.'
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -171,7 +171,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/not-her/scene-1-the-practiced-smile',
 				pov: 'John & Erin Duet',
 				storySummary:
-					'The following spring, John spots a slick predator boxing Erin\'s power wheelchair into a recessed limestone alcove outside Newman Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him.'
+					'The following spring, John spots a slick predator boxing Erin\'s power wheelchair into a recessed Ironstone alcove outside Kincaid Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him.'
 			}
 		]
 	}
