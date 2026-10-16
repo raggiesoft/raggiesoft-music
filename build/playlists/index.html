@@ -196,6 +196,25 @@
 		<link rel="apple-touch-startup-image" href="https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/apple-splash-dark-640-1136.jpg" media="(prefers-color-scheme: dark) and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
 		<link rel="apple-touch-startup-image" href="https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/apple-splash-dark-1136-640.jpg" media="(prefers-color-scheme: dark) and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
 
+		<!--
+			========================================================================
+			GOOGLE ANALYTICS 4 (GA4) TELEMETRY INTEGRATION (G-P9RG9JVYB6)
+			========================================================================
+			Unified RaggieSoft ecosystem measurement property. Loaded asynchronously
+			via gtag.js so it never blocks audio playback, SPA routing, or LCP.
+			========================================================================
+		-->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9RG9JVYB6"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag('js', new Date());
+
+			gtag('config', 'G-P9RG9JVYB6');
+		</script>
+
 		<link href="../_app/immutable/entry/start.C-klUapu.js" rel="modulepreload">
 		<link href="../_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
 		<link href="../_app/immutable/chunks/CRzLMJPS.js" rel="modulepreload">
@@ -236,15 +255,15 @@
 			
 			<script>
 				{
-					__sveltekit_ev4djx = {
+					__sveltekit_166qa1i = {
 						base: new URL("..", location).pathname.slice(0, -1),
-						version: "1792112038480"
+						version: "1792117670181"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("../_app/immutable/entry/start.C-klUapu.js").then(async (kit) => {
-						kit.init(__sveltekit_ev4djx);
+						kit.init(__sveltekit_166qa1i);
 						const app = await import("../_app/immutable/entry/app.B3v3Vt-i.js");
 						kit.start(app, element, {
 							node_ids: [0, 7],
