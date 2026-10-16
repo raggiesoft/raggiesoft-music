@@ -314,12 +314,21 @@
 						{/if}
 						<span class="font-mono text-xs font-semibold text-slate-400">
 							{formatReleaseDate(album.temporalCoverage, album.year)} • {album.genre}
+							{#if album.upc}
+								• UPC: {album.upc}
+							{/if}
 						</span>
 					</div>
 
 					<h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
 						{album.title}
 					</h1>
+
+					{#if album.subtitle}
+						<p class="mt-1.5 text-sm font-bold tracking-wide text-amber-400 uppercase sm:text-base">
+							{album.subtitle}
+						</p>
+					{/if}
 
 					<a
 						href={resolve('/[artist]', { artist: album.artistSlug })}
@@ -337,9 +346,23 @@
 						</span>
 					</a>
 
-					<p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
-						{album.description}
-					</p>
+					{#if album.linerNotes && album.linerNotes.length > 0}
+						<div class="mt-4 space-y-3">
+							{#each album.linerNotes as paragraph, pIdx (pIdx)}
+								<p
+									class="leading-relaxed {pIdx === 0
+										? 'text-sm font-medium text-slate-200 sm:text-base'
+										: 'text-sm text-slate-300'}"
+								>
+									{paragraph}
+								</p>
+							{/each}
+						</div>
+					{:else}
+						<p class="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
+							{album.description}
+						</p>
+					{/if}
 				</div>
 
 				<!-- Action Buttons & Discovery Hub Upgrade Row -->
@@ -435,8 +458,33 @@
 							Share Album
 						</a>
 
-						<!-- Link to Official Album / Artist Lore Archive on RaggieSoft.com (when available) -->
-						{#if album.loreUrl}
+						<!-- Deep-Dive Story & Novel Lore Links -->
+						{#if album.loreLinks && album.loreLinks.length > 0}
+							{#each album.loreLinks as loreLink (loreLink.url)}
+								<a
+									href={loreLink.url}
+									target={loreLink.url.startsWith('http') ? '_blank' : undefined}
+									rel={loreLink.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+									class="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+									title={loreLink.description || loreLink.label}
+								>
+									<svg
+										class="h-4 w-4 text-indigo-400"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+										/>
+									</svg>
+									<span>{loreLink.label}</span>
+								</a>
+							{/each}
+						{:else if album.loreUrl}
 							<a
 								href={album.loreUrl}
 								target="_blank"
@@ -451,15 +499,7 @@
 										d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
 									/>
 								</svg>
-								<span>Album Lore Archive (RaggieSoft.com)</span>
-								<svg class="h-3.5 w-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-									/>
-								</svg>
+								<span>Story Archive (RaggieSoft.com)</span>
 							</a>
 						{:else if album.artistLoreUrl}
 							<a
@@ -477,14 +517,6 @@
 									/>
 								</svg>
 								<span>{album.artist} Lore Archive (RaggieSoft.com)</span>
-								<svg class="h-3.5 w-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-									/>
-								</svg>
 							</a>
 						{/if}
 
@@ -527,6 +559,117 @@
 		</div>
 	</section>
 
+	<!-- Live Stage Transcript Section (when present in album.json) -->
+	{#if album.liveTranscript}
+		<section
+			class="rounded-2xl border border-rose-500/40 bg-gradient-to-br from-rose-950/30 via-slate-900/90 to-slate-950 p-6 shadow-xl sm:p-8"
+		>
+			<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+				<span
+					class="inline-flex items-center gap-2 rounded-full border border-rose-500/50 bg-rose-950/80 px-3.5 py-1 text-xs font-bold tracking-wider text-rose-300 uppercase"
+				>
+					🎤 {album.liveTranscript.title}
+				</span>
+				{#if album.liveTranscript.venue}
+					<span class="font-mono text-xs text-slate-400">{album.liveTranscript.venue}</span>
+				{/if}
+			</div>
+
+			{#if album.liveTranscript.paragraphs}
+				<div class="space-y-3 text-sm leading-relaxed text-slate-300 italic">
+					{#each album.liveTranscript.paragraphs as p, idx (idx)}
+						<p>{p}</p>
+					{/each}
+				</div>
+			{/if}
+
+			{#if album.liveTranscript.quote}
+				<blockquote
+					class="mt-5 rounded-xl border-l-4 border-amber-500 bg-slate-950/90 p-4 font-mono text-sm font-bold tracking-wide text-amber-300 shadow-inner sm:text-base"
+				>
+					"{album.liveTranscript.quote}"
+					{#if album.liveTranscript.attribution}
+						<footer class="mt-2 text-xs font-normal text-slate-400">
+							— {album.liveTranscript.attribution}
+						</footer>
+					{/if}
+				</blockquote>
+			{/if}
+		</section>
+	{/if}
+
+	<!-- Studio Archives & Production Lore Section (migrated from raggiesoft-hub) -->
+	{#if album.studioArchives && album.studioArchives.length > 0}
+		<section class="space-y-4">
+			<div class="border-b border-slate-800/80 pb-3">
+				<h2 class="text-xl font-bold tracking-tight text-white uppercase sm:text-2xl">
+					Studio Archives &amp; Liner Notes
+				</h2>
+				<p class="text-xs text-slate-400 sm:text-sm">
+					Behind-the-scenes production logs, engineering notes, and historical context from the Engine
+					Room Records vault
+				</p>
+			</div>
+
+			<div
+				class="grid grid-cols-1 gap-4 {album.studioArchives.length === 1
+					? 'md:grid-cols-1'
+					: album.studioArchives.length === 3
+						? 'lg:grid-cols-3'
+						: 'md:grid-cols-2'}"
+			>
+				{#each album.studioArchives as archive, aIdx (aIdx)}
+					<div
+						class="flex flex-col justify-between rounded-2xl border p-5 shadow-lg {archive.variant ===
+						'warning'
+							? 'border-amber-500/30 bg-amber-950/15'
+							: archive.variant === 'danger'
+								? 'border-rose-500/30 bg-rose-950/15'
+								: archive.variant === 'success'
+									? 'border-emerald-500/30 bg-emerald-950/15'
+									: archive.variant === 'primary'
+										? 'border-indigo-500/30 bg-indigo-950/20'
+										: 'border-cyan-500/30 bg-slate-900/80'}"
+					>
+						<div>
+							<h3
+								class="mb-2 text-sm font-extrabold tracking-wider uppercase {archive.variant ===
+								'warning'
+									? 'text-amber-300'
+									: archive.variant === 'danger'
+										? 'text-rose-300'
+										: archive.variant === 'success'
+											? 'text-emerald-300'
+											: archive.variant === 'primary'
+												? 'text-indigo-300'
+												: 'text-cyan-300'}"
+							>
+								{archive.title}
+							</h3>
+							<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
+								{archive.content}
+							</p>
+						</div>
+
+						{#if archive.link}
+							<div class="mt-4 pt-2">
+								<a
+									href={archive.link.url}
+									target={archive.link.url.startsWith('http') ? '_blank' : undefined}
+									rel={archive.link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+									class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 hover:underline"
+								>
+									<span>{archive.link.label}</span>
+									<span>&rarr;</span>
+								</a>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	<!-- Tracklist & Discography Sequence -->
 	<section class="space-y-6">
 		<div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
@@ -549,7 +692,7 @@
 					{#if discs.length > 1}
 						<div class="border-b border-slate-800 bg-slate-800/50 px-6 py-3">
 							<span class="text-xs font-bold tracking-wider text-blue-400 uppercase">
-								Disc {disc.discNum}
+								Disc {disc.discNum}{disc.tracks[0]?.discName ? `: ${disc.tracks[0].discName}` : ''}
 							</span>
 						</div>
 					{/if}
@@ -589,7 +732,7 @@
 										{/if}
 
 										<div class="min-w-0">
-											<div class="flex items-center gap-2">
+											<div class="flex flex-wrap items-center gap-2">
 												<h3
 													class="truncate text-sm font-semibold {isCurrentTrack(track)
 														? 'font-bold text-blue-400'
@@ -597,6 +740,24 @@
 												>
 													{track.title}
 												</h3>
+												{#if track.legacyTier}
+													<span
+														class="rounded border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase {track.legacyTier.includes(
+															'Smash'
+														) || track.legacyTier.includes('Masterpiece')
+															? 'border-emerald-600/50 bg-emerald-950/70 text-emerald-300'
+															: track.legacyTier.includes('Anthem') ||
+																  track.legacyTier.includes('Classic') ||
+																  track.legacyTier.includes('Favorite')
+																? 'border-blue-600/50 bg-blue-950/70 text-blue-300'
+																: track.legacyTier.includes('Dud') ||
+																	  track.legacyTier.includes('Filler')
+																	? 'border-rose-600/50 bg-rose-950/70 text-rose-300'
+																	: 'border-slate-700 bg-slate-800/80 text-slate-300'}"
+													>
+														{track.legacyTier}
+													</span>
+												{/if}
 												{#if !track.isPlayable}
 													<span
 														class="rounded border border-amber-800/60 bg-amber-950/80 px-1.5 py-0.5 text-[10px] font-medium text-amber-300 uppercase"
@@ -611,7 +772,9 @@
 														>ISRC: {track.isrc}</span
 													>
 												{/if}
-												{#if track.vttUrl}
+												{#if track.vttVerified}
+													<span class="text-emerald-400/90">• ✓ Verified Synced Lyrics</span>
+												{:else if track.vttUrl}
 													<span class="text-blue-400/80">• Synced Lyrics</span>
 												{/if}
 											</div>

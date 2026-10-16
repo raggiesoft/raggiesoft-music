@@ -468,15 +468,30 @@ function buildCatalog() {
 					? `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${fileName}.mp3`
 					: '';
 
-				// Detect WebVTT synchronized lyrics if available on disk
+				// Detect WebVTT synchronized lyrics if available on disk & check HUMAN_VERIFIED status
 				let vttUrl = '';
+				let vttVerified = false;
 				if (fileName) {
-					if (fs.existsSync(path.join(albumDir, 'lyrics', `${fileName}.vtt`))) {
+					const vttPath1 = path.join(albumDir, 'lyrics', `${fileName}.vtt`);
+					const vttPath2 = path.join(albumDir, 'streaming-services', 'lyrics', `${fileName}.vtt`);
+					if (fs.existsSync(vttPath1)) {
 						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/lyrics/${fileName}.vtt`;
-					} else if (
-						fs.existsSync(path.join(albumDir, 'streaming-services', 'lyrics', `${fileName}.vtt`))
-					) {
+						try {
+							vttVerified = fs
+								.readFileSync(vttPath1, 'utf-8')
+								.includes('SYNC_TYPE: HUMAN_VERIFIED');
+						} catch {
+							// Ignore read errors
+						}
+					} else if (fs.existsSync(vttPath2)) {
 						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/streaming-services/lyrics/${fileName}.vtt`;
+						try {
+							vttVerified = fs
+								.readFileSync(vttPath2, 'utf-8')
+								.includes('SYNC_TYPE: HUMAN_VERIFIED');
+						} catch {
+							// Ignore read errors
+						}
 					}
 				}
 
@@ -488,16 +503,20 @@ function buildCatalog() {
 
 				return {
 					id: `${artistSlug}-${albumSlug}-${discNum}-${trackNum}`,
+					fileName,
 					disc: discNum,
+					discName: t.discName || '',
 					track: trackNum,
 					title: trackTitle,
 					duration,
 					isrc,
 					legacyTier,
+					stylePrompt: t.stylePrompt || '',
 					loreNote,
 					lyrics,
 					audioUrl,
 					vttUrl,
+					vttVerified,
 					isPlayable: hasPhysicalMp3
 				};
 			});
@@ -559,7 +578,17 @@ function buildCatalog() {
 				isRockOperaInitial || matchedManifestAlbum.isRockOpera || rockOperaSetId
 			);
 
-			// Resolve verified album-level lore URL on raggiesoft.com (only if route + PHP view exist)
+			// Extract migrated liner notes, studio archives, live transcripts, and lore links from album.json
+			const subtitle = String(albumData.subtitle || '').trim();
+			const upc = String(albumData.gtin12 || albumData.identifier || '').trim();
+			const linerNotes = Array.isArray(albumData.linerNotes) ? albumData.linerNotes : [];
+			const studioArchives = Array.isArray(albumData.studioArchives)
+				? albumData.studioArchives
+				: [];
+			const liveTranscript = albumData.liveTranscript || null;
+			const loreLinks = Array.isArray(albumData.loreLinks) ? albumData.loreLinks : [];
+
+			// Resolve verified non-discography story lore URL on raggiesoft.com if present
 			const rawManifestUrl = String(
 				matchedManifestAlbum.url || albumData.loreUrl || ''
 			).trim();
@@ -567,39 +596,21 @@ function buildCatalog() {
 				? rawManifestUrl.slice(HUB_BASE.length)
 				: rawManifestUrl;
 
-			const candidateAlbumRoutes = [
-				normalizedManifestRoute,
-				`/engine-room/artists/${hubArtistSlug}/discography/${albumSlug}`,
-				`/engine-room/artists/${artistSlug}/discography/${albumSlug}`,
-				albumSlug === '1996-ad-astra-single'
-					? '/engine-room/artists/stardust-engine/discography/1996-escape-velocity-ad-astra'
-					: '',
-				albumSlug === '2003-sanctuary-zero-g'
-					? '/engine-room/artists/stardust-engine/discography/2003-moon-1-sanctuary-zero-g'
-					: '',
-				albumSlug === '2003-mile-marker-98'
-					? '/engine-room/artists/stardust-engine/discography/2003-moon-2-mile-marker-98'
-					: '',
-				albumSlug.startsWith('2001-static-and-silence')
-					? '/engine-room/artists/the-paper-wall/discography/2001-static-and-silence'
-					: '',
-				albumSlug === '2007-tales-from-the-solstice'
-					? '/engine-room/artists/the-arctic-symphony-project/tales-of-the-solstice'
-					: ''
-			].filter(Boolean);
-
 			let loreUrl = '';
-			for (const route of candidateAlbumRoutes) {
-				if (verifiedHubRoutes.has(route)) {
-					loreUrl = `${HUB_BASE}${route}`;
-					break;
-				}
+			if (
+				normalizedManifestRoute &&
+				!normalizedManifestRoute.includes('/discography/') &&
+				verifiedHubRoutes.has(normalizedManifestRoute)
+			) {
+				loreUrl = `${HUB_BASE}${normalizedManifestRoute}`;
 			}
 
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
 				slug: albumSlug,
 				title: albumTitle,
+				subtitle,
+				upc,
 				artist: artistName,
 				artistSlug,
 				artistLogo,
@@ -621,6 +632,10 @@ function buildCatalog() {
 				artwork,
 				socialPreview,
 				description,
+				linerNotes,
+				studioArchives,
+				liveTranscript,
+				loreLinks,
 				spotifyId,
 				appleId,
 				amazonId,

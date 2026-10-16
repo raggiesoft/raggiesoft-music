@@ -28,16 +28,20 @@ import rawCatalog from './musicCatalog.json';
 /**
  * @typedef {Object} Track
  * @property {string} id
+ * @property {string} [fileName]
  * @property {number} disc
+ * @property {string} [discName]
  * @property {number} track
  * @property {string} title
  * @property {string} duration
  * @property {string} [isrc]
  * @property {string} [legacyTier]
+ * @property {string} [stylePrompt]
  * @property {string} [loreNote]
  * @property {string} [lyrics]
  * @property {string} audioUrl
  * @property {string} [vttUrl]
+ * @property {boolean} [vttVerified]
  * @property {boolean} [isPlayable]
  */
 
@@ -46,6 +50,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} id
  * @property {string} slug
  * @property {string} title
+ * @property {string} [subtitle]
  * @property {string} artist
  * @property {string} artistSlug
  * @property {string | null} [artistLogo]
@@ -55,6 +60,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} year
  * @property {string} [temporalCoverage]
  * @property {string} [datePublished]
+ * @property {string} [upc]
  * @property {string} genre
  * @property {boolean} isRockOpera
  * @property {string} [rockOperaSetId]
@@ -67,6 +73,10 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} artwork
  * @property {string} socialPreview
  * @property {string} description
+ * @property {string[]} [linerNotes]
+ * @property {Array<{ title: string, icon?: string, variant?: string, content: string, link?: { label: string, url: string } }>} [studioArchives]
+ * @property {{ title?: string, venue?: string, paragraphs?: string[], quote?: string, attribution?: string } | null} [liveTranscript]
+ * @property {Array<{ label: string, url: string, description?: string }>} [loreLinks]
  * @property {string} [spotifyId]
  * @property {string} [appleId]
  * @property {string} [amazonId]
