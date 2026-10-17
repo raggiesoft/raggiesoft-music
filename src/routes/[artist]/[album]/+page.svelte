@@ -23,7 +23,9 @@
 	 *    Native Share.
 	 * ============================================================================
 	 */
+	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { player } from '#lib/player.svelte.js';
 	import { playlistManager } from '#lib/playlists.svelte.js';
 	import {
@@ -101,6 +103,142 @@
 	// Active track expanded for lore/lyrics accordion view
 	let expandedTrackId = $state(/** @type {string | null} */ (null));
 
+	// Track ID matched via URL deep-link (?track=..., ?play=..., ?song=..., or #track-...)
+	let deepLinkedTrackId = $state(/** @type {string | null} */ (null));
+	let lastHandledDeepLinkKey = '';
+
+	// Track ID whose direct deep-link was recently copied to clipboard
+	let copiedTrackId = $state(/** @type {string | null} */ (null));
+
+	let deepLinkedTrack = $derived(
+		deepLinkedTrackId ? album.tracks.find((t) => t.id === deepLinkedTrackId) || null : null
+	);
+
+	/**
+	 * Normalizes a string into a lowercase alphanumeric hyphenated slug for flexible track matching.
+	 * @param {string} str
+	 * @returns {string}
+	 */
+	function slugifyTrackToken(str) {
+		return (str || '')
+			.toLowerCase()
+			.trim()
+			.replace(/^#?(?:track-)?/, '')
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '');
+	}
+
+	/**
+	 * Resolves a track from `album.tracks` matching a URL query parameter (`?track=`, `?play=`, `?song=`)
+	 * or hash fragment (`#track-...`). Supports matching by `fileName` (e.g. `2-04-moon-1-tidal-lock`),
+	 * stripped `fileName` (`moon-1-tidal-lock`), `id`, `isrc`, `disc-track` (`2-4` / `2-04`), or title slug.
+	 *
+	 * @param {string} rawQuery
+	 * @param {any[]} tracks
+	 * @returns {any | null}
+	 */
+	function findTrackByDeepLink(rawQuery, tracks) {
+		if (!rawQuery || !Array.isArray(tracks) || tracks.length === 0) return null;
+		const cleanRaw = rawQuery.trim().toLowerCase().replace(/^#?(?:track-)?/, '');
+		const cleanSlug = slugifyTrackToken(rawQuery);
+		if (!cleanRaw && !cleanSlug) return null;
+
+		for (const t of tracks) {
+			const fileName = (t.fileName || '').toLowerCase();
+			const strippedFileName = fileName.replace(/^\d+-\d+-/, '');
+			const id = (t.id || '').toLowerCase();
+			const isrc = (t.isrc || '').toLowerCase();
+			const discNum = t.disc || 1;
+			const trackNum = t.track || 1;
+			const discTrackShort = `${discNum}-${trackNum}`;
+			const discTrackPadded = `${discNum}-${String(trackNum).padStart(2, '0')}`;
+			const titleSlug = slugifyTrackToken(t.title || '');
+
+			if (
+				fileName === cleanRaw ||
+				fileName === cleanSlug ||
+				(strippedFileName && (strippedFileName === cleanRaw || strippedFileName === cleanSlug)) ||
+				id === cleanRaw ||
+				id === cleanSlug ||
+				(isrc && isrc === cleanRaw) ||
+				discTrackShort === cleanRaw ||
+				discTrackPadded === cleanRaw ||
+				(titleSlug && titleSlug === cleanSlug)
+			) {
+				return t;
+			}
+		}
+
+		// Secondary partial match on stripped fileName or titleSlug
+		return (
+			tracks.find((t) => {
+				const strippedFileName = (t.fileName || '').toLowerCase().replace(/^\d+-\d+-/, '');
+				const titleSlug = slugifyTrackToken(t.title || '');
+				return (
+					(strippedFileName && strippedFileName.includes(cleanSlug)) ||
+					(titleSlug && titleSlug.includes(cleanSlug))
+				);
+			}) || null
+		);
+	}
+
+	// Reactively detect incoming deep-link parameters (?track=, ?play=, ?song=, or #track-...)
+	// and automatically cue/start the requested song, expand its Lore & Lyrics, and scroll to it.
+	$effect(() => {
+		if (typeof window === 'undefined' || !page.url || !album?.tracks?.length) return;
+
+		const trackParam =
+			page.url.searchParams.get('track') ||
+			page.url.searchParams.get('play') ||
+			page.url.searchParams.get('song') ||
+			'';
+		const rawHash =
+			page.url.hash && page.url.hash !== '#share-album-section' ? page.url.hash : '';
+		const targetQuery = trackParam || rawHash;
+
+		if (!targetQuery) return;
+
+		const deepLinkKey = `${album.id}::${targetQuery}`;
+		if (deepLinkKey === lastHandledDeepLinkKey) return;
+
+		const matchedTrack = findTrackByDeepLink(targetQuery, album.tracks);
+		if (!matchedTrack) return;
+
+		lastHandledDeepLinkKey = deepLinkKey;
+		deepLinkedTrackId = matchedTrack.id;
+		expandedTrackId = matchedTrack.id;
+
+		if (matchedTrack.isPlayable) {
+			playTrack(matchedTrack);
+		}
+
+		tick().then(() => {
+			const rowDomId = `track-${matchedTrack.fileName || matchedTrack.id}`;
+			const rowEl = document.getElementById(rowDomId);
+			if (rowEl) {
+				rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		});
+	});
+
+	/**
+	 * Copies a direct deep-link URL that starts/highlights a specific track on this album.
+	 * @param {any} track
+	 */
+	async function copyTrackDeepLink(track) {
+		const slugOrId = track.fileName || track.id;
+		const shareUrl = `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}?track=${encodeURIComponent(slugOrId)}`;
+		try {
+			await navigator.clipboard.writeText(shareUrl);
+			copiedTrackId = track.id;
+			setTimeout(() => {
+				if (copiedTrackId === track.id) copiedTrackId = null;
+			}, 2500);
+		} catch {
+			// Fallback if clipboard permission is unavailable
+		}
+	}
+
 	/**
 	 * Toggles lore and lyrics details for the specified track.
 	 * @param {string} trackId
@@ -120,11 +258,15 @@
 	}
 
 	/**
-	 * Plays a specific playable track from this album.
+	 * Plays a specific playable track from this album (or toggles play/pause if already loaded).
 	 * @param {any} track
 	 */
 	function playTrack(track) {
 		if (!track.isPlayable) return;
+		if (isCurrentTrack(track)) {
+			player.togglePlay();
+			return;
+		}
 		const queue = formatAlbumQueue(album);
 		const trackIndex = queue.findIndex(
 			(t) => t.id === track.id || (t.isrc && t.isrc === track.isrc)
@@ -684,6 +826,41 @@
 			</div>
 		</div>
 
+		{#if deepLinkedTrack}
+			<div
+				class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-blue-500/50 bg-blue-950/30 p-4 shadow-lg"
+			>
+				<div class="flex items-center gap-3">
+					<span
+						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600/30 text-blue-300"
+					>
+						🎵
+					</span>
+					<div>
+						<div class="text-[11px] font-bold tracking-wider text-blue-300 uppercase">
+							Featured Track Deep-Link • Disc {deepLinkedTrack.disc || 1}, Track {deepLinkedTrack.track}
+						</div>
+						<div class="text-sm font-bold text-white sm:text-base">
+							{deepLinkedTrack.title}
+						</div>
+					</div>
+				</div>
+				{#if deepLinkedTrack.isPlayable}
+					<button
+						type="button"
+						onclick={() => playTrack(deepLinkedTrack)}
+						class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
+					>
+						{#if isCurrentTrack(deepLinkedTrack) && player.isPlaying}
+							<span>❚❚ Pause Track</span>
+						{:else}
+							<span>▶ Play "{deepLinkedTrack.title}"</span>
+						{/if}
+					</button>
+				{/if}
+			</div>
+		{/if}
+
 		<div class="space-y-8">
 			{#each discs as disc (disc.discNum)}
 				<div
@@ -700,9 +877,12 @@
 					<div class="divide-y divide-slate-800/60">
 						{#each disc.tracks as track (track.id)}
 							<div
+								id="track-{track.fileName || track.id}"
 								class="flex flex-col transition-colors {isCurrentTrack(track)
 									? 'bg-blue-950/20'
-									: 'hover:bg-slate-800/40'}"
+									: deepLinkedTrackId === track.id
+										? 'bg-indigo-950/25 ring-1 ring-blue-500/40'
+										: 'hover:bg-slate-800/40'}"
 							>
 								<div class="flex items-center justify-between gap-4 p-4 sm:px-6">
 									<div class="flex min-w-0 items-center gap-4">
@@ -783,6 +963,15 @@
 
 									<div class="flex shrink-0 items-center gap-2.5">
 										<span class="font-mono text-xs text-slate-400">{track.duration}</span>
+
+										<button
+											type="button"
+											onclick={() => copyTrackDeepLink(track)}
+											class="rounded-lg border border-slate-700/60 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 transition-colors hover:border-blue-500/50 hover:bg-slate-700 hover:text-blue-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+											title="Copy direct link to start {track.title}"
+										>
+											{copiedTrackId === track.id ? '✓ Link Copied' : '🔗 Link'}
+										</button>
 
 										{#if track.isPlayable && track.audioUrl}
 											<button
