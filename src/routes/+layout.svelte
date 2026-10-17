@@ -88,7 +88,7 @@
 </script>
 
 <div
-	class="flex min-h-screen flex-col bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
+	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
 >
 	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css) -->
 	<nav
@@ -116,17 +116,19 @@
 
 	<!-- Primary Global Header -->
 	<header
-		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-4 py-3 backdrop-blur-md"
+		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"
 	>
 		<div class="mx-auto flex max-w-7xl items-center justify-between gap-2">
-			<!-- Brand Logo & Home Link -->
+			<!-- Brand Logo & Home Link (Serves as the primary Home link across all viewports) -->
 			<a
 				href={resolve('/')}
 				onclick={() => (mobileMenuOpen = false)}
-				class="group flex items-center gap-3 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+				title="Return to The Listening Room Home (music.raggiesoft.com)"
+				aria-label="The Listening Room by Engine Room Records — Home"
+				class="group flex min-w-0 items-center gap-2.5 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:gap-3"
 			>
 				<div
-					class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-md transition-transform group-hover:scale-105"
+					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-md transition-transform group-hover:scale-105 sm:h-11 sm:w-11"
 				>
 					<!-- Light Mode Logo: Pure Black on Transparent Background -->
 					<img
@@ -141,24 +143,24 @@
 						class="er-logo-dark h-full w-full object-contain"
 					/>
 				</div>
-				<div>
-					<span class="block text-sm sm:text-base leading-tight font-extrabold tracking-tight text-white"
+				<div class="min-w-0">
+					<span class="block truncate text-sm leading-tight font-extrabold tracking-tight text-white sm:text-base"
 						>The Listening Room</span
 					>
-					<span class="text-[10px] sm:text-[11px] font-semibold tracking-wider text-blue-400 uppercase"
+					<span class="block truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]"
 						>by Engine Room Records</span
 					>
 				</div>
 			</a>
 
-			<!-- Global Navigation Links & Action Controls -->
-			<div class="flex items-center gap-1.5 sm:gap-2.5">
-				<nav class="hidden md:flex items-center gap-1.5 text-xs font-semibold sm:gap-2.5 sm:text-sm" aria-label="Global Navigation">
+			<!-- Trimmed Global Navigation Links & Action Controls -->
+			<div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+				<nav class="hidden md:flex items-center gap-1 text-xs font-semibold lg:gap-2 lg:text-sm" aria-label="Global Navigation">
 					{#if canInstall}
 						<button
 							type="button"
 							onclick={installApp}
-							class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 md:flex"
+							class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 xl:flex"
 							aria-label="Install Engine Room Records as an App"
 						>
 							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -174,18 +176,8 @@
 					{/if}
 
 					<a
-						href={resolve('/')}
-						class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath ===
-						'/'
-							? 'bg-blue-600 text-white shadow-sm'
-							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-					>
-						Home
-					</a>
-
-					<a
 						href={resolve('/discography')}
-						class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
+						class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 {currentPath !==
 							'/' &&
 						!currentPath.startsWith('/playlists') &&
 						!currentPath.startsWith('/settings') &&
@@ -201,7 +193,7 @@
 
 					<a
 						href={resolve('/playlists')}
-						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 {currentPath.startsWith(
 							'/playlists'
 						)
 							? 'bg-blue-600 text-white shadow-sm'
@@ -212,7 +204,7 @@
 
 					<a
 						href={resolve('/radio')}
-						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 {currentPath.startsWith(
 							'/radio'
 						)
 							? 'bg-blue-600 text-white shadow-sm'
@@ -223,20 +215,8 @@
 					</a>
 
 					<a
-						href={resolve('/behind-the-scenes')}
-						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
-							'/behind-the-scenes'
-						)
-							? 'bg-blue-600 text-white shadow-sm'
-							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-						title="Behind the Scenes: AI & The Creative Process"
-					>
-						<span>Behind the Scenes</span>
-					</a>
-
-					<a
 						href={resolve('/settings')}
-						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 {currentPath.startsWith(
 							'/settings'
 						)
 							? 'bg-blue-600 text-white shadow-sm'
@@ -258,7 +238,7 @@
 								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
 							/>
 						</svg>
-						<span>Settings</span>
+						<span class="hidden lg:inline">Settings</span>
 					</a>
 				</nav>
 
@@ -289,7 +269,7 @@
 					aria-expanded={mobileMenuOpen}
 					aria-controls="music-mobile-navigation"
 					aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-					class="flex md:hidden h-10 w-10 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					class="flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 				>
 					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 						{#if mobileMenuOpen}
@@ -355,7 +335,7 @@
 	</header>
 
 	<!-- Main Page Slot (Routes render here) -->
-	<main class="mx-auto w-full max-w-7xl flex-grow px-4 py-8 sm:px-6 lg:px-8">
+	<main class="mx-auto w-full max-w-7xl flex-grow overflow-x-clip px-4 py-8 sm:px-6 lg:px-8">
 		{@render children()}
 	</main>
 

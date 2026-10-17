@@ -283,7 +283,7 @@
 						</svg>
 					</div>
 
-					<div class="space-y-2.5">
+					<div class="min-w-0 space-y-2.5">
 						<div class="flex flex-wrap items-center gap-2">
 							<span
 								class="rounded border border-cyan-500/30 bg-cyan-950/80 px-2 py-0.5 text-[11px] font-bold tracking-wider text-cyan-300 uppercase"
@@ -454,7 +454,7 @@
 					/>
 				</a>
 
-				<div class="flex-1 space-y-3.5">
+				<div class="min-w-0 flex-1 space-y-3.5">
 					<div class="flex flex-wrap items-center gap-2">
 						<span
 							class="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
@@ -574,7 +574,7 @@
 				</a>
 
 				<!-- Spotlight Narrative Info -->
-				<div class="flex flex-1 flex-col text-left">
+				<div class="flex min-w-0 flex-1 flex-col text-left">
 					<div class="flex flex-wrap items-center gap-2">
 						<span
 							class="rounded border border-indigo-700/50 bg-indigo-900/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-indigo-300 uppercase"

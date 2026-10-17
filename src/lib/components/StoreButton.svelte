@@ -113,9 +113,9 @@
 			return 'px-3 py-1.5 text-xs';
 		}
 		if (size === 'medium') {
-			return 'px-4 py-2 text-xs sm:text-sm';
+			return 'px-3.5 py-2 text-xs sm:px-4 sm:text-sm';
 		}
-		return 'px-5 py-3 text-sm sm:text-base';
+		return 'px-3.5 py-2.5 text-xs sm:px-5 sm:py-3 sm:text-base';
 	});
 
 	let chevronSizeClasses = $derived.by(() => {
@@ -125,7 +125,7 @@
 		if (size === 'medium') {
 			return 'px-2.5 py-2 text-xs sm:text-sm';
 		}
-		return 'px-3 py-3 text-sm sm:text-base';
+		return 'px-2.5 py-2.5 text-xs sm:px-3 sm:py-3 sm:text-base';
 	});
 
 	/**
@@ -153,18 +153,18 @@
 {#if activePlatform || (showFourthwall && (storeStandardUrl || storeAudiophileUrl || storefrontUrl))}
 	<div
 		bind:this={containerEl}
-		class="inline-flex flex-wrap items-center gap-2.5 {menuOpen ? 'relative z-40' : ''}"
+		class="inline-flex max-w-full flex-wrap items-center gap-2.5 {menuOpen ? 'relative z-40' : ''}"
 	>
 		<!-- 1. SPLIT DSP STREAMING BUTTON -->
 		{#if activePlatform}
-			<div class="relative inline-flex shrink-0 rounded-xl shadow-lg">
+			<div class="relative inline-flex max-w-full rounded-xl shadow-lg">
 				<!-- Main Action Link (Opens Preferred DSP in New Tab) -->
 				<a
 					href={activePlatform.url}
 					target="_blank"
 					rel="noopener noreferrer"
 					style="background-color: {activePlatform.config.brandHex}; color: #ffffff;"
-					class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap font-extrabold tracking-tight transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white {sizeClasses} {availablePlatforms.length >
+					class="inline-flex min-w-0 items-center gap-2 text-left leading-snug font-extrabold tracking-tight transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:whitespace-nowrap {sizeClasses} {availablePlatforms.length >
 					1
 						? 'rounded-l-xl'
 						: 'rounded-xl'}"

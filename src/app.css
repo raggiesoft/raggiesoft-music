@@ -28,6 +28,20 @@
 @plugin '@tailwindcss/typography';
 
 /* ============================================================================
+ * 0. GLOBAL VIEWPORT OVERFLOW CONTAINMENT (MOBILE & RESPONSIVE GUARD)
+ * ============================================================================
+ * Uses `overflow-x: clip` rather than `overflow-x: hidden` so accidental
+ * horizontal bleed from decorative blurs or flex items is clipped at the
+ * viewport edge without creating a scroll container that would break
+ * `position: sticky` on the global header.
+ */
+html,
+body {
+	max-width: 100%;
+	overflow-x: clip;
+}
+
+/* ============================================================================
  * 1. LOGO VISIBILITY RULES (LIGHT VS. DARK MODE)
  * ============================================================================ */
 .er-logo-light {

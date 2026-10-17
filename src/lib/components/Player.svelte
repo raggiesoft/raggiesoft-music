@@ -1019,9 +1019,9 @@
 	</div>
 
 	<!-- Controls & Metadata Grid -->
-	<div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
+	<div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-4 sm:py-2.5">
 		<!-- 1. LEFT: Album Art & Track Info -->
-		<div class="flex min-w-0 flex-1 items-center gap-3.5">
+		<div class="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3.5">
 			<!-- Clickable thumbnail toggles Expanded Drawer -->
 			<button
 				onclick={() => player.toggleExpanded()}
@@ -1032,11 +1032,11 @@
 					<img
 						src={player.currentTrack.artwork}
 						alt="Cover artwork for {player.currentTrack.title}"
-						class="h-13 w-13 rounded-md object-cover shadow-md transition-opacity group-hover:opacity-85"
+						class="h-11 w-11 rounded-md object-cover shadow-md transition-opacity group-hover:opacity-85 sm:h-13 sm:w-13"
 					/>
 				{:else}
 					<div
-						class="flex h-13 w-13 items-center justify-center rounded-md border border-slate-700 bg-slate-800 text-slate-500"
+						class="flex h-11 w-11 items-center justify-center rounded-md border border-slate-700 bg-slate-800 text-slate-500 sm:h-13 sm:w-13"
 					>
 						♫
 					</div>
@@ -1057,7 +1057,7 @@
 
 			<div class="truncate text-left min-w-0">
 				<div class="flex items-center gap-1.5 truncate">
-					<h3 class="truncate text-sm leading-snug font-bold text-white">
+					<h3 class="truncate text-xs leading-snug font-bold text-white sm:text-sm">
 						{player.currentTrack.title || 'The Listening Room'}
 					</h3>
 					{#if player.currentTrack.audioUrl}
@@ -1077,7 +1077,7 @@
 							class="h-3.5 w-3.5 shrink-0 rounded-full object-cover border border-slate-700/80 bg-slate-950"
 						/>
 					{/if}
-					<p class="truncate text-xs text-slate-400">
+					<p class="truncate text-[11px] text-slate-400 sm:text-xs">
 						{player.currentTrack.artist || 'Select a track to preview (128kbps)'}
 					</p>
 				</div>
@@ -1086,7 +1086,7 @@
 
 		<!-- 2. CENTER: Playback Controls & Timestamp Display -->
 		<div class="flex shrink-0 flex-col items-center justify-center">
-			<div class="flex items-center gap-2 sm:gap-3">
+			<div class="flex items-center gap-1 sm:gap-3">
 				<!-- Shuffle Toggle (Desktop — Criss-Crossing Arrows + Explicit Label) -->
 				<button
 					type="button"
@@ -1118,7 +1118,7 @@
 					disabled={!player.currentTrack.audioUrl}
 					aria-label="Previous track"
 					title="Previous Track"
-					class="rounded-full p-2 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+					class="rounded-full p-1.5 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 sm:p-2"
 				>
 					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
 						<path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
@@ -1131,7 +1131,7 @@
 					onclick={() => player.togglePlay()}
 					disabled={!player.currentTrack.audioUrl}
 					aria-label={player.isPlaying ? 'Pause' : 'Play'}
-					class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
+					class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:w-11"
 				>
 					{#if player.isLoading}
 						<svg class="h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
@@ -1163,7 +1163,7 @@
 					disabled={!player.hasNext && !player.isShuffle}
 					aria-label="Next track"
 					title="Next Track"
-					class="rounded-full p-2 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+					class="rounded-full p-1.5 text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 sm:p-2"
 				>
 					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
 						<path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
@@ -1204,7 +1204,7 @@
 			</div>
 
 			<!-- Timestamp Counters -->
-			<div class="mt-1 flex items-center gap-2 font-mono text-xs text-slate-400">
+			<div class="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-slate-400 sm:mt-1 sm:gap-2 sm:text-xs">
 				<span>{player.formattedCurrentTime}</span>
 				<span>/</span>
 				<span>{player.formattedDuration}</span>
@@ -1212,7 +1212,7 @@
 		</div>
 
 		<!-- 3. RIGHT: DSP Upgrade Pill, Lore/Lyrics Drawer Toggle & Volume Slider -->
-		<div class="flex flex-1 items-center justify-end gap-2.5">
+		<div class="flex shrink-0 items-center justify-end gap-1.5 sm:flex-1 sm:gap-2.5">
 			{#if player.hasActiveExternalSupportLinks(player.currentTrack)}
 				<div class="hidden shrink-0 lg:block">
 					<StoreButton
@@ -1249,8 +1249,8 @@
 				{/if}
 			</button>
 
-			<!-- Volume Controls -->
-			<div class="flex items-center gap-2">
+			<!-- Volume Controls (Hidden on mobile < 768px where OS hardware volume buttons are used) -->
+			<div class="hidden items-center gap-2 md:flex">
 				<button
 					onclick={() => player.toggleMute()}
 					aria-label={player.isMuted ? 'Unmute' : 'Mute'}
