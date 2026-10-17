@@ -587,6 +587,35 @@
 							</button>
 						{/if}
 
+						<!-- 3. CC BY-SA 4.0 Free 128kbps MP3 ZIP Archive Download Button -->
+						{#if album.freeArchiveUrl}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -->
+							<a
+								href={album.freeArchiveUrl}
+								download
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-2 rounded-xl border border-emerald-500/50 bg-emerald-950/50 px-4 py-3 text-sm font-semibold text-emerald-200 shadow-md transition-colors hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+								title="Download Free 128kbps MP3 Album Archive (.zip) — Licensed under CC BY-SA 4.0"
+							>
+								<svg
+									class="h-4 w-4 text-emerald-400"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+									/>
+								</svg>
+								<span>Free 128kbps MP3 (.zip)</span>
+							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						{/if}
+
 						<!-- Share Album Button -->
 						<a
 							href="#share-album-section"
@@ -606,6 +635,7 @@
 						<!-- Deep-Dive Story & Novel Lore Links -->
 						{#if album.loreLinks && album.loreLinks.length > 0}
 							{#each album.loreLinks as loreLink (loreLink.url)}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
 								<a
 									href={loreLink.url}
 									target={loreLink.url.startsWith('http') ? '_blank' : undefined}
@@ -628,8 +658,10 @@
 									</svg>
 									<span>{loreLink.label}</span>
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/each}
 						{:else if album.loreUrl}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -->
 							<a
 								href={album.loreUrl}
 								target="_blank"
@@ -646,7 +678,9 @@
 								</svg>
 								<span>Story Archive (RaggieSoft.com)</span>
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						{:else if album.artistLoreUrl}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -->
 							<a
 								href={album.artistLoreUrl}
 								target="_blank"
@@ -663,6 +697,7 @@
 								</svg>
 								<span>{album.artist} Lore Archive (RaggieSoft.com)</span>
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						{/if}
 
 						<!-- Link to Artist Page -->
@@ -674,27 +709,55 @@
 						</a>
 					</div>
 
-					<!-- Transparent "Support the Artist" Microcopy (Only shown when DSP or Fourthwall links exist) -->
-					{#if hasAnyDsp(album) || hasFourthwallStore(album)}
+					<!-- Transparent "Support the Artist & CC BY-SA 4.0 Free Download" Microcopy -->
+					{#if hasAnyDsp(album) || hasFourthwallStore(album) || album.freeArchiveUrl}
 						<div
 							class="rounded-2xl border border-slate-800/90 bg-slate-950/70 px-4 py-3 text-xs leading-relaxed text-slate-300 shadow-inner"
 						>
 							<p>
 								<span class="mr-1" aria-hidden="true">💛</span>
-								<strong class="text-white">Enjoying the tracks?</strong> The built-in player streams free
-								<strong>128kbps web previews</strong> so you can explore the lyrics and lore.
-								{#if hasAnyDsp(album)}
-									Listening in lossless or high-res on your favorite streaming app—or saving this
-									album to your library for offline listening—directly supports
+								<strong class="text-white">CC BY-SA 4.0 Free Downloads &amp; Artist Support:</strong>
+								The built-in player streams free <strong>128kbps web previews</strong>, and you can
+								freely download the
+								{#if album.freeArchiveUrl}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -->
+									<a
+										href={album.freeArchiveUrl}
+										download
+										target="_blank"
+										rel="noopener noreferrer"
+										class="font-bold text-emerald-300 underline decoration-emerald-400/60 hover:text-white"
+									>
+										complete 128kbps MP3 Album ZIP Archive
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									or individual <strong>128kbps MP3 tracks</strong> below
 								{:else}
-									Purchasing the digital archive directly on Fourthwall supports
+									individual <strong>128kbps MP3 tracks</strong> below
 								{/if}
-								<strong class="text-blue-300">Michael Ragsdale</strong> and helps fund the next
-								<strong class="text-blue-300">Engine Room Records</strong> release.
-								{#if hasFourthwallStore(album)}
-									You can also own the DRM-free digital release on Fourthwall in
-									<strong class="text-cyan-300">High-Quality MP3/OGG</strong> or
-									<strong class="text-amber-300">Premium WAV/FLAC</strong>.
+								under our
+								<a
+									href="https://creativecommons.org/licenses/by-sa/4.0/"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="font-semibold text-blue-300 underline decoration-blue-400/60 hover:text-white"
+								>
+									Creative Commons BY-SA 4.0 License
+								</a>.
+								{#if hasAnyDsp(album) || hasFourthwallStore(album)}
+									{#if hasAnyDsp(album)}
+										Streaming in lossless or high-res on your favorite music app—or saving this
+										album to your library—directly supports
+									{:else}
+										Purchasing the studio archive directly on Fourthwall supports
+									{/if}
+									<strong class="text-blue-300">Michael Ragsdale</strong> and helps fund the next
+									<strong class="text-blue-300">Engine Room Records</strong> release.
+									{#if hasFourthwallStore(album)}
+										You can also own the DRM-free digital release on Fourthwall in
+										<strong class="text-cyan-300">High-Quality MP3/OGG</strong> or
+										<strong class="text-amber-300">Master WAV/FLAC</strong>.
+									{/if}
 								{/if}
 							</p>
 						</div>
@@ -817,16 +880,31 @@
 
 	<!-- Tracklist & Discography Sequence -->
 	<section class="space-y-6">
-		<div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+		<div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
 			<div>
 				<h2 class="text-2xl font-bold tracking-tight text-white">
 					Tracklist, Lyrics &amp; Canonical Lore
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
 					{album.totalTracksCount} tracks • {album.playableTrackCount} available as 128kbps web preview
-					streams
+					streams &amp; CC BY-SA 4.0 downloads
 				</p>
 			</div>
+
+			{#if album.freeArchiveUrl}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
+				<a
+					href={album.freeArchiveUrl}
+					download
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+					title="Download Full Album 128kbps MP3 Archive (.zip) under CC BY-SA 4.0"
+				>
+					<span>⬇ Download Album 128kbps MP3 (.zip)</span>
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{/if}
 		</div>
 
 		{#if deepLinkedTrack}
@@ -862,17 +940,33 @@
 					</div>
 				</div>
 				{#if deepLinkedTrack.isPlayable}
-					<button
-						type="button"
-						onclick={() => playTrack(deepLinkedTrack)}
-						class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
-					>
-						{#if isCurrentTrack(deepLinkedTrack) && player.isPlaying}
-							<span>❚❚ Pause Track</span>
-						{:else}
-							<span>▶ Play "{deepLinkedTrack.title}"</span>
+					<div class="flex flex-wrap items-center gap-2">
+						<button
+							type="button"
+							onclick={() => playTrack(deepLinkedTrack)}
+							class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
+						>
+							{#if isCurrentTrack(deepLinkedTrack) && player.isPlaying}
+								<span>❚❚ Pause Track</span>
+							{:else}
+								<span>▶ Play "{deepLinkedTrack.title}"</span>
+							{/if}
+						</button>
+						{#if deepLinkedTrack.audioUrl}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -->
+							<a
+								href={deepLinkedTrack.audioUrl}
+								download="{deepLinkedTrack.fileName || deepLinkedTrack.id}.mp3"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-1.5 rounded-xl border border-emerald-500/50 bg-emerald-950/60 px-3.5 py-2 text-xs font-bold text-emerald-200 transition-colors hover:border-emerald-400 hover:bg-emerald-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 sm:text-sm"
+								title="Download 128kbps MP3 ({deepLinkedTrack.title}) under CC BY-SA 4.0"
+							>
+								<span>⬇ 128kbps MP3</span>
+							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						{/if}
-					</button>
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -900,7 +994,7 @@
 										? 'bg-indigo-950/25 ring-1 ring-blue-500/40'
 										: 'hover:bg-slate-800/40'}"
 							>
-								<div class="flex items-center justify-between gap-4 p-4 sm:px-6">
+								<div class="flex flex-wrap items-center justify-between gap-4 p-4 sm:px-6">
 									<div class="flex min-w-0 items-center gap-4">
 										<!-- Track Number or Play Button -->
 										{#if track.isPlayable}
@@ -977,8 +1071,23 @@
 										</div>
 									</div>
 
-									<div class="flex shrink-0 items-center gap-2.5">
+									<div class="flex flex-wrap shrink-0 items-center gap-2">
 										<span class="font-mono text-xs text-slate-400">{track.duration}</span>
+
+										{#if track.isPlayable && track.audioUrl}
+											<!-- eslint-disable svelte/no-navigation-without-resolve -->
+											<a
+												href={track.audioUrl}
+												download="{track.fileName || track.id}.mp3"
+												target="_blank"
+												rel="noopener noreferrer"
+												class="rounded-lg border border-emerald-700/60 bg-emerald-950/40 px-2.5 py-1 text-xs font-semibold text-emerald-300 transition-colors hover:border-emerald-500 hover:bg-emerald-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+												title="Download raw 128kbps MP3 ({track.title}) — CC BY-SA 4.0"
+											>
+												⬇ MP3
+											</a>
+											<!-- eslint-enable svelte/no-navigation-without-resolve -->
+										{/if}
 
 										<button
 											type="button"

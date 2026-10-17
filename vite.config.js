@@ -60,10 +60,11 @@ function staticPwaAdapter(options = {}) {
  * @returns {import('vite').Plugin}
  */
 function engineRoomStudioDevApi() {
-	const artistsDir = path.resolve(
-		import.meta.dirname,
-		'../raggiesoft-assets/engine-room-records/artists'
-	);
+	const candidateDirs = [
+		path.resolve(import.meta.dirname, '../../../raggiesoft-assets/engine-room-records/artists'),
+		path.resolve(import.meta.dirname, '../raggiesoft-assets/engine-room-records/artists')
+	];
+	const artistsDir = candidateDirs.find((d) => fs.existsSync(d)) || candidateDirs[0];
 	const buildCatalogScript = path.resolve(import.meta.dirname, 'scripts/build-catalog.js');
 
 	/**

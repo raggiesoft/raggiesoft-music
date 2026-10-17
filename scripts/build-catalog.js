@@ -31,6 +31,7 @@ const HUB_BASE = 'https://raggiesoft.com';
 
 // Potential candidate paths for the raggiesoft-assets repository
 const candidateAssetPaths = [
+	path.resolve(__dirname, '../../../../raggiesoft-assets/engine-room-records/artists'),
 	path.resolve(__dirname, '../../raggiesoft-assets/engine-room-records/artists'),
 	path.resolve(__dirname, '../../../raggiesoft-assets/engine-room-records/artists'),
 	'/var/www/raggiesoft-assets/engine-room-records/artists'
@@ -38,6 +39,7 @@ const candidateAssetPaths = [
 
 // Potential candidate paths for the raggiesoft-hub repository (to verify live lore pages)
 const candidateHubPaths = [
+	path.resolve(__dirname, '../../www'),
 	path.resolve(__dirname, '../../raggiesoft-hub'),
 	path.resolve(__dirname, '../../../raggiesoft-hub'),
 	'/var/www/raggiesoft-hub'
@@ -400,6 +402,22 @@ function buildCatalog() {
 			// Web MP3 audio directory path
 			const webMp3Dir = path.join(albumDir, 'web-mp3');
 
+			// Detect CC BY-SA 4.0 Free 128kbps MP3 ZIP Archive inside web-mp3/ if available on disk
+			let freeArchiveUrl = '';
+			if (fs.existsSync(webMp3Dir)) {
+				try {
+					const zipFiles = fs
+						.readdirSync(webMp3Dir)
+						.filter((f) => f.endsWith('-free-archive.zip') && !f.startsWith('--'))
+						.sort();
+					if (zipFiles.length > 0) {
+						freeArchiveUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${zipFiles[zipFiles.length - 1]}`;
+					}
+				} catch {
+					// Ignore read errors
+				}
+			}
+
 			// Process individual tracks and check physical audio file presence
 			const formattedTracks = rawTracks.map((t, idx) => {
 				const trackNum = typeof t.track === 'number' ? t.track : idx + 1;
@@ -642,6 +660,7 @@ function buildCatalog() {
 				youtubeId,
 				storeStandardUrl,
 				storeAudiophileUrl,
+				freeArchiveUrl,
 				dspExempt,
 				dspNotice,
 				tracks: formattedTracks

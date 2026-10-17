@@ -83,6 +83,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [youtubeId]
  * @property {string} [storeStandardUrl]
  * @property {string} [storeAudiophileUrl]
+ * @property {string} [freeArchiveUrl]
  * @property {boolean} [dspExempt]
  * @property {string} [dspNotice]
  * @property {Track[]} tracks

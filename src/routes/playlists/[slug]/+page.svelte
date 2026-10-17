@@ -350,7 +350,23 @@
 						</div>
 
 						<div class="flex flex-wrap items-center gap-2 self-end sm:self-center shrink-0">
+							{#if track.audioUrl}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									href={track.audioUrl}
+									download="{track.fileName || track.id}.mp3"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="rounded-xl border border-emerald-700/60 bg-emerald-950/40 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-colors hover:border-emerald-500 hover:bg-emerald-900/60 hover:text-white"
+									title="Download raw 128kbps MP3 ({track.title}) — CC BY-SA 4.0"
+								>
+									⬇ MP3
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{/if}
+
 							{#if track.chapterUrl}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
 								<a
 									href={track.chapterUrl}
 									target="_blank"
@@ -359,6 +375,7 @@
 								>
 									📖 Read Scene ↗
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/if}
 
 							<button
