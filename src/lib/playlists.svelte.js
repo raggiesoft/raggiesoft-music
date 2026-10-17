@@ -419,12 +419,12 @@ export const curatedPlaylists = [
 				albumSlug: '2011-starfield-calibration',
 				trackId: '1-11',
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 11)',
-				chapterTitle: 'Ghost Signals Across the Copper Bus',
+				chapterTitle: 'Replacing "If You Walked Away" • Safe in Ryan’s Tight Embrace',
 				chapterUrl:
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
-				pov: "Cassidy O'Connell",
+				pov: "Cassidy O'Connell (Grounded by Her Safe Person, Ryan)",
 				storySummary:
-					"Cassidy threads vintage tape-delay feedback and modular ring modulation through 'Echoes in the Wire', honoring the late-night Blacksburg studio experiments where the sound was born."
+					"Originally written for 1997's Hard Reset to permanently replace 1989's 'If You Walked Away'—the forced Apex Records abandonment ballad that left Cassidy in tears backstage after every show—'Echoes in the Wire' is the story of Cassidy finding comfort, quiet, and safety when her brother and safe person Ryan is hugging her tightly. In this Cosmic Tidal Lock Mix, Cassidy wraps that deep-pressure grounding embrace in warm, zero-gravity analog pads."
 			},
 			{
 				artistSlug: 'the-stardust-engine',
