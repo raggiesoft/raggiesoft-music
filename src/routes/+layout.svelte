@@ -95,7 +95,7 @@
 <div
 	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
 >
-	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261017h) -->
+	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261017j) -->
 	<nav class="rs-network-bar" aria-label="RaggieSoft Ecosystem Network">
 		<div class="rs-network-bar-inner">
 			<span class="rs-network-label">✦ RaggieSoft Network:</span>
@@ -129,7 +129,6 @@
 						<li role="none"><a role="menuitem" href="https://stardust.raggiesoft.com"><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a></li>
 					</ul>
 				</li>
-				<li><a href="https://lore.raggiesoft.com">🏛️ Lore</a></li>
 				<li><a href="https://corporate.raggiesoft.com">🏢 Corporate</a></li>
 				<li><a href="https://storetrainer.raggiesoft.com">💾 StoreTrainer</a></li>
 				<li><a href="https://michaelpragsdale.com">👔 Michael P. Ragsdale</a></li>
