@@ -215,8 +215,24 @@
 			gtag('config', 'G-P9RG9JVYB6');
 		</script>
 
-		<link rel="stylesheet" href="https://assets.raggiesoft.com/common/css/raggiesoft-network.css?v=20261017h" />
-		<script src="https://assets.raggiesoft.com/common/js/raggiesoft-network.js?v=20261017h" defer></script>
+		<link rel="stylesheet" href="https://assets.raggiesoft.com/common/css/raggiesoft-network.css?v=20261017i" />
+		<script src="https://assets.raggiesoft.com/common/js/raggiesoft-network.js?v=20261017i" defer></script>
+		<script>
+			(function () {
+				try {
+					var isPwa =
+						(window.navigator && window.navigator.standalone === true) ||
+						(document.referrer && document.referrer.indexOf('android-app://') === 0) ||
+						(window.matchMedia &&
+							window.matchMedia(
+								'(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)'
+							).matches);
+					if (isPwa) {
+						document.documentElement.classList.add('is-pwa-standalone');
+					}
+				} catch (e) {}
+			})();
+		</script>
 
 		%sveltekit.head%
 	</head>

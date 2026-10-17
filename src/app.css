@@ -42,6 +42,27 @@ body {
 }
 
 /* ============================================================================
+ * 0B. NATIVE PWA IMMERSION MODE (STANDALONE / WINDOW-CONTROLS-OVERLAY)
+ * ============================================================================
+ * Hides the cross-site RaggieSoft Network Bar and mobile network switcher grid
+ * when The Listening Room is running as an installed OS Progressive Web App.
+ */
+@media (display-mode: standalone),
+       (display-mode: window-controls-overlay),
+       (display-mode: minimal-ui),
+       (display-mode: fullscreen) {
+	.rs-network-bar,
+	.rs-mobile-network-section {
+		display: none !important;
+	}
+}
+
+html.is-pwa-standalone .rs-network-bar,
+html.is-pwa-standalone .rs-mobile-network-section {
+	display: none !important;
+}
+
+/* ============================================================================
  * 1. LOGO VISIBILITY RULES (LIGHT VS. DARK MODE)
  * ============================================================================ */
 .er-logo-light {
