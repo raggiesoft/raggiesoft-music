@@ -54,6 +54,8 @@ const STORAGE_KEY = 'engine_room_user_playlists_v1';
  * @typedef {Object} CuratedPlaylist
  * @property {string} slug - URL-safe route identifier for `/playlists/[slug]`.
  * @property {string} title - Display title of the playlist.
+ * @property {string} [ogTitle] - Concise OpenGraph/SEO title (<= 60 characters).
+ * @property {string} [ogDescription] - Concise OpenGraph/SEO description (<= 155 characters).
  * @property {string} subtitle - Secondary tagline or narrative subtitle.
  * @property {string} curator - Band or in-universe author who published the playlist.
  * @property {string} artistSlug - Primary artist slug for navigation.
@@ -78,6 +80,9 @@ export const curatedPlaylists = [
 	{
 		slug: 'john-and-erin',
 		title: 'Before the Distance: The Story of John & Erin',
+		ogTitle: 'Before the Distance: The Story of John & Erin',
+		ogDescription:
+			"Stream the 5-song narrative playlist of fraternal twins John & Erin (Ryan & Cassidy O'Connell) by The Stardust Engine.",
 		subtitle: 'A Five-Song Twin Narrative by The Stardust Engine',
 		curator: "The Stardust Engine (Ryan & Cassidy O'Connell)",
 		artistSlug: 'the-stardust-engine',
@@ -178,6 +183,9 @@ export const curatedPlaylists = [
 	{
 		slug: 'cosmic-tidal-lock-sound',
 		title: 'The Cosmic Tidal Lock Sound™',
+		ogTitle: 'The Cosmic Tidal Lock Sound™ — The Stardust Engine',
+		ogDescription:
+			"Stream the 20-track evolution of Cassidy O'Connell's Cosmic Tidal Lock Sound™, from Moon 1 and Escape Velocity to Starfield Calibration.",
 		subtitle: "Cassidy O'Connell's Signature Space-Synth Architecture (1997–2011 • Thematic 1986 Origin)",
 		curator: "Cassidy O'Connell (with her Safe Person, Ryan O'Connell)",
 		artistSlug: 'the-stardust-engine',

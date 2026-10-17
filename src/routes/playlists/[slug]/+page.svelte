@@ -91,20 +91,20 @@
 </script>
 
 <svelte:head>
-	<title>{playlist.title} | Story Playlist | The Listening Room</title>
-	<meta name="description" content={playlist.description} />
+	<title>{playlist.ogTitle || playlist.title}</title>
+	<meta name="description" content={playlist.ogDescription || playlist.description} />
 	<link rel="canonical" href="https://music.raggiesoft.com/playlists/{playlist.slug}" />
 	<meta property="og:type" content="music.playlist" />
 	<meta property="og:site_name" content="The Listening Room by Engine Room Records" />
-	<meta property="og:title" content="{playlist.title} — {playlist.subtitle}" />
-	<meta property="og:description" content={playlist.description} />
+	<meta property="og:title" content={playlist.ogTitle || playlist.title} />
+	<meta property="og:description" content={playlist.ogDescription || playlist.description} />
 	<meta property="og:url" content="https://music.raggiesoft.com/playlists/{playlist.slug}" />
 	<meta property="og:image" content={playlist.socialPreview || playlist.artwork} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="{playlist.title} — {playlist.subtitle}" />
-	<meta name="twitter:description" content={playlist.description} />
+	<meta name="twitter:title" content={playlist.ogTitle || playlist.title} />
+	<meta name="twitter:description" content={playlist.ogDescription || playlist.description} />
 	<meta name="twitter:image" content={playlist.socialPreview || playlist.artwork} />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html `<script type="application/ld+json">${jsonLdString}</script>`}
