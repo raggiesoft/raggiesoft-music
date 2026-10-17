@@ -18,8 +18,8 @@
  * ============================================================================
  */
 
-const CACHE_NAME = 'err-pwa-v2';
-const STATIC_CACHE = 'err-static-v2';
+const CACHE_NAME = 'err-pwa-v3';
+const STATIC_CACHE = 'err-static-v3';
 
 const PRECACHE_ASSETS = [
 	'/',

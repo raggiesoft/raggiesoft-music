@@ -50,6 +50,11 @@
 		dspManager.init();
 		playlistManager.init();
 
+		// Ensure the site-wide RaggieSoft Network menu dropdown & mobile drawer are bound after Svelte hydration
+		if (typeof window !== 'undefined' && typeof (/** @type {any} */ (window)).initRaggieSoftNetworkMenu === 'function') {
+			(/** @type {any} */ (window)).initRaggieSoftNetworkMenu();
+		}
+
 		// Register Service Worker for PWA capabilities
 		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 			navigator.serviceWorker.register('/sw.js').catch((err) => {
@@ -90,26 +95,44 @@
 <div
 	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
 >
-	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css) -->
-	<nav
-		class="rs-network-bar w-full border-b border-slate-800 bg-slate-950 px-4 py-1.5 text-xs text-slate-200"
-		aria-label="RaggieSoft Ecosystem Network"
-	>
-		<div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2">
-			<span class="font-mono text-[11px] font-bold tracking-wider text-amber-400 uppercase">
-				✦ RaggieSoft Network:
-			</span>
-			<ul class="flex flex-wrap items-center gap-1 sm:gap-1.5">
-				<li><a href="https://raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🌐 Hub</a></li>
-				<li><a href="https://nebulae.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🌌 Nebulae</a></li>
-				<li><a href="https://music.raggiesoft.com" aria-current="page" class="rounded border border-sky-500/60 bg-sky-500/20 px-2 py-0.5 font-bold text-sky-300">🎧 Music</a></li>
-				<li><a href="https://books.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">📚 Books</a></li>
-				<li><a href="https://stardust.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🚀 Stardust</a></li>
-				<li><a href="https://engineroom.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">⚙️ Engine Room</a></li>
-				<li><a href="https://lore.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🏛️ Lore</a></li>
-				<li><a href="https://corporate.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🏢 Corporate</a></li>
-				<li><a href="https://storetrainer.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">💾 StoreTrainer</a></li>
-				<li><a href="https://michaelpragsdale.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">👔 Michael P. Ragsdale</a></li>
+	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261017f) -->
+	<nav class="rs-network-bar" aria-label="RaggieSoft Ecosystem Network">
+		<div class="rs-network-bar-inner">
+			<span class="rs-network-label">✦ RaggieSoft Network:</span>
+			<ul class="rs-network-links">
+				<li><a href="https://raggiesoft.com">🌐 Hub</a></li>
+				<li><a href="https://nebulae.raggiesoft.com">🌌 Nebulae</a></li>
+				<li><a href="https://books.raggiesoft.com">📚 Books</a></li>
+				<li class="rs-network-dropdown">
+					<button
+						type="button"
+						class="rs-network-dropdown-toggle is-active"
+						aria-expanded="false"
+						aria-haspopup="true"
+					>
+						<span aria-hidden="true">⚙️</span>
+						<span>Engine Room</span>
+						<span class="rs-network-caret" aria-hidden="true">▾</span>
+					</button>
+					<ul class="rs-network-dropdown-menu" role="menu" aria-label="Engine Room Records & Band Roster">
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com"><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a></li>
+						<li role="none"><a role="menuitem" href="https://music.raggiesoft.com" aria-current="page" class="is-active"><span aria-hidden="true">🎧</span><span>The Listening Room</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists"><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a></li>
+						<li class="rs-network-dropdown-divider" role="separator"></li>
+						<li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"><span aria-hidden="true">🔴</span><span>Crimson Node</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/firelight"><span aria-hidden="true">🔥</span><span>Firelight</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/fractured-prisms"><span aria-hidden="true">💎</span><span>Fractured Prisms</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/mana-canvas"><span aria-hidden="true">🎨</span><span>Mana Canvas</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"><span aria-hidden="true">❄️</span><span>The Arctic Symphony Project</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-paper-wall"><span aria-hidden="true">🧱</span><span>The Paper Wall</span></a></li>
+						<li role="none"><a role="menuitem" href="https://stardust.raggiesoft.com"><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a></li>
+					</ul>
+				</li>
+				<li><a href="https://lore.raggiesoft.com">🏛️ Lore</a></li>
+				<li><a href="https://corporate.raggiesoft.com">🏢 Corporate</a></li>
+				<li><a href="https://storetrainer.raggiesoft.com">💾 StoreTrainer</a></li>
+				<li><a href="https://michaelpragsdale.com">👔 Michael P. Ragsdale</a></li>
 			</ul>
 		</div>
 	</nav>
