@@ -9,7 +9,7 @@
     "artistSlug": "fractured-prisms",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/fractured-prisms",
     "loreUrl": "",
     "year": "1983",
     "temporalCoverage": "1983-10-03",
@@ -236,8 +236,8 @@
     "artistSlug": "fractured-prisms",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/social-preview.jpg",
-    "artistLoreUrl": "",
-    "loreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/fractured-prisms",
+    "loreUrl": "https://engineroom.raggiesoft.com/artists/fractured-prisms/story/the-hollow-square",
     "year": "1984",
     "temporalCoverage": "1984-10-19",
     "datePublished": "2026-10-15",
@@ -373,8 +373,8 @@
     "artistSlug": "fractured-prisms",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/fractured-prisms/social-preview.jpg",
-    "artistLoreUrl": "",
-    "loreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/fractured-prisms",
+    "loreUrl": "https://engineroom.raggiesoft.com/artists/fractured-prisms/story/1985-american-shores-tour",
     "year": "1985",
     "temporalCoverage": "1985-08-15",
     "datePublished": "1985-08-15",
@@ -444,7 +444,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1987",
     "temporalCoverage": "1987-08-25",
@@ -737,7 +737,7 @@
     "artistSlug": "firelight",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/firelight/band-logo.png",
     "artistSocialPreview": null,
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/firelight",
     "loreUrl": "",
     "year": "1987",
     "temporalCoverage": "1987-11-21",
@@ -960,7 +960,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1989",
     "temporalCoverage": "1989-04-18",
@@ -1235,7 +1235,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1990",
     "temporalCoverage": "1990-05-10",
@@ -1264,7 +1264,7 @@
         "content": "This is the last official recording of Ryan O'Connell performing standing up. Two weeks after this show, on the icy highway outside Des Moines, the tour bus hit a patch of black ice.",
         "link": {
           "label": "Read \"The Crash of '90\" Case File",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/crash-of-1990"
+          "url": "https://stardust.raggiesoft.com/story/crash-of-1990"
         }
       },
       {
@@ -1287,7 +1287,7 @@
     "loreLinks": [
       {
         "label": "Read \"The Crash of '90\" Case File",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/crash-of-1990",
+        "url": "https://stardust.raggiesoft.com/story/crash-of-1990",
         "description": "Official investigation and narrative archive of the 1990 I-80 bus crash."
       }
     ],
@@ -1421,7 +1421,7 @@
     "artistSlug": "mana-canvas",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/mana-canvas",
     "loreUrl": "",
     "year": "1992",
     "temporalCoverage": "1992-10-30",
@@ -1878,7 +1878,7 @@
     "artistSlug": "mana-canvas",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/mana-canvas",
     "loreUrl": "",
     "year": "1993",
     "temporalCoverage": "1993-07-24",
@@ -1939,7 +1939,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1995",
     "temporalCoverage": "1995-10-03",
@@ -1980,7 +1980,7 @@
         "content": "Movement I: Ignition (0:00–3:45) — Starts with a lone, clean electric guitar riff by Ryan before Tyler's massive drums kick in like rocket boosters. Movement II: Orbit (3:45–7:30) — Cassidy takes over with a soaring Moog synthesizer solo representing the quiet majesty of looking back at what you survived. Movement III: The Drift (7:30–11:15) — An ambient, haunting bridge with Evan's echoing bassline where Ryan and Cassidy trade hushed vocals about the fear of the dark. Movement IV: The Drop (11:15–15:33) — The full band crashes back in with double-time drums and dueling guitar/synth solos in a triumphant sprint toward the stars.",
         "link": {
           "label": "Explore the Interactive \"Ad Astra\" Flight Log",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra"
+          "url": "https://stardust.raggiesoft.com/story/ad-astra"
         }
       }
     ],
@@ -1988,7 +1988,7 @@
     "loreLinks": [
       {
         "label": "Explore \"Ad Astra\" Mission Control & Flight Log",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra",
+        "url": "https://stardust.raggiesoft.com/story/ad-astra",
         "description": "The interactive 21-day voyage of the U.S.S. Aethelgard."
       }
     ],
@@ -2122,7 +2122,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1996",
     "temporalCoverage": "1996-07-16",
@@ -2152,7 +2152,7 @@
         "content": "The centerpiece of The Warehouse Tapes. A four-movement progressive rock opera that chronicles the psychological journey from trauma to transcendence (Ignition -> Orbit -> The Drift -> The Drop). Features a 4-minute dual solo between Ryan (Guitar) and Cassidy (Synthesizer) recorded in a single, uninterrupted live take at 3:00 AM.",
         "link": {
           "label": "Read the Full \"Ad Astra\" Lore Breakdown",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra"
+          "url": "https://stardust.raggiesoft.com/story/ad-astra"
         }
       },
       {
@@ -2172,7 +2172,7 @@
     "loreLinks": [
       {
         "label": "Explore \"Ad Astra\" Mission Control",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra",
+        "url": "https://stardust.raggiesoft.com/story/ad-astra",
         "description": "Deep-dive into the 4-movement progressive rock epic and U.S.S. Aethelgard flight logs."
       }
     ],
@@ -2288,7 +2288,7 @@
     "artistSlug": "the-arctic-symphony-project",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project",
     "loreUrl": "",
     "year": "1996",
     "temporalCoverage": "1996-10-15",
@@ -2349,7 +2349,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1997",
     "temporalCoverage": "1997-11-18",
@@ -2388,7 +2388,7 @@
     "loreLinks": [
       {
         "label": "Read \"The Nine-Figure Refusal\" Archive",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/nine-figure-refusal",
+        "url": "https://stardust.raggiesoft.com/story/nine-figure-refusal",
         "description": "How Engine Room Records defended its independence against OmniGlobal."
       }
     ],
@@ -2702,7 +2702,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "1997",
     "temporalCoverage": "1997-12-09",
@@ -2731,7 +2731,7 @@
         "content": "When \"Ignition\" won CPI's 1986 student anthem contest, 16-year-old dual-enrolled prodigy Holly O'Connell struck out the university's Work-for-Hire clause and replaced it with a $1.00 Perpetual Mutual Cross-License—allowing CPI Athletics to blast the song forever for $1.00 while granting the band perpetual rights to sing about CPI, The Forgers, and The Crucible.",
         "link": {
           "label": "Read \"Stadium Anthems & The 1986 Redline\"",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/crucible/anthems-and-redline"
+          "url": "https://stardust.raggiesoft.com/story/crucible/anthems-and-redline"
         }
       },
       {
@@ -2745,7 +2745,7 @@
     "loreLinks": [
       {
         "label": "Explore CPI & The Crucible Lore Hub",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cpi",
+        "url": "https://stardust.raggiesoft.com/story/cpi",
         "description": "Campus landmarks, Jeremiah Vance's $100M Ironhead Covenant, and blood feuds of the Commonwealth."
       }
     ],
@@ -3077,7 +3077,7 @@
     "artistSlug": "the-paper-wall",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-paper-wall",
     "loreUrl": "",
     "year": "2000",
     "temporalCoverage": "2000-08-20",
@@ -3291,7 +3291,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2001",
     "temporalCoverage": "2001-10-30",
@@ -3602,7 +3602,7 @@
     "artistSlug": "the-paper-wall",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-paper-wall",
     "loreUrl": "",
     "year": "2001",
     "temporalCoverage": "2001-11-20",
@@ -3955,7 +3955,7 @@
     "artistSlug": "the-paper-wall",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-paper-wall",
     "loreUrl": "",
     "year": "2001",
     "temporalCoverage": "2001-11-20",
@@ -4283,7 +4283,7 @@
     "artistSlug": "crimson-node",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/crimson-node/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/crimson-node/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/crimson-node",
     "loreUrl": "",
     "year": "2002",
     "temporalCoverage": "2002-09-18",
@@ -4618,7 +4618,7 @@
     "artistSlug": "the-paper-wall",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-paper-wall",
     "loreUrl": "",
     "year": "2003",
     "temporalCoverage": "2003-08-20",
@@ -4985,7 +4985,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2003",
     "temporalCoverage": "2003-10-10",
@@ -5028,7 +5028,7 @@
     "loreLinks": [
       {
         "label": "Read \"The Cosmic Tidal Lock Sound\"",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound",
+        "url": "https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound",
         "description": "How Moon 1 and Moon 2 lock together in tempo and harmonic structure."
       }
     ],
@@ -5234,7 +5234,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2003",
     "temporalCoverage": "2003-10-10",
@@ -5263,7 +5263,7 @@
         "content": "Engineered using binaural 3D audio techniques. The synthesizers are mixed to pan in slow, elliptical orbits around the listener's head, mimicking the physics of the \"Cosmic Tidal Lock Sound.\"",
         "link": {
           "label": "Read the Technical Breakdown",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound"
+          "url": "https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound"
         }
       },
       {
@@ -5281,7 +5281,7 @@
     "loreLinks": [
       {
         "label": "Read \"The Cosmic Tidal Lock Sound\"",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound",
+        "url": "https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound",
         "description": "The physics and studio engineering behind the Twin Moons dual album project."
       }
     ],
@@ -5487,7 +5487,7 @@
     "artistSlug": "the-paper-wall",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-paper-wall/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-paper-wall",
     "loreUrl": "",
     "year": "2003",
     "temporalCoverage": "2003-12-10",
@@ -5836,7 +5836,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2004",
     "temporalCoverage": "2004-10-15",
@@ -5866,7 +5866,7 @@
         "content": "The album cover was photographed at dusk on Progress Street NE right outside the family house. Parked at the curb is the band's brand-new custom 2004 Prairie Coachworks RLFD30—a 30-foot Restyled Low-Floor diesel shuttle bus finished in Obsidian Midnight with a cosmic nebula wrap, front-door-only boarding, a deployed aluminum ADA wheelchair ramp, and glowing amber Luminator LED signs reading PROGRESS STREET and THE STARDUST ENGINE. Because Holly, Evan, and Tyler all held Class A Commercial Driver's Licenses (CDLs) with Passenger and Airbrake endorsements, the family drove their own bus without hiring outside drivers.",
         "link": {
           "label": "Inspect the Engine Room Fleet Archive",
-          "url": "https://raggiesoft.com/engine-room/corporate/fleet"
+          "url": "https://engineroom.raggiesoft.com/corporate/fleet"
         }
       },
       {
@@ -6119,8 +6119,8 @@
     "artistSlug": "the-arctic-symphony-project",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/social-preview.jpg",
-    "artistLoreUrl": "",
-    "loreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project",
+    "loreUrl": "https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project/tales-of-the-solstice",
     "year": "2007",
     "temporalCoverage": "2007-11-13",
     "datePublished": "",
@@ -6743,7 +6743,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2007",
     "temporalCoverage": "2007-11-20",
@@ -7060,7 +7060,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2008",
     "temporalCoverage": "2008-05-14",
@@ -7095,7 +7095,7 @@
         "content": "The band did not tour for this album, do press interviews, or shoot music videos. They simply uploaded it to the Engine Room Records website on a Tuesday morning in October 2008 with a one-sentence note: \"We're still here, and we're okay.\"",
         "link": {
           "label": "Read the \"Our Own Frequency\" Story Archive",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/our-own-frequency"
+          "url": "https://stardust.raggiesoft.com/story/our-own-frequency"
         }
       }
     ],
@@ -7103,7 +7103,7 @@
     "loreLinks": [
       {
         "label": "Read the \"Our Own Frequency\" Story Archive",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/our-own-frequency",
+        "url": "https://stardust.raggiesoft.com/story/our-own-frequency",
         "description": "Inside the quiet 2008 Blacksburg sessions during the Burnout Hiatus."
       }
     ],
@@ -7273,7 +7273,7 @@
     "artistSlug": "the-stardust-engine",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/band-logo.png",
     "artistSocialPreview": "https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/social-preview.jpg",
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://stardust.raggiesoft.com",
     "loreUrl": "",
     "year": "2011",
     "temporalCoverage": "2011-10-18",
@@ -7309,7 +7309,7 @@
         "content": "'80s Cosmic Pop' is the open, generic sub-genre name describing an atmospheric blend of driving 1980s arena hooks, lush analog synthesizers, and deep-space lyricism—and creator Michael P. Ragsdale welcomes everyone to use '80s Cosmic Pop' freely for their own music and prompts. By contrast, 'The Cosmic Tidal Lock Sound™' is a proprietary trademark claimed by Michael P. Ragsdale / RaggieSoft Media / Engine Room Records™ (and in-universe by Holly & Cassidy O'Connell) to identify official RaggieSoft zero-gravity audio releases.",
         "link": {
           "label": "Read Full Trademark & Sonic Explainer",
-          "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound"
+          "url": "https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound"
         }
       },
       {
@@ -7329,7 +7329,7 @@
     "loreLinks": [
       {
         "label": "The Cosmic Tidal Lock Sound™ vs. 80s Cosmic Pop Explainer",
-        "url": "https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound",
+        "url": "https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound",
         "description": "Read the official trademark policy, open generic genre guide ('80s Cosmic Pop'), and the Suno v6 74% Audio Influence engineering protocol."
       },
       {
@@ -7617,7 +7617,7 @@
     "artistSlug": "firelight",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/firelight/band-logo.png",
     "artistSocialPreview": null,
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/firelight",
     "loreUrl": "",
     "year": "2017",
     "temporalCoverage": "2017-11-21",
@@ -7858,7 +7858,7 @@
     "artistSlug": "firelight",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/firelight/band-logo.png",
     "artistSocialPreview": null,
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/firelight",
     "loreUrl": "",
     "year": "2017",
     "temporalCoverage": "2017-11-21",
@@ -8099,7 +8099,7 @@
     "artistSlug": "firelight",
     "artistLogo": "https://assets.raggiesoft.com/engine-room-records/artists/firelight/band-logo.png",
     "artistSocialPreview": null,
-    "artistLoreUrl": "",
+    "artistLoreUrl": "https://engineroom.raggiesoft.com/artists/firelight",
     "loreUrl": "",
     "year": "2017",
     "temporalCoverage": "2017-11-21",

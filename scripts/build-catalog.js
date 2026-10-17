@@ -220,19 +220,11 @@ function buildCatalog() {
 				? `${CDN_BASE}/${artistSlug}/discography-social-preview.jpg`
 				: null;
 
-		// Resolve verified artist-level lore URL on raggiesoft.com (only if route + PHP view exist)
-		const hubArtistSlug = artistSlug === 'the-stardust-engine' ? 'stardust-engine' : artistSlug;
-		const candidateArtistRoutes = [
-			`/engine-room/artists/${hubArtistSlug}`,
-			`/engine-room/artists/${artistSlug}`
-		];
-		let artistLoreUrl = '';
-		for (const route of candidateArtistRoutes) {
-			if (verifiedHubRoutes.has(route)) {
-				artistLoreUrl = `${HUB_BASE}${route}`;
-				break;
-			}
-		}
+		// Resolve canonical artist-level lore URL on stardust.raggiesoft.com or engineroom.raggiesoft.com
+		const artistLoreUrl =
+			artistSlug === 'the-stardust-engine'
+				? 'https://stardust.raggiesoft.com'
+				: `https://engineroom.raggiesoft.com/artists/${artistSlug}`;
 
 		// Parse artist-level albums.json for DSP IDs (Spotify, Apple, Amazon, YouTube)
 		// and Fourthwall direct storefront URLs (Standard MP3/OGG & Audiophile WAV/FLAC)
@@ -606,21 +598,21 @@ function buildCatalog() {
 			const liveTranscript = albumData.liveTranscript || null;
 			const loreLinks = Array.isArray(albumData.loreLinks) ? albumData.loreLinks : [];
 
-			// Resolve verified non-discography story lore URL on raggiesoft.com if present
+			// Resolve non-discography story lore URL on stardust.raggiesoft.com or engineroom.raggiesoft.com if present
 			const rawManifestUrl = String(
 				matchedManifestAlbum.url || albumData.loreUrl || ''
 			).trim();
-			const normalizedManifestRoute = rawManifestUrl.startsWith(HUB_BASE)
-				? rawManifestUrl.slice(HUB_BASE.length)
-				: rawManifestUrl;
 
 			let loreUrl = '';
-			if (
-				normalizedManifestRoute &&
-				!normalizedManifestRoute.includes('/discography/') &&
-				verifiedHubRoutes.has(normalizedManifestRoute)
-			) {
-				loreUrl = `${HUB_BASE}${normalizedManifestRoute}`;
+			if (rawManifestUrl && !rawManifestUrl.includes('/discography/')) {
+				if (rawManifestUrl.startsWith('https://stardust.raggiesoft.com') || rawManifestUrl.startsWith('https://engineroom.raggiesoft.com')) {
+					loreUrl = rawManifestUrl;
+				} else if (rawManifestUrl.startsWith(HUB_BASE)) {
+					const route = rawManifestUrl.slice(HUB_BASE.length);
+					if (verifiedHubRoutes.has(route)) {
+						loreUrl = rawManifestUrl;
+					}
+				}
 			}
 
 			catalog.push({
