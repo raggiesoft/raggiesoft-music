@@ -89,6 +89,30 @@
 <div
 	class="flex min-h-screen flex-col bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
 >
+	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar -->
+	<nav
+		class="w-full border-b border-slate-800 bg-slate-950 px-4 py-1.5 text-xs text-slate-200"
+		aria-label="RaggieSoft Ecosystem Network"
+	>
+		<div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2">
+			<span class="font-mono text-[11px] font-bold tracking-wider text-amber-400 uppercase">
+				✦ RaggieSoft Network:
+			</span>
+			<ul class="flex flex-wrap items-center gap-1 sm:gap-1.5">
+				<li><a href="https://raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🌐 Hub</a></li>
+				<li><a href="https://nebulae.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🌌 Nebulae</a></li>
+				<li><a href="https://music.raggiesoft.com" aria-current="page" class="rounded border border-sky-500/60 bg-sky-500/20 px-2 py-0.5 font-bold text-sky-300">🎧 Music</a></li>
+				<li><a href="https://books.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">📚 Books</a></li>
+				<li><a href="https://stardust.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🚀 Stardust</a></li>
+				<li><a href="https://engineroom.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">⚙️ Engine Room</a></li>
+				<li><a href="https://lore.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🏛️ Lore</a></li>
+				<li><a href="https://corporate.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">🏢 Corporate</a></li>
+				<li><a href="https://storetrainer.raggiesoft.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">💾 StoreTrainer</a></li>
+				<li><a href="https://michaelpragsdale.com" class="rounded px-2 py-0.5 font-semibold text-slate-200 hover:bg-slate-800 hover:text-sky-400">👔 Michael P. Ragsdale</a></li>
+			</ul>
+		</div>
+	</nav>
+
 	<!-- Primary Global Header -->
 	<header
 		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-4 py-3 backdrop-blur-md"
