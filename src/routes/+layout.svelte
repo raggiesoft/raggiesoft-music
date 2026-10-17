@@ -39,6 +39,7 @@
 	let deferredPrompt = $state(/** @type {any} */ (null));
 	let canInstall = $state(false);
 	let showGlobalSearch = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// Track active route path for nav highlighting
 	let currentPath = $derived(page.url?.pathname || '/');
@@ -89,9 +90,9 @@
 <div
 	class="flex min-h-screen flex-col bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
 >
-	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar -->
+	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css) -->
 	<nav
-		class="w-full border-b border-slate-800 bg-slate-950 px-4 py-1.5 text-xs text-slate-200"
+		class="rs-network-bar w-full border-b border-slate-800 bg-slate-950 px-4 py-1.5 text-xs text-slate-200"
 		aria-label="RaggieSoft Ecosystem Network"
 	>
 		<div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2">
@@ -121,6 +122,7 @@
 			<!-- Brand Logo & Home Link -->
 			<a
 				href={resolve('/')}
+				onclick={() => (mobileMenuOpen = false)}
 				class="group flex items-center gap-3 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 			>
 				<div
@@ -139,107 +141,136 @@
 						class="er-logo-dark h-full w-full object-contain"
 					/>
 				</div>
-				<div class="hidden xs:block sm:block">
-					<span class="block text-base leading-tight font-extrabold tracking-tight text-white"
+				<div>
+					<span class="block text-sm sm:text-base leading-tight font-extrabold tracking-tight text-white"
 						>The Listening Room</span
 					>
-					<span class="text-[11px] font-semibold tracking-wider text-blue-400 uppercase"
+					<span class="text-[10px] sm:text-[11px] font-semibold tracking-wider text-blue-400 uppercase"
 						>by Engine Room Records</span
 					>
 				</div>
 			</a>
 
 			<!-- Global Navigation Links & Action Controls -->
-			<nav class="flex items-center gap-1.5 text-xs font-semibold sm:gap-2.5 sm:text-sm" aria-label="Global Navigation">
-				{#if canInstall}
-					<button
-						type="button"
-						onclick={installApp}
-						class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 md:flex"
-						aria-label="Install Engine Room Records as an App"
+			<div class="flex items-center gap-1.5 sm:gap-2.5">
+				<nav class="hidden md:flex items-center gap-1.5 text-xs font-semibold sm:gap-2.5 sm:text-sm" aria-label="Global Navigation">
+					{#if canInstall}
+						<button
+							type="button"
+							onclick={installApp}
+							class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 md:flex"
+							aria-label="Install Engine Room Records as an App"
+						>
+							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+								/>
+							</svg>
+							Install App
+						</button>
+					{/if}
+
+					<a
+						href={resolve('/')}
+						class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath ===
+						'/'
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
 					>
-						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						Home
+					</a>
+
+					<a
+						href={resolve('/discography')}
+						class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
+							'/' &&
+						!currentPath.startsWith('/playlists') &&
+						!currentPath.startsWith('/settings') &&
+						!currentPath.startsWith('/radio') &&
+						!currentPath.startsWith('/behind-the-scenes') &&
+						!currentPath.startsWith('/privacy') &&
+						!currentPath.startsWith('/terms')
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					>
+						Discography
+					</a>
+
+					<a
+						href={resolve('/playlists')}
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+							'/playlists'
+						)
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					>
+						<span>Playlists</span>
+					</a>
+
+					<a
+						href={resolve('/radio')}
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+							'/radio'
+						)
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					>
+						<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+						<span>Radio</span>
+					</a>
+
+					<a
+						href={resolve('/behind-the-scenes')}
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+							'/behind-the-scenes'
+						)
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+						title="Behind the Scenes: AI & The Creative Process"
+					>
+						<span>Behind the Scenes</span>
+					</a>
+
+					<a
+						href={resolve('/settings')}
+						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
+							'/settings'
+						)
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
+						aria-label="Theme and Preferences Settings"
+						title="Themes & Settings"
+					>
+						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+								d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+							/>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
 							/>
 						</svg>
-						Install App
-					</button>
-				{/if}
-
-				<a
-					href={resolve('/')}
-					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath ===
-					'/'
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-				>
-					Home
-				</a>
-
-				<a
-					href={resolve('/discography')}
-					class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath !==
-						'/' &&
-					!currentPath.startsWith('/playlists') &&
-					!currentPath.startsWith('/settings') &&
-					!currentPath.startsWith('/radio') &&
-					!currentPath.startsWith('/behind-the-scenes') &&
-					!currentPath.startsWith('/privacy') &&
-					!currentPath.startsWith('/terms')
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-				>
-					Discography
-				</a>
-
-				<a
-					href={resolve('/playlists')}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
-						'/playlists'
-					)
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-				>
-					<span>Playlists</span>
-				</a>
-
-				<a
-					href={resolve('/radio')}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
-						'/radio'
-					)
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-				>
-					<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-					<span>Radio</span>
-				</a>
-
-				<a
-					href={resolve('/behind-the-scenes')}
-					class="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 md:flex {currentPath.startsWith(
-						'/behind-the-scenes'
-					)
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-					title="Behind the Scenes: AI & The Creative Process"
-				>
-					<span>Behind the Scenes</span>
-				</a>
+						<span>Settings</span>
+					</a>
+				</nav>
 
 				<!-- Global Search & Filter Menu Button -->
 				<button
 					type="button"
 					onclick={() => (showGlobalSearch = true)}
-					class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3"
+					class="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3"
 					aria-label="Open Search and Filter Menu"
 					title="Search & Filter Catalog"
 				>
-					<svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -250,49 +281,74 @@
 					<span class="hidden sm:inline">Search</span>
 				</button>
 
-				<!-- Settings / Theme Picker Link -->
+				<!-- Single Mobile Hamburger Menu Toggle (< 768px) -->
+				<button
+					type="button"
+					id="mobile-menu-toggle"
+					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+					aria-expanded={mobileMenuOpen}
+					aria-controls="music-mobile-navigation"
+					aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+					class="flex md:hidden h-10 w-10 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+				>
+					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+						{#if mobileMenuOpen}
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M6 18L18 6M6 6l12 12" />
+						{:else}
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M4 6h16M4 12h16M4 18h16" />
+						{/if}
+					</svg>
+				</button>
+			</div>
+		</div>
+
+		<!-- Unified Mobile Hamburger Menu Panel (Local Links + Auto-Injected RaggieSoft Network Grid) -->
+		<div
+			id="music-mobile-navigation"
+			class="{mobileMenuOpen ? 'block' : 'hidden'} md:hidden mx-auto max-w-7xl border-t border-slate-800 pt-3 mt-3"
+		>
+			<nav class="grid grid-cols-2 gap-2 text-xs font-bold" aria-label="Mobile Listening Room Navigation">
+				<a
+					href={resolve('/')}
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath === '/' ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+				>
+					🏠 Home
+				</a>
+				<a
+					href={resolve('/discography')}
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/discography') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+				>
+					💿 Discography
+				</a>
+				<a
+					href={resolve('/playlists')}
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/playlists') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+				>
+					🎶 Playlists
+				</a>
+				<a
+					href={resolve('/radio')}
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/radio') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+				>
+					📻 Radio
+				</a>
+				<a
+					href={resolve('/behind-the-scenes')}
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/behind-the-scenes') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+				>
+					🎚️ Studio Workflow
+				</a>
 				<a
 					href={resolve('/settings')}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 {currentPath.startsWith(
-						'/settings'
-					)
-						? 'bg-blue-600 text-white shadow-sm'
-						: 'text-slate-300 hover:bg-slate-800 hover:text-white'}"
-					aria-label="Theme and Preferences Settings"
-					title="Themes & Settings"
+					onclick={() => (mobileMenuOpen = false)}
+					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/settings') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-						/>
-					</svg>
-					<span class="hidden md:inline">Settings</span>
-				</a>
-
-				<a
-					href="https://books.raggiesoft.com"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="hidden items-center gap-1 rounded-lg px-2.5 py-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:flex"
-				>
-					<span>Books</span>
-					<svg class="h-3.5 w-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-						/>
-					</svg>
+					⚙️ Themes &amp; Settings
 				</a>
 			</nav>
 		</div>
