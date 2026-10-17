@@ -111,6 +111,19 @@
 	}
 
 	/**
+	 * Updates whether deep-linked track URLs (`?track=...`) automatically start audio playback.
+	 * @param {boolean} enabled
+	 */
+	function selectAutoplayDeepLinks(enabled) {
+		dspManager.setAutoplayDeepLinks(enabled);
+		notifyChange(
+			enabled
+				? 'Deep-Link Autoplay enabled: ?track= links will start playing automatically.'
+				: 'Deep-Link Autoplay disabled (WCAG Default): ?track= links will scroll and expand without auto-starting audio.'
+		);
+	}
+
+	/**
 	 * Clears the saved "Jump Back In" playback session from `localStorage`.
 	 */
 	function clearPlaybackHistory() {
@@ -143,8 +156,9 @@
 	 */
 	function resetAllPreferences() {
 		themeManager.reset();
+		dspManager.setAutoplayDeepLinks(false);
 		notifyChange(
-			'All theme preferences reset to System Default (Studio Cobalt + Match System OS).'
+			'All theme & autoplay preferences reset to System Default (Studio Cobalt + Match System OS + Autoplay Off).'
 		);
 	}
 </script>
@@ -195,12 +209,12 @@
 	</section>
 
 	<!-- =================================================================== -->
-	<!-- 1. PREFERRED STREAMING PLATFORM (GLOBAL DEFAULT DSP)                -->
+	<!-- 1. PREFERRED STREAMING PLATFORM & DEEP-LINK AUTOPLAY                -->
 	<!-- =================================================================== -->
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<div class="mb-5">
 			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-				1. Preferred Streaming Platform (Global Default)
+				1. Preferred Streaming Platform &amp; Playback Behavior
 			</h2>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
 				Select your primary music service. Every <strong class="text-slate-200"
@@ -244,8 +258,61 @@
 			{/each}
 		</div>
 
+		<!-- Deep-Link Track Autoplay Toggle (WCAG 2.1 SC 1.4.2 Audio Control) -->
+		<div class="mt-5 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:p-5">
+			<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+				<div>
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="text-xs font-extrabold tracking-wide text-white sm:text-sm">
+							Autoplay on Deep-Linked Tracks (<code class="font-mono text-xs text-blue-400"
+								>?track=...</code
+							>)
+						</span>
+						<span
+							class="rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase {dspManager.autoplayDeepLinks
+								? 'border-emerald-500/50 bg-emerald-950/60 text-emerald-300'
+								: 'border-amber-500/50 bg-amber-950/60 text-amber-300'}"
+						>
+							{dspManager.autoplayDeepLinks ? 'True (Autoplay On)' : 'False (WCAG Default)'}
+						</span>
+					</div>
+					<p class="mt-1 text-xs leading-relaxed text-slate-400">
+						When following a direct song link from a story or lore page (e.g., <code
+							class="font-mono text-[11px] text-slate-300">?track=2-04-moon-1-tidal-lock</code
+						>), The Listening Room scrolls to the song and expands its Lyrics &amp; Lore. Defaults to
+						<strong class="text-slate-200">False</strong> per
+						<strong class="text-slate-200">WCAG 2.1 SC 1.4.2 (Audio Control)</strong> so screen-reader
+						and assistive-tech users are never surprised by unsolicited audio on page load.
+					</p>
+				</div>
+
+				<div class="flex shrink-0 items-center gap-2">
+					<button
+						type="button"
+						onclick={() => selectAutoplayDeepLinks(false)}
+						aria-pressed={!dspManager.autoplayDeepLinks}
+						class="rounded-xl border px-3.5 py-2 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {!dspManager.autoplayDeepLinks
+							? 'border-blue-500 bg-blue-600 text-white shadow-md'
+							: 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					>
+						False (Default)
+					</button>
+					<button
+						type="button"
+						onclick={() => selectAutoplayDeepLinks(true)}
+						aria-pressed={dspManager.autoplayDeepLinks}
+						class="rounded-xl border px-3.5 py-2 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {dspManager.autoplayDeepLinks
+							? 'border-emerald-500 bg-emerald-600 text-white shadow-md'
+							: 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}"
+					>
+						True (Autoplay)
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<div
-			class="mt-5 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:flex-row sm:items-center"
+			class="mt-4 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:flex-row sm:items-center"
 		>
 			<div>
 				<div class="text-xs font-bold text-slate-200">

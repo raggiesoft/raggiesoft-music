@@ -325,36 +325,44 @@
 								class="rounded-2xl border border-blue-500/30 bg-blue-950/25 p-4"
 							>
 								<p class="mb-2.5 text-xs font-bold tracking-wider text-blue-300 uppercase">
-									📖 Read the Companion Novel &amp; Band Lore
+									📖 {playlist.bookUrl
+										? 'Read the Companion Novel & Band Lore'
+										: 'Explore Official Sonic Architecture & Band Lore'}
 								</p>
 								<div class="flex flex-wrap gap-2.5">
-									<a
-										href={playlist.bookUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-amber-400"
-									>
-										<span>📚 Read Book on Ocean View Archives (books.raggiesoft.com/erin)</span>
-										<span>↗</span>
-									</a>
-									<a
-										href={playlist.loreUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-slate-900/90 px-4 py-2 text-xs font-bold text-blue-300 transition-colors hover:border-blue-400 hover:bg-slate-800 hover:text-white"
-									>
-										<span>🎸 Official Stardust Engine Lore Page</span>
-										<span>↗</span>
-									</a>
-									<a
-										href={playlist.hubBookUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
-									>
-										<span>RaggieSoft Hub Reader</span>
-										<span>↗</span>
-									</a>
+									{#if playlist.bookUrl}
+										<a
+											href={playlist.bookUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-amber-400"
+										>
+											<span>📚 Read Book on Ocean View Archives</span>
+											<span>↗</span>
+										</a>
+									{/if}
+									{#if playlist.loreUrl}
+										<a
+											href={playlist.loreUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-slate-900/90 px-4 py-2 text-xs font-bold text-blue-300 transition-colors hover:border-blue-400 hover:bg-slate-800 hover:text-white"
+										>
+											<span>🎸 Official Stardust Engine Lore Page</span>
+											<span>↗</span>
+										</a>
+									{/if}
+									{#if playlist.hubBookUrl}
+										<a
+											href={playlist.hubBookUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+										>
+											<span>{playlist.bookUrl ? 'RaggieSoft Hub Reader' : 'Ad Astra Lore Archive'}</span>
+											<span>↗</span>
+										</a>
+									{/if}
 								</div>
 							</div>
 						</div>

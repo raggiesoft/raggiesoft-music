@@ -27,6 +27,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { player } from '#lib/player.svelte.js';
+	import { dspManager } from '#lib/dspPreference.svelte.js';
 	import { playlistManager } from '#lib/playlists.svelte.js';
 	import {
 		formatAlbumQueue,
@@ -183,7 +184,9 @@
 	}
 
 	// Reactively detect incoming deep-link parameters (?track=, ?play=, ?song=, or #track-...)
-	// and automatically cue/start the requested song, expand its Lore & Lyrics, and scroll to it.
+	// and automatically highlight the requested song, expand its Lore & Lyrics, and scroll to it.
+	// Audio playback only auto-starts if the user explicitly enabled `dspManager.autoplayDeepLinks`
+	// in `/settings` (defaults to `false` for WCAG 2.1 SC 1.4.2 Audio Control compliance).
 	$effect(() => {
 		if (typeof window === 'undefined' || !page.url || !album?.tracks?.length) return;
 
@@ -208,7 +211,7 @@
 		deepLinkedTrackId = matchedTrack.id;
 		expandedTrackId = matchedTrack.id;
 
-		if (matchedTrack.isPlayable) {
+		if (dspManager.autoplayDeepLinks && matchedTrack.isPlayable) {
 			playTrack(matchedTrack);
 		}
 
@@ -842,6 +845,19 @@
 						</div>
 						<div class="text-sm font-bold text-white sm:text-base">
 							{deepLinkedTrack.title}
+						</div>
+						<div class="mt-0.5 text-[11px] text-slate-300">
+							Autoplay on Deep-Links:
+							<strong class={dspManager.autoplayDeepLinks ? 'text-emerald-300' : 'text-amber-300'}>
+								{dspManager.autoplayDeepLinks ? 'On' : 'Off (WCAG Default)'}
+							</strong>
+							•
+							<a
+								href={resolve('/settings')}
+								class="font-semibold text-blue-300 underline decoration-blue-400/60 hover:text-white"
+							>
+								Configure in Settings
+							</a>
 						</div>
 					</div>
 				</div>

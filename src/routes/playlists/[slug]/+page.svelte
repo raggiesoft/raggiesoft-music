@@ -200,42 +200,56 @@
 				<!-- Prominent Companion Book & Lore Gateway Box -->
 				<div class="rounded-2xl border border-amber-500/40 bg-amber-950/20 p-5 shadow-inner">
 					<h2 class="text-xs font-extrabold tracking-wider text-amber-300 uppercase">
-						📚 Official Companion Novel &amp; Band Lore Archive
+						📚 {playlist.bookUrl
+							? 'Official Companion Novel & Band Lore Archive'
+							: 'Official Sonic Architecture & Band Lore Archive'}
 					</h2>
 					<p class="mt-1 text-xs leading-relaxed text-slate-300">
-						Read the complete four-chapter narrative of fraternal twins <strong>John and Erin</strong>
-						(portrayed by Ryan and Cassidy O'Connell, both navigating CPI's steep Blacksburg hills in
-						motorized power wheelchairs) in <em>The Ocean View Archives</em>, or explore the liner-note
-						lore page on <em>raggiesoft.com</em>:
+						{#if playlist.bookUrl}
+							Read the complete four-chapter narrative of fraternal twins <strong>John and Erin</strong>
+							(portrayed by Ryan and Cassidy O'Connell, both navigating CPI's steep Blacksburg hills in
+							motorized power wheelchairs) in <em>The Ocean View Archives</em>, or explore the liner-note
+							lore page on <em>raggiesoft.com</em>:
+						{:else}
+							Explore the complete studio engineering and narrative lore behind
+							<strong>{playlist.title}</strong> and Cassidy O'Connell's signature analog space-synth
+							architecture on <em>raggiesoft.com</em>:
+						{/if}
 					</p>
 					<div class="mt-3.5 flex flex-wrap gap-3">
-						<a
-							href={playlist.bookUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-amber-400"
-						>
-							<span>📖 Read Novel on Ocean View Archives (books.raggiesoft.com/erin)</span>
-							<span>↗</span>
-						</a>
-						<a
-							href={playlist.loreUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-blue-600/20 px-4 py-2.5 text-xs font-extrabold text-blue-200 transition-colors hover:bg-blue-600 hover:text-white"
-						>
-							<span>🎸 Stardust Engine Lore Page (john-and-erin)</span>
-							<span>↗</span>
-						</a>
-						<a
-							href={playlist.hubBookUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2.5 text-xs font-bold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
-						>
-							<span>Contemporary Library Index (raggiesoft.com)</span>
-							<span>↗</span>
-						</a>
+						{#if playlist.bookUrl}
+							<a
+								href={playlist.bookUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-amber-400"
+							>
+								<span>📖 Read Novel on Ocean View Archives</span>
+								<span>↗</span>
+							</a>
+						{/if}
+						{#if playlist.loreUrl}
+							<a
+								href={playlist.loreUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-blue-600/20 px-4 py-2.5 text-xs font-extrabold text-blue-200 transition-colors hover:bg-blue-600 hover:text-white"
+							>
+								<span>🎸 Official Stardust Engine Lore Dossier</span>
+								<span>↗</span>
+							</a>
+						{/if}
+						{#if playlist.hubBookUrl}
+							<a
+								href={playlist.hubBookUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2.5 text-xs font-bold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+							>
+								<span>{playlist.bookUrl ? 'Contemporary Library Index (raggiesoft.com)' : 'Ad Astra Lore Archive (raggiesoft.com)'}</span>
+								<span>↗</span>
+							</a>
+						{/if}
 					</div>
 				</div>
 
@@ -256,14 +270,14 @@
 		<div class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-3 sm:flex-row sm:items-end">
 			<div>
 				<span class="text-xs font-bold tracking-widest text-blue-400 uppercase">
-					Five-Part Musical Arc
+					{playlist.tracks.length}-Song Curated Arc
 				</span>
 				<h2 id="story-tracks-heading" class="mt-0.5 text-2xl font-extrabold text-white">
-					Chapter-by-Chapter Soundtrack
+					{playlist.bookUrl ? 'Chapter-by-Chapter Soundtrack' : 'Track-by-Track Evolution & Lore'}
 				</h2>
 			</div>
 			<p class="text-xs text-slate-400">
-				Click any chapter song to stream in 128kbps or expand full lyrics &amp; liner notes
+				Click any track to stream in 128kbps or expand full lyrics &amp; liner notes
 			</p>
 		</div>
 

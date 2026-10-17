@@ -32,6 +32,7 @@
 const STORAGE_KEY_DSP = 'user_preferred_dsp';
 const LEGACY_STORAGE_KEY_DSP = 'preferredMusicStore';
 const STORAGE_KEY_NUDGE_DISMISSALS = 'raggiesoft_listening_room_nudge_dismissals';
+const STORAGE_KEY_AUTOPLAY_DEEPLINKS = 'raggiesoft_music_autoplay_deeplinks_v1';
 export const MAX_NUDGE_DISMISSALS = 3;
 
 /**
@@ -125,6 +126,15 @@ class DspPreferenceManager {
 	/** @type {number} */
 	nudgeDismissCount = $state(0);
 
+	/**
+	 * Whether visiting a deep-linked track URL (`?track=...`) should automatically
+	 * begin audio playback. Defaults to `false` in strict compliance with WCAG 2.1
+	 * Success Criterion 1.4.2 (Audio Control) so screen-reader and keyboard users
+	 * are never surprised by unexpected audio on page load.
+	 * @type {boolean}
+	 */
+	autoplayDeepLinks = $state(false);
+
 	/** @type {boolean} */
 	initialized = false;
 
@@ -135,9 +145,9 @@ class DspPreferenceManager {
 	}
 
 	/**
-	 * Hydrates preferred DSP and nudge dismissal count from `localStorage`.
-	 * If the visitor has never set a preference, defaults intelligently based
-	 * on their operating system (Apple Music on macOS/iOS/iPadOS; Spotify elsewhere).
+	 * Hydrates preferred DSP, nudge dismissal count, and deep-link autoplay preference
+	 * from `localStorage`. If the visitor has never set a DSP preference, defaults
+	 * intelligently based on their operating system.
 	 */
 	init() {
 		if (this.initialized || typeof window === 'undefined') return;
@@ -164,8 +174,28 @@ class DspPreferenceManager {
 			if (!Number.isNaN(savedDismissals) && savedDismissals >= 0) {
 				this.nudgeDismissCount = savedDismissals;
 			}
+
+			const savedAutoplay = localStorage.getItem(STORAGE_KEY_AUTOPLAY_DEEPLINKS);
+			this.autoplayDeepLinks = savedAutoplay === 'true';
 		} catch {
 			this.preferredDsp = detectSystemDefaultDsp();
+			this.autoplayDeepLinks = false;
+		}
+	}
+
+	/**
+	 * Sets whether deep-linked track URLs (`?track=...`, `?play=...`, `#track-...`)
+	 * automatically start audio playback when opened. Defaults to `false` for WCAG 1.4.2.
+	 * @param {boolean} enabled
+	 */
+	setAutoplayDeepLinks(enabled) {
+		this.autoplayDeepLinks = Boolean(enabled);
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.setItem(STORAGE_KEY_AUTOPLAY_DEEPLINKS, String(this.autoplayDeepLinks));
+			} catch {
+				// Ignore storage errors
+			}
 		}
 	}
 
