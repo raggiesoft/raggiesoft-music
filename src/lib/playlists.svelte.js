@@ -254,7 +254,7 @@ export const curatedPlaylists = [
 				actLabel: 'III. The Apoapsis Suite (Part 1 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement I: The Farthest Point of the Orbit',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/1997-hard-reset',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Opening The Apoapsis Suite—the three-song suite that launches Disc 2 of Hard Reset ('The Engine Room')—'Apoapsis' captures the exact orbital moment where a spacecraft reaches its farthest distance from gravity's pull and hangs in silent, weightless equilibrium."
@@ -266,7 +266,7 @@ export const curatedPlaylists = [
 				actLabel: 'III. The Apoapsis Suite (Part 2 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement II: Stabilizing the Deep-Space Trajectory',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/1997-hard-reset',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"The second movement of The Apoapsis Suite deepens the harmonic lock. Instead of falling back toward the planet below, Cassidy's layered modular sequencers fire a secondary stabilization burn, locking the band into a permanent high-altitude orbit."
@@ -278,7 +278,7 @@ export const curatedPlaylists = [
 				actLabel: 'III. The Apoapsis Suite (Part 3 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement III: Reclaiming 1987’s "Electric Color" in Unfiltered Light',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/1997-hard-reset',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Concluding The Apoapsis Suite, 'The Spectrum (True Color)' directly answers the band's 1987 Apex Records album Electric Color. Free from corporate neon and studio tampering, Cassidy refracts the full analog frequency spectrum across the void."
@@ -299,12 +299,12 @@ export const curatedPlaylists = [
 				albumSlug: '2011-starfield-calibration',
 				trackId: '1-01',
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 1)',
-				chapterTitle: 'The 1985 Band Theme Reborn in Zero Gravity',
+				chapterTitle: 'Written in 1986 When Evan & Tyler Joined • Released on 1987’s Electric Color',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
-					"Launching the 14-song Starfield Calibration celebration of The Cosmic Tidal Lock Sound™, Cassidy re-engineers the band's 1985 eponymous anthem inside her 360-degree planetarium synthesizer rig."
+					"Like the rest of Electric Color, 'The Stardust Engine' was officially released in 1987 (buried by Apex Records at the end of the album as Track 13). However, it was the very first song Cassidy and Ryan O'Connell came up with in 1986 when their twin cousins Evan and Tyler Wright joined them at CPI. Too scared at the time to shop the song around, the four of them kept it to themselves and decided to use that first song to name their band. Launching 2011's Starfield Calibration, Cassidy re-engineers their 1986 origin anthem in The Cosmic Tidal Lock Sound™."
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -313,7 +313,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 2)',
 				chapterTitle: '1987’s Title Track Refracted Through The Engine Room',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Once symbol of Apex Records' 1987 commercial sheen, 'Electric Color' is reclaimed in a lush Cosmic Tidal Lock Mix where Cassidy's analog pads and Ryan's soaring guitar lines shimmer in synchronous orbit."
@@ -325,7 +325,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 3)',
 				chapterTitle: 'Shattering the Artificial Dome',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Originally an indictment of corporate artifice, 'Plastic Sky' expands into a widescreen space-synth meditation as the artificial ceiling gives way to real starlight."
@@ -337,7 +337,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 4)',
 				chapterTitle: 'Bridging the Orbital Distance',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"In this Cosmic Tidal Lock Mix, the emotional distance of 'Worlds Apart' becomes literal astrophysics—two bodies separated by vacuum yet bound together by unbreakable gravitational resonance."
@@ -349,7 +349,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 5)',
 				chapterTitle: 'The Tether That Never Snaps',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"Re-envisioned with deep sub-octave Moog pedals and crystalline bell arpeggios, 'My Anchor Holds' celebrates the family bond that kept Ryan and Cassidy grounded through every storm."
@@ -361,7 +361,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 6)',
 				chapterTitle: 'Warm Vacuum Tubes in the Cold Void',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Cassidy strips away the 1980s gated snare and replaces it with a hypnotic, pulse-locked analog heartbeat, turning 'Neon Hearts' into an intimate nocturnal transmission."
@@ -373,7 +373,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 7)',
 				chapterTitle: 'Looking Back at Earth from High Orbit',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"Stretching past five and a half minutes, 'Rearview Mirror (Cosmic Tidal Lock Mix)' transforms a highway reflection into an orbital look back at the decades the family traveled together."
@@ -385,7 +385,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 8)',
 				chapterTitle: 'Breathing Inside the Pressurized Sanctuary',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"A showcase for Cassidy's custom filter-bank modulation, 'Atmosphere (Cosmic Tidal Lock Mix)' surrounds the listener in shimmering, headphone-calibrated harmonic air."
@@ -397,7 +397,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 9)',
 				chapterTitle: 'Zero Corporate Strings Attached',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Originally a defiant statement of independence on 1997's Hard Reset, 'No Hidden Gravity' returns in a celebratory Cosmic Tidal Lock Mix where every frequency moves in transparent, uncoerced freedom."
@@ -409,7 +409,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 10)',
 				chapterTitle: 'Newton’s First Law in Pure Analog Motion',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Evan & Tyler Wright with Cassidy O'Connell",
 				storySummary:
 					"Twin cousins Evan and Tyler Wright lock their bass and drum pocket directly to Cassidy's master clock, proving that an object in motion stays in motion when no corporate friction slows it down."
@@ -421,7 +421,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 11)',
 				chapterTitle: 'Ghost Signals Across the Copper Bus',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Cassidy threads vintage tape-delay feedback and modular ring modulation through 'Echoes in the Wire', honoring the late-night Blacksburg studio experiments where the sound was born."
@@ -433,7 +433,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 12)',
 				chapterTitle: 'The 1986–2001 Nocturnal Highway Meets Deep Space',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"The title track of 2001's Midnight Drivers receives the full Cosmic Tidal Lock treatment—uniting the 1986 rejected-floor nocturnal synthwave aesthetic with the expansive starfield dome of 2011."
@@ -445,7 +445,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 13)',
 				chapterTitle: 'Where the Blue Ridge Meets the Exosphere',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"As the calibration sequence approaches daybreak, 'The Horizon Line (Cosmic Tidal Lock Mix)' blends warm acoustic guitar textures with sweeping golden-amber synthesizer horizons."
@@ -457,7 +457,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 14 • Finale)',
 				chapterTitle: 'Sunrise Over the Orbital Observatory',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/discography/2011-starfield-calibration',
+					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "The Stardust Engine",
 				storySummary:
 					"Closing both Starfield Calibration and this 20-track journey through The Cosmic Tidal Lock Sound™, 'Fade to Dawn (Cosmic Tidal Lock Mix)' brings the orbital observatory gently into the light of a new morning."
