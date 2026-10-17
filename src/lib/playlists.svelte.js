@@ -178,21 +178,21 @@ export const curatedPlaylists = [
 	{
 		slug: 'cosmic-tidal-lock-sound',
 		title: 'The Cosmic Tidal Lock Sound™',
-		subtitle: "Cassidy O'Connell's Signature Space-Synth Architecture (1986–2011)",
-		curator: "Cassidy O'Connell (Chief Audio Architect, The Stardust Engine)",
+		subtitle: "Cassidy O'Connell's Signature Space-Synth Architecture (1997–2011 • Thematic 1986 Origin)",
+		curator: "Cassidy O'Connell (with her Safe Person, Ryan O'Connell)",
 		artistSlug: 'the-stardust-engine',
-		year: '1986–2011 (1997 Hard Reset • 2001 Midnight Drivers • 2011 Starfield Calibration)',
+		year: '1997–2011 (1997 Hard Reset • 2001 Midnight Drivers • 2011 Starfield Calibration)',
 		badge: 'Official Sonic Architecture & Lore Playlist',
 		artwork:
 			'https://assets.raggiesoft.com/engine-room-records/playlists/cosmic-tidal-lock-sound/cover.jpg',
 		socialPreview:
 			'https://assets.raggiesoft.com/engine-room-records/playlists/cosmic-tidal-lock-sound/social-preview.jpg',
 		description:
-			"Experience the complete 20-track evolution of Cassidy O'Connell's signature 'Cosmic Tidal Lock Sound™'—beginning with the catalyst track 'Moon 1 (Tidal Lock)' where she first named the style, flashing back to 'Terminal Velvet' from the 1986 Apex-rejected cutting-room floor, ascending through the three-part 'Apoapsis Suite' and her 15-minute autobiographical masterpiece 'Escape Velocity (Ad Astra)', and culminating in all 14 tracks of 2011's 'Starfield Calibration'.",
+			"Experience the 20-track evolution of Cassidy O'Connell's signature 'Cosmic Tidal Lock Sound™'—anchored by her brother and safe person Ryan O'Connell. Opening with 1997's catalyst track 'Moon 1 (Tidal Lock)', visiting 2001's retro-engineered 'Terminal Velvet' (created in 2001 to thematically represent a 1986 song Apex Records would have cut before Cassidy had a name for the style), ascending through the three-part 'Apoapsis Suite' and her 15-minute autobiographical resume masterpiece 'Escape Velocity (Ad Astra)', and culminating in all 14 tracks of 2011's 'Starfield Calibration'.",
 		storyParagraphs: [
-			"For eleven years under Apex Records (1985–1996), keyboardist and audio engineer Cassidy O'Connell was told that her sprawling, zero-gravity analog synthesizer landscapes were 'too atmospheric, too unconventional, and not radio-friendly.' Whenever she brought a darkwave or progressive space-synth demo to the table in 1986, corporate A&R executives left it on the studio floor and demanded punchier three-minute arena hooks instead.",
-			"Everything changed in 1997 when the family founded Engine Room Records and built Disc 2 of Hard Reset ('The Engine Room'). While engineering 'Moon 1 (Tidal Lock)', Cassidy officially christened her unhurried, phase-locked analog architecture 'The Cosmic Tidal Lock Sound™'—a reference to orbital mechanics in which a moon's rotation locks in permanent synchronous resonance with its parent body. Four years later on 2001's Midnight Drivers, the band finally excavated the 1986 Apex-rejected cutting-room floor, releasing 'Terminal Velvet'—the chronological prototype that birthed the sound before Cassidy even had a name for it.",
-			"At the center of this 20-song journey sits Cassidy's crowning achievement: the three-movement 'Apoapsis Suite' ('Apoapsis', 'Second Apoapsis', and 'The Spectrum (True Color)') followed by the 15-minute-and-33-second magnum opus 'Escape Velocity (Ad Astra)'—the most important work on Cassidy's resume and her personal musical autobiography, for which she wrote every lyric, composed every note, and directed the band (her family). The playlist concludes with all 14 tracks of 2011's Starfield Calibration: a full-length 25th-anniversary celebration of The Cosmic Tidal Lock Sound™."
+			"During The Stardust Engine's corporate era under Apex Records (1987–1992), keyboardist and Chief Audio Architect Cassidy O'Connell was forced to suppress her sprawling, zero-gravity analog synthesizer landscapes in favor of radio-friendly pop sheen. That corporate captivity ended abruptly in September 1992 with the 'Friction Catastrophe'—when rogue executive Julian Vance, unaware of Ryan's paralysis and falsely assuming Ryan and Cassidy were a married couple, demanded the explicit 'Shot 12' at a Los Angeles warehouse photo shoot. After Ryan's furious outcry ('SHE'S MY SISTER!'), younger sister Holly O'Connell used Vance's misconduct to force Apex Records to void their contract in 1992 and founded Engine Room Records.",
+			"After purging the raw trauma of 1992 on 1995's The Warehouse Tapes, Cassidy built Disc 2 of 1997's Hard Reset ('The Engine Room') as a weightless orbital sanctuary for herself and her brother Ryan—whom Cassidy considers her safe person. It was while engineering 'Moon 1 (Tidal Lock)' in 1997 that Cassidy officially named her phase-locked, zero-gravity style 'The Cosmic Tidal Lock Sound™' (protected by Holly as an Engine Room Records trademark). Four years later, when the band recorded 2001's Midnight Drivers—a retro-engineered concept album built around the lone surviving 1987 title track to represent a 'lost' album Apex would have shelved—Cassidy composed 'Terminal Velvet' in 2001 as a fictional chronological paradox: a song written in 2001 using The Cosmic Tidal Lock Sound™, but thematically representing a 1986 cutting-room-floor track from before Cassidy had ever named the style.",
+			"At the heart of this playlist sits the three-song 'Apoapsis Suite' ('Apoapsis', 'Second Apoapsis', and 'The Spectrum (True Color)') followed by the 15-minute-and-33-second magnum opus 'Escape Velocity (Ad Astra)'—Cassidy's most important piece of work and the #1 achievement she would list on her resume. It is her musical autobiography: she wrote the lyrics, she wrote the notes, and she directed the band (her family). The playlist concludes with all 14 tracks of 2011's Starfield Calibration, a silver-anniversary celebration of The Cosmic Tidal Lock Sound™."
 		],
 		loreUrl:
 			'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
@@ -200,18 +200,18 @@ export const curatedPlaylists = [
 		hubBookUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra',
 		crossUniverseLinks: [
 			{
-				label: 'Audio Engineering Dossier • 1997',
-				title: 'What Is "The Cosmic Tidal Lock Sound™"?',
+				label: 'The 1992 Emancipation • Friction Catastrophe',
+				title: 'How the 1992 Warehouse Incident Ended Apex Records’ Control',
 				description:
-					"Read the complete technical and narrative breakdown of how Cassidy O'Connell engineered Disc 2 of Hard Reset after escaping eleven years of Apex Records censorship.",
-				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound'
+					"Read the archival dossier on the September 1992 'Shot 12' confrontation that ended the band's contract with Apex Records and led Holly O'Connell to found Engine Room Records.",
+				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/friction'
 			},
 			{
-				label: 'Magnum Opus Lore • Hard Reset (Disc 2)',
-				title: 'Escape Velocity (Ad Astra): Cassidy’s 15-Minute Autobiography',
+				label: 'Audio Engineering Dossier • 1997–2011',
+				title: 'What Is "The Cosmic Tidal Lock Sound™"?',
 				description:
-					'Explore the four movements of Cassidy’s defining composition—written, composed, and conducted by Cassidy O’Connell with Ryan, Evan, and Tyler.',
-				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra'
+					"Explore how Cassidy O'Connell engineered her zero-gravity synthesizer sanctuary with her brother and safe person Ryan O'Connell.",
+				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound'
 			}
 		],
 		trackSpecs: [
@@ -220,24 +220,24 @@ export const curatedPlaylists = [
 				albumSlug: '1997-hard-reset',
 				trackId: '2-04',
 				actLabel: 'I. The Catalyst Track • Hard Reset (Disc 2, 1997)',
-				chapterTitle: 'The First Song Created Under the Name "The Cosmic Tidal Lock Sound™"',
+				chapterTitle: 'The First Song Created After Naming "The Cosmic Tidal Lock Sound™"',
 				chapterUrl:
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell (Chief Audio Architect)",
 				storySummary:
-					"This is the first song Cassidy O'Connell created after officially deciding that her signature style of music is called 'The Cosmic Tidal Lock Sound™.' Built on phase-locked analog arpeggiators and zero-gravity sub-bass, 'Moon 1 (Tidal Lock)' established the sonic blueprint for everything that followed."
+					"Five years after the 1992 Friction catastrophe freed the family from Apex Records, Cassidy created 'Moon 1 (Tidal Lock)' for Disc 2 of 1997's Hard Reset—the very first song she created after officially deciding that this zero-gravity style of music is called 'The Cosmic Tidal Lock Sound™.'"
 			},
 			{
 				artistSlug: 'the-stardust-engine',
 				albumSlug: '2001-midnight-drivers',
 				trackId: '1-08',
-				actLabel: 'II. The 1986 Rejected-Floor Prototype • Midnight Drivers (2001)',
-				chapterTitle: 'The First Song With the Style (Before Cassidy Named It)',
+				actLabel: 'II. The 2001 Retro-Engineered "1986" Paradox • Midnight Drivers (2001)',
+				chapterTitle: 'Created in 2001 to Represent a 1986 Song Apex Would Have Cut',
 				chapterUrl:
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
-					"In-universe, 'Terminal Velvet' is the very first song ever written with this style of music—back before Cassidy had named it 'The Cosmic Tidal Lock Sound™.' Although the Midnight Drivers album was released in 2001 (four years after 1997's Hard Reset), thematically the album resurrects the songs left on the cutting-room floor when Apex Records rejected them in 1986."
+					"Because only the title track of Midnight Drivers was actually recorded in 1987, Cassidy wrote and recorded 'Terminal Velvet' from scratch in 2001 (four years after 1997's Hard Reset) to build out the 'lost' album. Thematically, it was crafted to represent a 1986 song that Apex Records would have left on the cutting-room floor—meaning that within the story's thematic timeline, it represents the first song with this sound, before Cassidy had ever called it 'The Cosmic Tidal Lock Sound™.'"
 			},
 			{
 				artistSlug: 'the-stardust-engine',
