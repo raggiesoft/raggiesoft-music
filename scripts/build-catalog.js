@@ -205,6 +205,8 @@ function buildCatalog() {
 			artistName = 'The Arctic Symphony Project';
 		else if (artistSlug === 'firelight') artistName = 'Firelight';
 		else if (artistSlug === 'steel-horizon') artistName = 'Steel Horizon';
+		else if (artistSlug === 'the-hoshizora-ensemble')
+			artistName = 'The Hoshizora Ensemble';
 
 		// Resolve artist logo if band-logo.png or band-logo.jpg exists
 		const artistLogo = fs.existsSync(path.join(artistDir, 'band-logo.png'))
@@ -326,6 +328,9 @@ function buildCatalog() {
 				: albumData.narrativeReleaseDate
 					? String(albumData.narrativeReleaseDate).trim()
 					: '';
+			const usReleaseDate = albumData.usReleaseDate
+				? String(albumData.usReleaseDate).trim()
+				: '';
 			const datePublished = albumData.datePublished
 				? String(albumData.datePublished).trim()
 				: albumData.albumRelease?.datePublished
@@ -629,6 +634,7 @@ function buildCatalog() {
 				loreUrl,
 				year,
 				temporalCoverage,
+				usReleaseDate,
 				datePublished,
 				genre,
 				isRockOpera,
