@@ -107,8 +107,8 @@ class ThemeManager {
 	 */
 	logoUrl = $derived(
 		this.isDark
-			? '/logos/engine-room-records-logo-white.png'
-			: '/logos/engine-room-records-logo.png'
+			? 'https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png'
+			: 'https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png'
 	);
 
 	/**

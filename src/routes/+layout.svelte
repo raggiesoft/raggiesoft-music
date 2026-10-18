@@ -154,13 +154,13 @@
 				>
 					<!-- Light Mode Logo: Pure Black on Transparent Background -->
 					<img
-						src="/logos/engine-room-records-logo.png"
+						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
 						alt="Engine Room Records Logo"
 						class="er-logo-light h-full w-full object-contain"
 					/>
 					<!-- Dark Mode Logo: Pure White on Transparent Background -->
 					<img
-						src="/logos/engine-room-records-logo-white.png"
+						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
 						alt="Engine Room Records Logo"
 						class="er-logo-dark h-full w-full object-contain"
 					/>

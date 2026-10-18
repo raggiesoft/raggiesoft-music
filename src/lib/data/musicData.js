@@ -180,7 +180,7 @@ export const artistLoreMetadata = {
 			'Blending authentic 16-bit Super Famicom / SNES JRPG chiptune synthesis with sweeping live symphonic rock and progressive metal, Mana Canvas bridges the worlds of classic fantasy video game soundtracks and high-voltage arena concerts.',
 		genres: ['16-Bit Symphonic Prog', 'JRPG Soundtrack', 'Fantasy Rock Opera'],
 		yearsActive: '1992–Present',
-		flagshipAlbumSlug: '1992-dream-kingdom-ost',
+		flagshipAlbumSlug: '1992-runebreaker-ost',
 		socialPreview:
 			'https://assets.raggiesoft.com/engine-room-records/artists/mana-canvas/social-preview.jpg'
 	},
@@ -206,9 +206,12 @@ export const artistLoreMetadata = {
 	},
 	firelight: {
 		description:
-			'Rooted in warm acoustic storytelling, heartland rock, and rich vocal harmonies, Firelight captures the intimate, glowing moments of community, memory, and resilience around the hearth.',
-		genres: ['Heartland Rock', 'Acoustic Folk-Rock', 'Americana'],
-		yearsActive: '1995–Present'
+			'The official 1980s motion picture soundtrack ensemble behind The Silver Gauntlet of Aethel—Michael P. Ragsdale\'s love letter to 1980s fantasy-adventure cinema. Anchored by its flagship main theme "A Sister\'s Love" (heavily inspired by Limahl\'s NeverEnding Story theme song), Firelight fuses shimmering 1980s synth-pop arpeggios and soaring melodic hooks with widescreen fantasy orchestration.',
+		genres: ['80s Movie Soundtracks', '80s Synth-Pop', 'Fantasy-Adventure Score', 'Orchestral Rock'],
+		yearsActive: '1987–Present',
+		flagshipAlbumSlug: '2017-silver-gauntlet-of-aethel-book-i',
+		socialPreview:
+			'https://assets.raggiesoft.com/engine-room-records/artists/firelight/1987-silver-gauntlet-of-aethel/social-preview.jpg'
 	},
 	'the-arctic-symphony-project': {
 		description:

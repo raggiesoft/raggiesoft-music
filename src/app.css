@@ -66,17 +66,17 @@ html.is-pwa-standalone .rs-mobile-network-section {
  * 1. LOGO VISIBILITY RULES (LIGHT VS. DARK MODE)
  * ============================================================================ */
 .er-logo-light {
-	display: none;
+	display: none !important;
 }
 .er-logo-dark {
-	display: block;
+	display: block !important;
 }
 
 html[data-color-scheme='light'] .er-logo-light {
-	display: block;
+	display: block !important;
 }
 html[data-color-scheme='light'] .er-logo-dark {
-	display: none;
+	display: none !important;
 }
 
 /* ============================================================================

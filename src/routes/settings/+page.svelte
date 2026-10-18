@@ -395,12 +395,12 @@
 					class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-md"
 				>
 					<img
-						src="/logos/engine-room-records-logo.png"
+						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
 						alt="Engine Room Records Light Mode Logo (Black on Transparent)"
 						class="er-logo-light h-full w-full object-contain"
 					/>
 					<img
-						src="/logos/engine-room-records-logo-white.png"
+						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
 						alt="Engine Room Records Dark Mode Logo (White on Transparent)"
 						class="er-logo-dark h-full w-full object-contain"
 					/>
