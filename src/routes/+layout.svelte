@@ -395,7 +395,7 @@
 				</div>
 			</div>
 			<p class="mt-1 text-amber-100/95">
-				All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>, such as <em>Midnight Drivers</em> [<code>2001</code>] and <em>Starfield Calibration</em> [<code>2011</code>]) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong>.
+				All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>, such as <em>Midnight Drivers</em> [<code>2001</code>] and <em>Starfield Calibration</em> [<code>2011</code>]) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 			</p>
 		</aside>
 
