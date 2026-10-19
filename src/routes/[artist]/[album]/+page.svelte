@@ -458,7 +458,7 @@
 							</span>
 						{/if}
 						<span class="font-mono text-xs font-semibold text-slate-400">
-							{formatReleaseDate(album.temporalCoverage, album.year)} • {album.genre}
+							Lore Era: {formatReleaseDate(album.temporalCoverage, album.year)} • Real-World Release: {album.datePublished || '2026'} • {album.genre}
 							{#if album.upc}
 								• UPC: {album.upc}
 							{/if}

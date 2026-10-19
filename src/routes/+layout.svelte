@@ -358,6 +358,47 @@
 
 	<!-- Main Page Slot (Routes render here) -->
 	<main class="mx-auto w-full max-w-7xl flex-grow overflow-x-clip px-4 py-8 sm:px-6 lg:px-8">
+		<!-- Global Dual Timelines & DSP Verification Disclaimer (Displayed at the top of EVERY page) -->
+		<aside
+			class="mb-6 rounded-2xl border border-amber-500/40 bg-amber-950/35 px-4 py-3 text-xs leading-relaxed text-amber-100 shadow-md sm:px-5 sm:py-3.5"
+			 aria-label="Dual Timelines and DSP Copyright Verification Disclaimer"
+		>
+			<div class="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between">
+				<p class="font-extrabold tracking-wide text-amber-300 uppercase">
+					⏱️ Dual Timelines Disclaimer (In-Universe Lore Era vs. 2026 Real-World Release)
+				</p>
+				<div class="flex flex-wrap items-center gap-3 text-[11px] font-bold">
+					<a
+						href="https://stardust.raggiesoft.com/dsp-verification"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-amber-300 underline hover:text-white"
+					>
+						Stardust Engine DSP Verification ↗
+					</a>
+					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
+					<a
+						href="https://engineroom.raggiesoft.com/dsp-verification"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-amber-300 underline hover:text-white"
+					>
+						Master ISRC Ledger ↗
+					</a>
+					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
+					<a
+						href={resolve('/behind-the-scenes')}
+						class="text-amber-300 underline hover:text-white"
+					>
+						Behind the Scenes &rarr;
+					</a>
+				</div>
+			</div>
+			<p class="mt-1 text-amber-100/95">
+				All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>, such as <em>Midnight Drivers</em> [<code>2001</code>] and <em>Starfield Calibration</em> [<code>2011</code>]) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong>.
+			</p>
+		</aside>
+
 		{@render children()}
 	</main>
 
