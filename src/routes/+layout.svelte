@@ -44,6 +44,55 @@
 	// Track active route path for nav highlighting
 	let currentPath = $derived(page.url?.pathname || '/');
 
+	// Context-aware metadata for the Global Dual Timelines & DSP Verification Disclaimer
+	let activeAlbum = $derived(/** @type {any} */ (page.data)?.album || null);
+	let activeArtist = $derived(/** @type {any} */ (page.data)?.artist || null);
+	let activeArtistSlug = $derived(
+		page.params?.artist || activeAlbum?.artistSlug || activeArtist?.slug || ''
+	);
+	let activeArtistName = $derived(activeAlbum?.artist || activeArtist?.name || '');
+	let activeAlbumSlug = $derived(page.params?.album || activeAlbum?.slug || '');
+	let activeAlbumTitle = $derived(activeAlbum?.title || '');
+	let activeLoreDate = $derived(activeAlbum?.temporalCoverage || activeAlbum?.year || '');
+	let activeRealDate = $derived(activeAlbum?.datePublished || '2026');
+	let activeTrackSlug = $state('');
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !page.url) {
+			activeTrackSlug = '';
+			return;
+		}
+		activeTrackSlug =
+			page.url.searchParams.get('track') ||
+			page.url.searchParams.get('play') ||
+			page.url.searchParams.get('song') ||
+			'';
+	});
+
+	let dspVerificationUrl = $derived.by(() => {
+		const baseUrl = 'https://engineroom.raggiesoft.com/dsp-verification/';
+		if (!activeArtistSlug) return baseUrl;
+		const params = new URLSearchParams();
+		params.set('artist', activeArtistSlug);
+		if (activeAlbumSlug) {
+			params.set('album', activeAlbumSlug);
+		}
+		if (activeTrackSlug) {
+			params.set('track', activeTrackSlug);
+		}
+		return `${baseUrl}?${params.toString()}`;
+	});
+
+	let dspVerificationLabel = $derived.by(() => {
+		if (activeArtistName && activeAlbumTitle) {
+			return `DSP Verification (${activeArtistName} — ${activeAlbumTitle}) ↗`;
+		}
+		if (activeArtistName) {
+			return `DSP Verification (${activeArtistName}) ↗`;
+		}
+		return 'DSP Verification & Master ISRC Ledger ↗';
+	});
+
 	onMount(() => {
 		// Initialize adaptive theme manager & prefers-color-scheme listener
 		themeManager.init();
@@ -361,7 +410,7 @@
 		<!-- Global Dual Timelines & DSP Verification Disclaimer (Displayed at the top of EVERY page) -->
 		<aside
 			class="mb-6 rounded-2xl border border-amber-500/40 bg-amber-950/35 px-4 py-3 text-xs leading-relaxed text-amber-100 shadow-md sm:px-5 sm:py-3.5"
-			 aria-label="Dual Timelines and DSP Copyright Verification Disclaimer"
+			aria-label="Dual Timelines and DSP Copyright Verification Disclaimer"
 		>
 			<div class="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between">
 				<p class="font-extrabold tracking-wide text-amber-300 uppercase">
@@ -369,22 +418,24 @@
 				</p>
 				<div class="flex flex-wrap items-center gap-3 text-[11px] font-bold">
 					<a
-						href="https://stardust.raggiesoft.com/dsp-verification"
+						href={dspVerificationUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-amber-300 underline hover:text-white"
 					>
-						Stardust Engine DSP Verification ↗
+						{dspVerificationLabel}
 					</a>
-					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
-					<a
-						href="https://engineroom.raggiesoft.com/dsp-verification"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-amber-300 underline hover:text-white"
-					>
-						Master ISRC Ledger ↗
-					</a>
+					{#if activeArtistSlug}
+						<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
+						<a
+							href="https://engineroom.raggiesoft.com/dsp-verification/"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-amber-300 underline hover:text-white"
+						>
+							Full Master ISRC Ledger ↗
+						</a>
+					{/if}
 					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
 					<a
 						href={resolve('/behind-the-scenes')}
@@ -395,7 +446,13 @@
 				</div>
 			</div>
 			<p class="mt-1 text-amber-100/95">
-				All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>, such as <em>Midnight Drivers</em> [<code>2001</code>] and <em>Starfield Calibration</em> [<code>2011</code>]) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+				{#if activeArtistName && activeAlbumTitle}
+					<strong>{activeArtistName}</strong> and the historical release date for <em>{activeAlbumTitle}</em> (<code>{activeLoreDate}</code>) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements on this release are original 2026 studio creations (<code>datePublished: {activeRealDate}</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+				{:else if activeArtistName}
+					<strong>{activeArtistName}</strong> and all historical release dates across their discography represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+				{:else}
+					All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+				{/if}
 			</p>
 		</aside>
 
