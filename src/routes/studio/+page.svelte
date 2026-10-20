@@ -167,6 +167,30 @@
 	let editTrackLoreNote = $state('');
 	let editTrackLyrics = $state('');
 
+	/**
+	 * Official US ISRC Agency Registrant Prefix (`QTAHP`, Registrant ID `185611`,
+	 * allocated 2026-10-20 to Michael Ragsdale / `dsp.operations@engineroom-records.com`).
+	 * Computes the next sequential 2026 ISRC (`QTAHP2600001`+) by scanning all
+	 * existing `QTAHP26xxxxx` codes across the catalog.
+	 */
+	let nextQtahpIsrc = $derived.by(() => {
+		let maxSeq = 0;
+		const yy = String(new Date().getFullYear()).slice(-2);
+		const prefix = `QTAHP${yy}`;
+		for (const album of allAlbums) {
+			for (const t of album.tracks || []) {
+				const code = String(t.isrc || '').trim().toUpperCase();
+				if (code.startsWith(prefix) && code.length === 12) {
+					const num = parseInt(code.slice(7), 10);
+					if (Number.isFinite(num) && num > maxSeq) {
+						maxSeq = num;
+					}
+				}
+			}
+		}
+		return `${prefix}${String(maxSeq + 1).padStart(5, '0')}`;
+	});
+
 	// ---------------------------------------------------------------------------
 	// 5. INITIALIZATION & TRACK LOADING
 	// ---------------------------------------------------------------------------
@@ -1299,12 +1323,32 @@
 							/>
 						</div>
 						<div>
-							<label for="edit-track-isrc" class="mb-1 block text-xs font-semibold text-slate-400">
-								ISRC Code
-							</label>
+							<div class="mb-1 flex items-center justify-between gap-2">
+								<label for="edit-track-isrc" class="block text-xs font-semibold text-slate-400">
+									ISRC Code (US ISRC Prefix: <span class="font-mono text-amber-400">QTAHP</span>)
+								</label>
+								{#if !editTrackIsrc.trim()}
+									<button
+										type="button"
+										onclick={() => (editTrackIsrc = nextQtahpIsrc)}
+										class="rounded bg-amber-500/20 px-2 py-0.5 font-mono text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/30"
+										title="Mint next sequential US ISRC Agency code under prefix QTAHP (Registrant ID 185611)"
+									>
+										+ Mint {nextQtahpIsrc}
+									</button>
+								{:else}
+									<span
+										class="font-mono text-[10px] text-emerald-400"
+										title="US ISRC Agency Rule: Never assign a second ISRC to an already-registered sound recording."
+									>
+										🔒 Assigned
+									</span>
+								{/if}
+							</div>
 							<input
 								id="edit-track-isrc"
 								type="text"
+								placeholder={nextQtahpIsrc}
 								bind:value={editTrackIsrc}
 								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-white"
 							/>
