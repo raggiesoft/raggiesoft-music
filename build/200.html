@@ -17,6 +17,13 @@
 		<script>
 			(function () {
 				try {
+					if (window.location && /^\/artists\//i.test(window.location.pathname)) {
+						var cleanPath = window.location.pathname.replace(/^\/artists\//i, '/');
+						window.location.replace(
+							cleanPath + (window.location.search || '') + (window.location.hash || '')
+						);
+						return;
+					}
 					var raw = localStorage.getItem('engine_room_settings');
 					var parsed = raw ? JSON.parse(raw) : {};
 					var theme = parsed.theme || 'studio';
@@ -261,15 +268,15 @@
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_12m32mu = {
+					__sveltekit_i9o3mj = {
 						base: "",
-						version: "1792809518982"
+						version: "1792810812427"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.BpD3J1gm.js").then(async (kit) => {
-						kit.init(__sveltekit_12m32mu);
+						kit.init(__sveltekit_i9o3mj);
 						const app = await import("/_app/immutable/entry/app.C8HsShMp.js");
 						kit.start(app, element);
 					});

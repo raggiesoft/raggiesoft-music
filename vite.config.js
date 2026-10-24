@@ -40,6 +40,28 @@ function staticPwaAdapter(options = {}) {
 			if (fallback) {
 				builder.generateFallback(`${out}/${fallback}`);
 			}
+
+			// Normalize relative `./_app/` and `../_app/` asset references in generated HTML
+			// to root-relative `/_app/` so Nginx SPA fallback serving `/index.html` at deep
+			// URLs never misresolves CSS/JS bundles in PWA standalone or browser mode.
+			/** @param {string} dir */
+			function normalizeHtmlAssetPaths(dir) {
+				for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+					const fullPath = path.join(dir, entry.name);
+					if (entry.isDirectory()) {
+						normalizeHtmlAssetPaths(fullPath);
+					} else if (entry.isFile() && entry.name.endsWith('.html')) {
+						const html = fs.readFileSync(fullPath, 'utf-8');
+						const normalized = html
+							.replace(/(href|src)="(\.\.?\/)+_app\//g, '$1="/_app/')
+							.replace(/import\("(\.\.?\/)+_app\//g, 'import("/_app/');
+						if (normalized !== html) {
+							fs.writeFileSync(fullPath, normalized, 'utf-8');
+						}
+					}
+				}
+			}
+			normalizeHtmlAssetPaths(out);
 		}
 	};
 }

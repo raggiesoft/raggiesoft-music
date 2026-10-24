@@ -17,6 +17,13 @@
 		<script>
 			(function () {
 				try {
+					if (window.location && /^\/artists\//i.test(window.location.pathname)) {
+						var cleanPath = window.location.pathname.replace(/^\/artists\//i, '/');
+						window.location.replace(
+							cleanPath + (window.location.search || '') + (window.location.hash || '')
+						);
+						return;
+					}
 					var raw = localStorage.getItem('engine_room_settings');
 					var parsed = raw ? JSON.parse(raw) : {};
 					var theme = parsed.theme || 'studio';

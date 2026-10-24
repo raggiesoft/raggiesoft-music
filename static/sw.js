@@ -18,8 +18,8 @@
  * ============================================================================
  */
 
-const CACHE_NAME = 'err-pwa-v3';
-const STATIC_CACHE = 'err-static-v3';
+const CACHE_NAME = 'err-pwa-v4';
+const STATIC_CACHE = 'err-static-v4';
 
 const PRECACHE_ASSETS = [
 	'/',
@@ -73,6 +73,14 @@ self.addEventListener('fetch', (event) => {
 		return;
 	}
 
+	// 0. Normalize legacy /artists/<slug> deep links to root /<slug> routes
+	if (request.mode === 'navigate' && /^\/artists\//i.test(url.pathname)) {
+		const targetUrl = new URL(url.href);
+		targetUrl.pathname = url.pathname.replace(/^\/artists\//i, '/');
+		event.respondWith(Response.redirect(targetUrl.href, 301));
+		return;
+	}
+
 	// 1. Navigation requests (HTML pages): Network-first with cache fallback
 	if (request.mode === 'navigate') {
 		event.respondWith(
@@ -93,15 +101,19 @@ self.addEventListener('fetch', (event) => {
 		return;
 	}
 
-	// 2. Static Assets (/_app/**, /icons/**): Cache-first
-	if (url.pathname.startsWith('/_app/') || url.pathname.startsWith('/icons/')) {
+	// 2. Static Assets (/_app/**, /icons/**): Cache-first (also rewrite any nested /.../_app/ requests to root /_app/)
+	if (url.pathname.includes('/_app/') || url.pathname.startsWith('/icons/')) {
+		const normalizedRequest =
+			url.pathname.includes('/_app/') && !url.pathname.startsWith('/_app/')
+				? new Request(new URL(url.pathname.slice(url.pathname.indexOf('/_app/')), url.origin), request)
+				: request;
 		event.respondWith(
-			caches.match(request).then((cached) => {
+			caches.match(normalizedRequest).then((cached) => {
 				if (cached) return cached;
-				return fetch(request).then((response) => {
+				return fetch(normalizedRequest).then((response) => {
 					if (response.ok) {
 						const copy = response.clone();
-						caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+						caches.open(STATIC_CACHE).then((cache) => cache.put(normalizedRequest, copy));
 					}
 					return response;
 				});
