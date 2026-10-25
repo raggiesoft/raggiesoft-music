@@ -17,12 +17,52 @@
 	 */
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
-	import { formatReleaseDate } from '#lib/data/musicData.js';
+	import {
+		buildSongFamilyComparisonQueue,
+		formatReleaseDate,
+		getRelatedSongs
+	} from '#lib/data/musicData.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
 	let audioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
 	let isScrubbing = $state(false);
 	let scrubTime = $state(0);
+
+	// Reactively compute related recordings and alternate versions for the active track
+	let currentRelatedSongs = $derived(
+		player.currentTrack?.title
+			? getRelatedSongs(player.currentTrack, player.currentTrack.albumSlug)
+			: []
+	);
+	let currentComparisonData = $derived(
+		currentRelatedSongs.length > 0
+			? buildSongFamilyComparisonQueue(player.currentTrack, player.currentTrack.albumSlug)
+			: { queue: [], startIndex: 0 }
+	);
+
+	/**
+	 * Plays a selected alternate version directly inside the persistent player,
+	 * loading the full song family comparison queue so the listener can step between versions.
+	 * @param {import('#lib/data/musicData.js').RelatedSongEntry} relEntry
+	 */
+	function playDrawerRelatedVersion(relEntry) {
+		if (!relEntry?.track?.isPlayable) return;
+		const { queue, startIndex } = buildSongFamilyComparisonQueue(relEntry.track, relEntry.album);
+		if (queue.length > 0) {
+			player.loadQueue(queue, startIndex, true);
+		} else {
+			player.loadQueue([relEntry.playerTrack], 0, true);
+		}
+	}
+
+	/**
+	 * Loads all playable versions of the current song in chronological sequence.
+	 */
+	function compareCurrentSongVersions() {
+		if (currentComparisonData.queue.length > 0) {
+			player.loadQueue(currentComparisonData.queue, 0, true);
+		}
+	}
 
 	// Synchronized WebVTT lyrics scroll container and tracking
 	let lyricsContainer = $state(/** @type {HTMLElement | null} */ (null));
@@ -258,6 +298,19 @@
 						</svg>
 						Lyrics & Lore
 					</button>
+
+					{#if currentRelatedSongs.length > 0}
+						<button
+							onclick={() => (player.drawerTab = 'versions')}
+							class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 {player.drawerTab ===
+							'versions'
+								? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+								: 'border border-purple-500/40 bg-purple-950/40 text-purple-200 hover:border-purple-400 hover:text-white'}"
+						>
+							<span>🔀</span>
+							<span>Other Versions ({currentRelatedSongs.length})</span>
+						</button>
+					{/if}
 
 					<button
 						onclick={() => (player.drawerTab = 'queue')}
@@ -724,6 +777,206 @@
 								No lyrics manifest filed for this recording. Enjoy the music!
 							</div>
 						{/if}
+
+						{#if currentRelatedSongs.length > 0}
+							<div class="rounded-xl border border-purple-500/40 bg-purple-950/20 p-5">
+								<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+									<div>
+										<h3
+											class="flex items-center gap-1.5 text-xs font-bold tracking-wider text-purple-300 uppercase"
+										>
+											<span>🔀</span>
+											<span>Other Versions &amp; Recordings ({currentRelatedSongs.length})</span>
+										</h3>
+										<p class="mt-0.5 text-xs text-slate-300">
+											Compare studio masters, early demos, alternate mixes, and live concert
+											performances.
+										</p>
+									</div>
+
+									{#if currentComparisonData.queue.length > 1}
+										<button
+											type="button"
+											onclick={compareCurrentSongVersions}
+											class="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+										>
+											<span>▶ Compare All {currentComparisonData.queue.length} Playable</span>
+										</button>
+									{/if}
+								</div>
+
+								<div class="max-h-60 space-y-2 overflow-y-auto pr-1">
+									{#each currentRelatedSongs as rel (rel.key)}
+										<div
+											class="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900/80 p-2.5"
+										>
+											<div class="flex min-w-0 items-center gap-2.5">
+												<img
+													src={rel.album.artwork}
+													alt="{rel.album.title} cover art"
+													class="h-10 w-10 shrink-0 rounded border border-slate-700 object-cover"
+												/>
+												<div class="min-w-0">
+													<div class="flex flex-wrap items-center gap-1.5">
+														<span
+															class="rounded border border-purple-500/40 bg-purple-950/80 px-1.5 py-0.5 text-[10px] font-bold text-purple-200 uppercase"
+														>
+															{rel.releaseYear} • {rel.versionLabel}
+														</span>
+														{#if rel.isSameMasterIsrc}
+															<span
+																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
+															>
+																Same Master
+															</span>
+														{/if}
+														{#if !rel.track.isPlayable}
+															<span
+																class="rounded border border-amber-800/60 bg-amber-950/80 px-1.5 py-0.5 text-[10px] font-medium text-amber-300 uppercase"
+															>
+																In Studio
+															</span>
+														{/if}
+													</div>
+													<div class="mt-0.5 truncate text-xs font-bold text-white">
+														{rel.track.title}
+													</div>
+													<div class="truncate text-[11px] text-slate-300">
+														{rel.album.title}
+													</div>
+												</div>
+											</div>
+
+											<div class="flex shrink-0 items-center gap-1.5">
+												{#if rel.track.isPlayable}
+													<button
+														type="button"
+														onclick={() => playDrawerRelatedVersion(rel)}
+														class="rounded-lg border border-blue-500/50 bg-blue-950/60 px-2.5 py-1 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-600 hover:text-white"
+													>
+														▶ Play
+													</button>
+												{/if}
+												<!-- eslint-disable svelte/no-navigation-without-resolve -->
+												<a
+													href="{resolve('/[artist]/[album]', {
+														artist: rel.album.artistSlug,
+														album: rel.album.slug
+													})}?track={encodeURIComponent(rel.deepLinkQuery)}"
+													onclick={() => (player.isExpanded = false)}
+													class="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+												>
+													Album &rarr;
+												</a>
+												<!-- eslint-enable svelte/no-navigation-without-resolve -->
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					{:else if player.drawerTab === 'versions'}
+						<!-- Dedicated Alternate Versions & Recordings Comparison View -->
+						<div class="rounded-xl border border-purple-500/40 bg-slate-950/80 p-5">
+							<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+								<div>
+									<h3 class="text-xs font-bold tracking-wider text-purple-300 uppercase">
+										🔀 Related Recordings &amp; Alternate Versions ({currentRelatedSongs.length})
+									</h3>
+									<p class="mt-1 text-xs text-slate-300">
+										Every known studio recording, early demo, alternate mix, and live concert
+										performance of <strong class="text-white">{player.currentTrack.title}</strong> across
+										the Engine Room Records catalog.
+									</p>
+								</div>
+
+								{#if currentComparisonData.queue.length > 1}
+									<button
+										type="button"
+										onclick={compareCurrentSongVersions}
+										class="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-600/30 transition-all hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+									>
+										<span>▶ Compare All {currentComparisonData.queue.length} Playable Versions</span>
+									</button>
+								{/if}
+							</div>
+
+							{#if currentRelatedSongs.length > 0}
+								<div class="max-h-96 space-y-2.5 overflow-y-auto pr-1">
+									{#each currentRelatedSongs as rel (rel.key)}
+										<div
+											class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3 transition-colors hover:border-purple-500/40"
+										>
+											<div class="flex min-w-0 items-center gap-3">
+												<img
+													src={rel.album.artwork}
+													alt="{rel.album.title} cover art"
+													class="h-12 w-12 shrink-0 rounded-lg border border-slate-700 object-cover"
+												/>
+												<div class="min-w-0">
+													<div class="flex flex-wrap items-center gap-1.5">
+														<span
+															class="rounded border border-purple-500/40 bg-purple-950/80 px-1.5 py-0.5 text-[10px] font-bold text-purple-200 uppercase"
+														>
+															{rel.releaseYear} • {rel.versionLabel}
+														</span>
+														{#if rel.isSameMasterIsrc}
+															<span
+																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
+															>
+																Same Master
+															</span>
+														{/if}
+														{#if !rel.track.isPlayable}
+															<span
+																class="rounded border border-amber-800/60 bg-amber-950/80 px-1.5 py-0.5 text-[10px] font-medium text-amber-300 uppercase"
+															>
+																In Studio
+															</span>
+														{/if}
+													</div>
+													<div class="mt-1 truncate text-xs font-bold text-white sm:text-sm">
+														{rel.track.title}
+													</div>
+													<div class="truncate text-[11px] text-slate-300">
+														{rel.album.artist} • {rel.album.title} (Disc {rel.track.disc || 1}, Track {rel
+															.track.track})
+													</div>
+												</div>
+											</div>
+
+											<div class="flex shrink-0 items-center gap-2">
+												{#if rel.track.isPlayable}
+													<button
+														type="button"
+														onclick={() => playDrawerRelatedVersion(rel)}
+														class="rounded-lg border border-blue-500/50 bg-blue-950/60 px-3 py-1.5 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-600 hover:text-white"
+													>
+														▶ Play
+													</button>
+												{/if}
+												<!-- eslint-disable svelte/no-navigation-without-resolve -->
+												<a
+													href="{resolve('/[artist]/[album]', {
+														artist: rel.album.artistSlug,
+														album: rel.album.slug
+													})}?track={encodeURIComponent(rel.deepLinkQuery)}"
+													onclick={() => (player.isExpanded = false)}
+													class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+												>
+													Album &rarr;
+												</a>
+												<!-- eslint-enable svelte/no-navigation-without-resolve -->
+											</div>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-sm text-slate-400">
+									No other recordings of this song were found in the catalog.
+								</p>
+							{/if}
+						</div>
 					{:else if player.drawerTab === 'queue'}
 						<!-- Active Playback Queue List -->
 						<div class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-5">
@@ -1067,6 +1320,22 @@
 						>
 							128k Preview
 						</span>
+					{/if}
+					{#if currentRelatedSongs.length > 0}
+						<button
+							type="button"
+							onclick={() => {
+								player.drawerTab = 'versions';
+								player.isExpanded = true;
+							}}
+							class="hidden shrink-0 items-center gap-1 rounded border border-purple-500/50 bg-purple-950/70 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-purple-200 uppercase transition-colors hover:border-purple-400 hover:bg-purple-900/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 md:inline-flex"
+							title="Compare {currentRelatedSongs.length} other {currentRelatedSongs.length === 1
+								? 'version'
+								: 'versions'} of {player.currentTrack.title}"
+						>
+							<span>🔀</span>
+							<span>{currentRelatedSongs.length + 1} Versions</span>
+						</button>
 					{/if}
 				</div>
 				<div class="mt-0.5 flex items-center gap-1.5 truncate">

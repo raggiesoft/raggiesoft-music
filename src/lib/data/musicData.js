@@ -757,3 +757,342 @@ export function formatReleaseDate(rawDate, fallbackYear = '', style = 'long') {
 	return value;
 }
 
+/**
+ * Cross-artist shared composition slugs where multiple bands on the Engine Room
+ * Records roster perform the same canonical song (e.g., Crimson Node's studio
+ * "The Flight Path" and The Stardust Engine's live concert performances of it).
+ * @type {Set<string>}
+ */
+const CROSS_ARTIST_SHARED_SONG_SLUGS = new Set([
+	'the-flight-path',
+	'homeward-on-this-day'
+]);
+
+/**
+ * Canonical song family alias map unifying tracks whose titles evolved across eras
+ * (e.g., "My Anchor (The Sail)" / "My Anchor: The Sail" reclaiming 1987's "My Anchor Holds",
+ * or live concert medleys/subtitles referencing the studio original).
+ * @type {Record<string, string>}
+ */
+const CANONICAL_SONG_FAMILY_ALIASES = {
+	'my-anchor-the-sail': 'my-anchor-holds',
+	'impact-mile-marker-98': 'impact',
+	'the-penumbra-transit': 'the-penumbra'
+};
+
+/**
+ * Normalizes a track title and artist slug into a canonical song family identifier
+ * (`"<artistSlug|shared>::<baseSongSlug>"`).
+ *
+ * Strips parenthetical and bracketed version, demo, mix, edit, language, and live
+ * venue descriptors while preserving core song titles (such as `Escape Velocity (Ad Astra)`).
+ *
+ * @param {string | undefined | null} title
+ * @param {string | undefined | null} [artistSlug='']
+ * @returns {string}
+ */
+export function getSongFamilyKey(title, artistSlug = '') {
+	if (!title || typeof title !== 'string') return '';
+
+	let cleaned = title
+		.toLowerCase()
+		.replace(/[’‘]/g, "'")
+		// Strip bracketed version/suite/edit/language tags: [Full Suite], [Radio Edit], [Japanese Version], etc.
+		.replace(
+			/\[(?:full suite|radio edit|japanese version|english version|[^\]]*mix[^\]]*|[^\]]*demo[^\]]*|[^\]]*live[^\]]*)\]/gi,
+			''
+		)
+		// Strip parenthetical live, guest, demo, sketch, mix, edit, and reprise suffixes
+		.replace(
+			/\((?:live[^)]*|feat\.[^)]*|ft\.[^)]*|corporate demo|sabotage demo|warehouse demo|1992 demo|basement demo|early demo|the rejected mix|acoustic[^)]*|rough mix|alternate[^)]*|12"[^)]*|extended[^)]*|club mix|instrumental[^)]*|b-side|the family mix[^)]*|cosmic tidal lock mix|radio edit|full suite|reprise|remaster[^)]*)\)/gi,
+			''
+		)
+		.trim();
+
+	let baseSlug = cleaned.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+	if (!baseSlug) return '';
+
+	if (CANONICAL_SONG_FAMILY_ALIASES[baseSlug]) {
+		baseSlug = CANONICAL_SONG_FAMILY_ALIASES[baseSlug];
+	}
+
+	const scope = CROSS_ARTIST_SHARED_SONG_SLUGS.has(baseSlug)
+		? 'shared'
+		: (artistSlug || 'unknown').toLowerCase().trim();
+
+	return `${scope}::${baseSlug}`;
+}
+
+/**
+ * Extracts a concise, human-readable version descriptor badge for a recording
+ * (e.g., `"1987 Studio"`, `"Early Demo"`, `"Cosmic Tidal Lock Mix"`, `"Live in Norfolk"`,
+ * `"Corporate Demo"`, `"Sabotage Demo"`, `"Full Suite"`, `"Radio Edit"`).
+ *
+ * @param {Track | any} track
+ * @param {Album | any} album
+ * @returns {string}
+ */
+export function describeTrackVersion(track, album) {
+	const rawTitle = (track?.title || '').trim();
+
+	// 1. Check bracketed descriptors first: [Full Suite], [Radio Edit], [Japanese Version]
+	const bracketMatch = /\[([^\]]+)\]/.exec(rawTitle);
+	if (bracketMatch && bracketMatch[1]) {
+		return bracketMatch[1].trim();
+	}
+
+	// 2. Check parenthetical version/demo/mix/live descriptors (ignoring "(Ad Astra)" and "(The Sail)")
+	const parenRegex = /\(([^)]+)\)/g;
+	/** @type {string[]} */
+	const matchedTags = [];
+	let match;
+	while ((match = parenRegex.exec(rawTitle)) !== null) {
+		const inner = match[1].trim();
+		const lower = inner.toLowerCase();
+		if (lower === 'ad astra' || lower === 'the sail') continue;
+		matchedTags.push(inner);
+	}
+
+	if (matchedTags.length > 0) {
+		return matchedTags.join(' • ');
+	}
+
+	// 3. Fall back to album production category
+	if (album?.albumType === 'live') {
+		return 'Live Concert Recording';
+	}
+	if (album?.albumType === 'compilation') {
+		return 'Anthology / Compilation';
+	}
+	if (album?.albumType === 'soundtrack') {
+		return 'Soundtrack Recording';
+	}
+	return 'Studio Recording';
+}
+
+/**
+ * Formats a single `(track, album)` pair into a complete player queue item compatible
+ * with `player.loadTrack()` and `player.loadQueue()`.
+ *
+ * @param {Track | any} track
+ * @param {Album} album
+ * @returns {any}
+ */
+export function formatSingleTrackForPlayer(track, album) {
+	return {
+		...track,
+		album: album.title,
+		albumSlug: album.slug,
+		artist: album.artist,
+		artistSlug: album.artistSlug,
+		artistLogo: album.artistLogo || null,
+		artistLoreUrl: album.artistLoreUrl || '',
+		loreUrl: album.loreUrl || '',
+		artwork: album.artwork,
+		socialPreview: album.socialPreview,
+		year: album.year,
+		temporalCoverage: album.temporalCoverage,
+		spotifyId: album.spotifyId || '',
+		appleId: album.appleId || '',
+		amazonId: album.amazonId || '',
+		youtubeId: album.youtubeId || '',
+		storeStandardUrl: album.storeStandardUrl || '',
+		storeAudiophileUrl: album.storeAudiophileUrl || '',
+		dspExempt: Boolean(album.dspExempt),
+		dspNotice: album.dspNotice || '',
+		isRockOpera: Boolean(album.isRockOpera),
+		rockOperaSetId: album.rockOperaSetId || ''
+	};
+}
+
+/**
+ * @typedef {Object} RelatedSongEntry
+ * @property {string} key - Unique composite key (`${album.slug}::${track.id}`)
+ * @property {Track} track - The related track object
+ * @property {Album} album - The parent album containing the related track
+ * @property {any} playerTrack - Pre-formatted queue object ready for `player.loadTrack()`
+ * @property {string} versionLabel - Concise version descriptor (e.g. `"Early Demo"`, `"Live in Norfolk"`)
+ * @property {string} releaseYear - 4-digit in-universe or release year for chronological sorting
+ * @property {boolean} isSameAlbum - Whether this alternate version is on the same album (e.g. Full Suite vs. Radio Edit)
+ * @property {boolean} isSameMasterIsrc - Whether this entry shares the exact same ISRC code as the source track
+ * @property {string} deepLinkQuery - Query parameter value for `?track=...`
+ */
+
+/**
+ * Finds all related recordings and alternate versions of a given song across the
+ * Engine Room Records catalog (`allAlbums`), sorted in chronological order.
+ *
+ * Matches:
+ * - Studio originals vs. Live concert performances (*Electric Color*, *Midnight Drivers*, *Our Own Frequency*, etc.)
+ * - Early demos, acoustic sketches, warehouse tapes, and rejected mixes (*Neon Hearts*, *Empty Arenas*, *The Promise*, *Atmosphere*)
+ * - Full Suites vs. Radio Edits (*Escape Velocity (Ad Astra)*)
+ * - Cosmic Tidal Lock Mixes (*Starfield Calibration*) and Family Mixes (*Upon This Winter's Night*)
+ * - Cross-band shared songs (*The Flight Path* across Crimson Node and The Stardust Engine)
+ *
+ * @param {Track | any} track - The reference track (from an Album page or `player.currentTrack`)
+ * @param {Album | string | null | undefined} [currentAlbumOrSlug] - The parent album object or `albumSlug`
+ * @param {Album[]} [catalog=allAlbums]
+ * @returns {RelatedSongEntry[]}
+ */
+export function getRelatedSongs(track, currentAlbumOrSlug = null, catalog = allAlbums) {
+	if (!track || !track.title) return [];
+
+	const currentAlbumSlug =
+		typeof currentAlbumOrSlug === 'string'
+			? currentAlbumOrSlug
+			: currentAlbumOrSlug?.slug || track.albumSlug || '';
+	const currentArtistSlug =
+		(typeof currentAlbumOrSlug === 'object' && currentAlbumOrSlug?.artistSlug) ||
+		track.artistSlug ||
+		'';
+
+	const familyKey = getSongFamilyKey(track.title, currentArtistSlug);
+	if (!familyKey) return [];
+
+	const currentTrackId = track.id || '';
+	const currentIsrc = (track.isrc || '').trim().toUpperCase();
+
+	/** @type {RelatedSongEntry[]} */
+	const results = [];
+
+	for (const album of catalog) {
+		for (const candidate of album.tracks) {
+			// Skip the exact same track instance on the exact same album
+			if (album.slug === currentAlbumSlug && candidate.id === currentTrackId) {
+				continue;
+			}
+
+			const candidateFamilyKey = getSongFamilyKey(candidate.title, album.artistSlug);
+			if (candidateFamilyKey !== familyKey) continue;
+
+			const candidateIsrc = (candidate.isrc || '').trim().toUpperCase();
+			const isSameMasterIsrc = Boolean(
+				currentIsrc && candidateIsrc && currentIsrc === candidateIsrc
+			);
+			const isSameAlbum = Boolean(currentAlbumSlug && album.slug === currentAlbumSlug);
+			const rawYear = (album.temporalCoverage || album.year || '').slice(0, 4);
+
+			results.push({
+				key: `${album.slug}::${candidate.id}`,
+				track: candidate,
+				album,
+				playerTrack: formatSingleTrackForPlayer(candidate, album),
+				versionLabel: describeTrackVersion(candidate, album),
+				releaseYear: rawYear || album.year || '',
+				isSameAlbum,
+				isSameMasterIsrc,
+				deepLinkQuery: candidate.fileName || candidate.id
+			});
+		}
+	}
+
+	// Sort chronologically by in-universe date (`temporalCoverage || year`), then album type, then disc/track
+	results.sort((a, b) => {
+		const dateA = a.album.temporalCoverage || a.album.year || '9999';
+		const dateB = b.album.temporalCoverage || b.album.year || '9999';
+		if (dateA !== dateB) return dateA.localeCompare(dateB);
+		if (a.album.slug !== b.album.slug) return a.album.slug.localeCompare(b.album.slug);
+		if ((a.track.disc || 1) !== (b.track.disc || 1)) {
+			return (a.track.disc || 1) - (b.track.disc || 1);
+		}
+		return (a.track.track || 1) - (b.track.track || 1);
+	});
+
+	return results;
+}
+
+/**
+ * Builds a chronological playback queue of all distinct playable recordings in a
+ * song's family (including the reference track and all playable alternate versions),
+ * deduplicating identical audio streams/ISRCs so listeners can compare every
+ * distinct version back-to-back.
+ *
+ * @param {Track | any} referenceTrack
+ * @param {Album | string | null | undefined} [currentAlbumOrSlug]
+ * @param {Album[]} [catalog=allAlbums]
+ * @returns {{ queue: any[], startIndex: number }}
+ */
+export function buildSongFamilyComparisonQueue(
+	referenceTrack,
+	currentAlbumOrSlug = null,
+	catalog = allAlbums
+) {
+	if (!referenceTrack || !referenceTrack.title) {
+		return { queue: [], startIndex: 0 };
+	}
+
+	const currentAlbumSlug =
+		typeof currentAlbumOrSlug === 'string'
+			? currentAlbumOrSlug
+			: currentAlbumOrSlug?.slug || referenceTrack.albumSlug || '';
+	const currentArtistSlug =
+		(typeof currentAlbumOrSlug === 'object' && currentAlbumOrSlug?.artistSlug) ||
+		referenceTrack.artistSlug ||
+		'';
+
+	const familyKey = getSongFamilyKey(referenceTrack.title, currentArtistSlug);
+	if (!familyKey) return { queue: [], startIndex: 0 };
+
+	/** @type {Array<{ album: Album, track: Track, playerTrack: any }>} */
+	const allPlayableMatches = [];
+
+	for (const album of catalog) {
+		for (const candidate of album.tracks) {
+			if (!candidate.isPlayable || !candidate.audioUrl) continue;
+			if (getSongFamilyKey(candidate.title, album.artistSlug) !== familyKey) continue;
+			allPlayableMatches.push({
+				album,
+				track: candidate,
+				playerTrack: formatSingleTrackForPlayer(candidate, album)
+			});
+		}
+	}
+
+	// Sort so studio/live albums take precedence over compilation re-inclusions for identical ISRCs,
+	// then sort chronologically by release date.
+	allPlayableMatches.sort((a, b) => {
+		const dateA = a.album.temporalCoverage || a.album.year || '9999';
+		const dateB = b.album.temporalCoverage || b.album.year || '9999';
+		if (dateA !== dateB) return dateA.localeCompare(dateB);
+		const compA = a.album.albumType === 'compilation' ? 1 : 0;
+		const compB = b.album.albumType === 'compilation' ? 1 : 0;
+		if (compA !== compB) return compA - compB;
+		if ((a.track.disc || 1) !== (b.track.disc || 1)) {
+			return (a.track.disc || 1) - (b.track.disc || 1);
+		}
+		return (a.track.track || 1) - (b.track.track || 1);
+	});
+
+	// Deduplicate by ISRC (or audioUrl if ISRC is empty) unless it is the exact track the user clicked from
+	/** @type {Set<string>} */
+	const seenRecordingKeys = new Set();
+	/** @type {any[]} */
+	const deduplicatedQueue = [];
+
+	for (const item of allPlayableMatches) {
+		const isrcKey = (item.track.isrc || '').trim().toUpperCase();
+		const dedupeKey = isrcKey || item.track.audioUrl;
+		if (dedupeKey && seenRecordingKeys.has(dedupeKey)) {
+			// If the user started from a compilation whose ISRC was already added via its original studio album,
+			// we keep the original studio entry in the comparison queue.
+			continue;
+		}
+		if (dedupeKey) seenRecordingKeys.add(dedupeKey);
+		deduplicatedQueue.push(item.playerTrack);
+	}
+
+	const refIsrc = (referenceTrack.isrc || '').trim().toUpperCase();
+	let startIndex = deduplicatedQueue.findIndex(
+		(q) =>
+			(q.albumSlug === currentAlbumSlug && q.id === referenceTrack.id) ||
+			(refIsrc && (q.isrc || '').trim().toUpperCase() === refIsrc)
+	);
+	if (startIndex < 0) startIndex = 0;
+
+	return {
+		queue: deduplicatedQueue,
+		startIndex
+	};
+}
+
+

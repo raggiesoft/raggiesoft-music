@@ -34,7 +34,7 @@ export class AudioPlayer {
 
 	// Drawer / Modal overlay state for expanded lyrics & canonical lore view
 	isExpanded = $state(false);
-	drawerTab = $state(/** @type {'lyrics-lore' | 'queue' | 'credits'} */ ('lyrics-lore'));
+	drawerTab = $state(/** @type {'lyrics-lore' | 'versions' | 'queue' | 'credits'} */ ('lyrics-lore'));
 
 	// Playback speed and timer
 	playbackRate = $state(1);
