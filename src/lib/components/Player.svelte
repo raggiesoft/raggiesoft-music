@@ -427,6 +427,13 @@
 								<span>🎧</span>
 								<span>128kbps Preview Stream</span>
 							</span>
+							{#if player.currentTrack.version}
+								<span
+									class="inline-flex items-center gap-1 rounded-full border border-cyan-500/40 bg-cyan-950/60 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-cyan-200"
+								>
+									{player.currentTrack.version}
+								</span>
+							{/if}
 						</div>
 						<h2 class="text-2xl font-bold tracking-tight text-white">
 							{player.currentTrack.title || 'The Listening Room'}
@@ -1311,7 +1318,9 @@
 			<div class="truncate text-left min-w-0">
 				<div class="flex items-center gap-1.5 truncate">
 					<h3 class="truncate text-xs leading-snug font-bold text-white sm:text-sm">
-						{player.currentTrack.title || 'The Listening Room'}
+						{player.currentTrack.title || 'The Listening Room'}{player.currentTrack.version
+							? ` (${player.currentTrack.version})`
+							: ''}
 					</h3>
 					{#if player.currentTrack.audioUrl}
 						<span

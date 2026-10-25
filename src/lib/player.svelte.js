@@ -75,6 +75,7 @@ export class AudioPlayer {
 	currentTrack = $state({
 		id: '',
 		title: '',
+		version: '',
 		artist: '',
 		artistSlug: '',
 		artistLogo: '',
@@ -305,6 +306,7 @@ export class AudioPlayer {
 			// Seamlessly update metadata to match new album context without resetting playhead
 			this.currentTrack.id = track.id || this.currentTrack.id;
 			this.currentTrack.title = track.title || this.currentTrack.title;
+			this.currentTrack.version = track.version ?? this.currentTrack.version ?? '';
 			this.currentTrack.artist = track.artist || this.currentTrack.artist;
 			this.currentTrack.artistSlug = track.artistSlug || this.currentTrack.artistSlug;
 			this.currentTrack.artistLogo =
@@ -367,6 +369,7 @@ export class AudioPlayer {
 		this.currentTrack = {
 			id: track.id || '',
 			title: track.title || 'Unknown Title',
+			version: track.version || '',
 			artist: track.artist || 'Unknown Artist',
 			artistSlug: track.artistSlug || '',
 			artistLogo: track.artistLogo || '',

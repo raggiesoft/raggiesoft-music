@@ -420,6 +420,7 @@ function buildCatalog() {
 				const trackNum = typeof t.track === 'number' ? t.track : idx + 1;
 				const discNum = typeof t.disc === 'number' ? t.disc : 1;
 				const trackTitle = t.title || `Track ${trackNum}`;
+				const trackVersion = t.version ? String(t.version).trim() : '';
 				const isrc = t.isrc || '';
 				const legacyTier = t.legacyTier || '';
 
@@ -523,6 +524,7 @@ function buildCatalog() {
 					discName: t.discName || '',
 					track: trackNum,
 					title: trackTitle,
+					version: trackVersion,
 					duration,
 					isrc,
 					legacyTier,

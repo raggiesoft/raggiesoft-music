@@ -958,7 +958,7 @@
 							Featured Track Deep-Link • Disc {deepLinkedTrack.disc || 1}, Track {deepLinkedTrack.track}
 						</div>
 						<div class="text-sm font-bold text-white sm:text-base">
-							{deepLinkedTrack.title}
+							{deepLinkedTrack.title}{deepLinkedTrack.version ? ` (${deepLinkedTrack.version})` : ''}
 						</div>
 						<div class="mt-0.5 text-[11px] text-slate-300">
 							Autoplay on Deep-Links:
@@ -1071,6 +1071,14 @@
 												>
 													{track.title}
 												</h3>
+												{#if track.version}
+													<span
+														class="rounded border border-cyan-500/40 bg-cyan-950/60 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-cyan-200"
+														title="Version: {track.version}"
+													>
+														{track.version}
+													</span>
+												{/if}
 												{#if track.legacyTier}
 													<span
 														class="rounded border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase {track.legacyTier.includes(

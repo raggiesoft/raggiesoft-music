@@ -33,6 +33,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [discName]
  * @property {number} track
  * @property {string} title
+ * @property {string} [version]
  * @property {string} duration
  * @property {string} [isrc]
  * @property {string} [legacyTier]
@@ -833,6 +834,11 @@ export function getSongFamilyKey(title, artistSlug = '') {
  * @returns {string}
  */
 export function describeTrackVersion(track, album) {
+	// 0. Prefer explicit `version` key from `tracks.json` when present
+	if (track?.version && String(track.version).trim()) {
+		return String(track.version).trim();
+	}
+
 	const rawTitle = (track?.title || '').trim();
 
 	// 1. Check bracketed descriptors first: [Full Suite], [Radio Edit], [Japanese Version]
