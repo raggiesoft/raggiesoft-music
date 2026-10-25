@@ -295,6 +295,35 @@
 	}
 
 	/**
+	 * Checks whether a specific Related Song card is the exact album + track instance
+	 * currently loaded in the audio player (prevents two cards that share an ISRC across
+	 * a studio album and a compilation from both lighting up with duplicate blue
+	 * `❚❚ Playing` buttons).
+	 *
+	 * @param {import('#lib/data/musicData.js').RelatedSongEntry} relEntry
+	 * @returns {boolean}
+	 */
+	function isExactRelatedTrack(relEntry) {
+		if (!player.currentTrack || !relEntry) return false;
+		return (
+			player.currentTrack.id === relEntry.track.id &&
+			player.currentTrack.albumSlug === relEntry.album.slug
+		);
+	}
+
+	/**
+	 * Checks whether another album's copy of the exact same master recording (shared ISRC)
+	 * is currently loaded in the audio player.
+	 *
+	 * @param {import('#lib/data/musicData.js').RelatedSongEntry} relEntry
+	 * @returns {boolean}
+	 */
+	function isSharedMasterPlaying(relEntry) {
+		if (!relEntry) return false;
+		return !isExactRelatedTrack(relEntry) && isCurrentTrack(relEntry.track);
+	}
+
+	/**
 	 * Plays a specific related version/recording directly in the persistent audio player,
 	 * queuing all distinct playable versions of that song family so the listener can
 	 * step forward/backward across versions.
@@ -303,7 +332,7 @@
 	 */
 	function playRelatedVersion(relEntry) {
 		if (!relEntry?.track?.isPlayable) return;
-		if (isCurrentTrack(relEntry.track)) {
+		if (isExactRelatedTrack(relEntry) || isSharedMasterPlaying(relEntry)) {
 			player.togglePlay();
 			return;
 		}
@@ -1264,11 +1293,13 @@
 												<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 													{#each relatedSongs as rel (rel.key)}
 														<div
-															class="flex items-center justify-between gap-3 rounded-xl border p-3 transition-all {isCurrentTrack(
-																rel.track
+															class="flex items-center justify-between gap-3 rounded-xl border p-3 transition-all {isExactRelatedTrack(
+																rel
 															)
 																? 'border-blue-500/60 bg-blue-950/30'
-																: 'border-slate-800/90 bg-slate-900/75 hover:border-purple-500/40'}"
+																: isSharedMasterPlaying(rel)
+																	? 'border-emerald-500/40 bg-emerald-950/15'
+																	: 'border-slate-800/90 bg-slate-900/75 hover:border-purple-500/40'}"
 														>
 															<div class="flex min-w-0 items-center gap-3">
 																<!-- Album Cover Thumbnail -->
@@ -1285,12 +1316,12 @@
 																		>
 																			{rel.releaseYear} • {rel.versionLabel}
 																		</span>
-																		{#if rel.isSameMasterIsrc}
+																		{#if rel.sharedMasterLabel}
 																			<span
 																				class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
-																				title="Identical studio master recording ({rel.track.isrc})"
+																				title="This album includes the exact same studio master recording ({rel.track.isrc})"
 																			>
-																				Same Master
+																				🔗 {rel.sharedMasterLabel}
 																			</span>
 																		{/if}
 																		{#if !rel.track.isPlayable}
@@ -1326,15 +1357,22 @@
 																	<button
 																		type="button"
 																		onclick={() => playRelatedVersion(rel)}
-																		class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 {isCurrentTrack(
-																			rel.track
+																		class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 {isExactRelatedTrack(
+																			rel
 																		)
 																			? 'bg-blue-600 text-white'
-																			: 'border border-blue-500/50 bg-blue-950/60 text-blue-200 hover:bg-blue-600 hover:text-white'}"
+																			: isSharedMasterPlaying(rel)
+																				? 'border border-emerald-500/50 bg-emerald-950/70 text-emerald-200 hover:bg-emerald-800 hover:text-white'
+																				: 'border border-blue-500/50 bg-blue-950/60 text-blue-200 hover:bg-blue-600 hover:text-white'}"
 																		aria-label="Play {rel.track.title} from {rel.album.title}"
+																		title={isSharedMasterPlaying(rel)
+																			? 'This album shares the same audio recording that is currently playing'
+																			: `Play ${rel.track.title} from ${rel.album.title}`}
 																	>
-																		{#if isCurrentTrack(rel.track) && player.isPlaying}
+																		{#if isExactRelatedTrack(rel) && player.isPlaying}
 																			<span>❚❚ Playing</span>
+																		{:else if isSharedMasterPlaying(rel) && player.isPlaying}
+																			<span>🔗 Same Audio Playing</span>
 																		{:else}
 																			<span>▶ Play</span>
 																		{/if}

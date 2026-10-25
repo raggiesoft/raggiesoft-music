@@ -830,11 +830,12 @@
 														>
 															{rel.releaseYear} • {rel.versionLabel}
 														</span>
-														{#if rel.isSameMasterIsrc}
+														{#if rel.sharedMasterLabel}
 															<span
 																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
+																title="This album includes the exact same studio master recording ({rel.track.isrc})"
 															>
-																Same Master
+																🔗 {rel.sharedMasterLabel}
 															</span>
 														{/if}
 														{#if !rel.track.isPlayable}
@@ -927,11 +928,12 @@
 														>
 															{rel.releaseYear} • {rel.versionLabel}
 														</span>
-														{#if rel.isSameMasterIsrc}
+														{#if rel.sharedMasterLabel}
 															<span
 																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
+																title="This album includes the exact same studio master recording ({rel.track.isrc})"
 															>
-																Same Master
+																🔗 {rel.sharedMasterLabel}
 															</span>
 														{/if}
 														{#if !rel.track.isPlayable}

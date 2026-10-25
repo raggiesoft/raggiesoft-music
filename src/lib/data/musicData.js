@@ -921,6 +921,7 @@ export function formatSingleTrackForPlayer(track, album) {
  * @property {string} releaseYear - 4-digit in-universe or release year for chronological sorting
  * @property {boolean} isSameAlbum - Whether this alternate version is on the same album (e.g. Full Suite vs. Radio Edit)
  * @property {boolean} isSameMasterIsrc - Whether this entry shares the exact same ISRC code as the source track
+ * @property {string} sharedMasterLabel - Plain-English explanation when a compilation or re-issue shares the exact same audio recording as another album in the song family (e.g. `"Same Audio as 1987 Electric Color"`)
  * @property {string} deepLinkQuery - Query parameter value for `?track=...`
  */
 
@@ -958,6 +959,46 @@ export function getRelatedSongs(track, currentAlbumOrSlug = null, catalog = allA
 	const currentTrackId = track.id || '';
 	const currentIsrc = (track.isrc || '').trim().toUpperCase();
 
+	// First pass across the entire song family (including the reference track's album)
+	// so we can identify the earliest canonical source album for any shared ISRC / recording.
+	/** @type {Map<string, { albumSlug: string, albumTitle: string, releaseYear: string, trackId: string }>} */
+	const canonicalSourceByIsrc = new Map();
+
+	/** @type {Array<{ album: Album, candidate: Track, releaseYear: string, isComp: number, sortDate: string }>} */
+	const allFamilyInstances = [];
+
+	for (const album of catalog) {
+		for (const candidate of album.tracks) {
+			if (getSongFamilyKey(candidate.title, album.artistSlug) !== familyKey) continue;
+			const rawYear = (album.temporalCoverage || album.year || '').slice(0, 4);
+			allFamilyInstances.push({
+				album,
+				candidate,
+				releaseYear: rawYear || album.year || '',
+				isComp: album.albumType === 'compilation' ? 1 : 0,
+				sortDate: album.temporalCoverage || album.year || '9999'
+			});
+		}
+	}
+
+	allFamilyInstances.sort((a, b) => {
+		if (a.isComp !== b.isComp) return a.isComp - b.isComp;
+		if (a.sortDate !== b.sortDate) return a.sortDate.localeCompare(b.sortDate);
+		return a.album.slug.localeCompare(b.album.slug);
+	});
+
+	for (const inst of allFamilyInstances) {
+		const isrc = (inst.candidate.isrc || '').trim().toUpperCase();
+		if (isrc && !canonicalSourceByIsrc.has(isrc)) {
+			canonicalSourceByIsrc.set(isrc, {
+				albumSlug: inst.album.slug,
+				albumTitle: inst.album.title,
+				releaseYear: inst.releaseYear,
+				trackId: inst.candidate.id
+			});
+		}
+	}
+
 	/** @type {RelatedSongEntry[]} */
 	const results = [];
 
@@ -978,6 +1019,19 @@ export function getRelatedSongs(track, currentAlbumOrSlug = null, catalog = allA
 			const isSameAlbum = Boolean(currentAlbumSlug && album.slug === currentAlbumSlug);
 			const rawYear = (album.temporalCoverage || album.year || '').slice(0, 4);
 
+			let sharedMasterLabel = '';
+			if (candidateIsrc) {
+				const canonical = canonicalSourceByIsrc.get(candidateIsrc);
+				if (
+					canonical &&
+					(canonical.albumSlug !== album.slug || canonical.trackId !== candidate.id)
+				) {
+					sharedMasterLabel = `Same Audio as ${canonical.releaseYear} ${canonical.albumTitle}`;
+				} else if (isSameMasterIsrc) {
+					sharedMasterLabel = `Same Audio as This Album`;
+				}
+			}
+
 			results.push({
 				key: `${album.slug}::${candidate.id}`,
 				track: candidate,
@@ -987,6 +1041,7 @@ export function getRelatedSongs(track, currentAlbumOrSlug = null, catalog = allA
 				releaseYear: rawYear || album.year || '',
 				isSameAlbum,
 				isSameMasterIsrc,
+				sharedMasterLabel,
 				deepLinkQuery: candidate.fileName || candidate.id
 			});
 		}
@@ -1069,21 +1124,30 @@ export function buildSongFamilyComparisonQueue(
 		return (a.track.track || 1) - (b.track.track || 1);
 	});
 
-	// Deduplicate by ISRC (or audioUrl if ISRC is empty) unless it is the exact track the user clicked from
-	/** @type {Set<string>} */
-	const seenRecordingKeys = new Set();
+	// Deduplicate by ISRC (or audioUrl if ISRC is empty), while respecting the exact album card the user clicked from
+	/** @type {Map<string, number>} */
+	const seenRecordingIndices = new Map();
 	/** @type {any[]} */
 	const deduplicatedQueue = [];
 
 	for (const item of allPlayableMatches) {
 		const isrcKey = (item.track.isrc || '').trim().toUpperCase();
 		const dedupeKey = isrcKey || item.track.audioUrl;
-		if (dedupeKey && seenRecordingKeys.has(dedupeKey)) {
-			// If the user started from a compilation whose ISRC was already added via its original studio album,
-			// we keep the original studio entry in the comparison queue.
+		const isExactRequestedItem =
+			item.album.slug === currentAlbumSlug && item.track.id === referenceTrack.id;
+
+		if (dedupeKey && seenRecordingIndices.has(dedupeKey)) {
+			// If the user explicitly clicked Play on this specific compilation/re-issue card,
+			// swap its album metadata into that slot so the active card matches what they clicked.
+			if (isExactRequestedItem) {
+				const existingIdx = seenRecordingIndices.get(dedupeKey);
+				if (existingIdx !== undefined) {
+					deduplicatedQueue[existingIdx] = item.playerTrack;
+				}
+			}
 			continue;
 		}
-		if (dedupeKey) seenRecordingKeys.add(dedupeKey);
+		if (dedupeKey) seenRecordingIndices.set(dedupeKey, deduplicatedQueue.length);
 		deduplicatedQueue.push(item.playerTrack);
 	}
 
