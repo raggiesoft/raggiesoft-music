@@ -86,7 +86,36 @@
 			'script>'
 	);
 
-	// Group tracks by disc number for clean multi-disc presentation
+	/**
+	 * Parses a "MM:SS" or "HH:MM:SS" duration string into total seconds (returns 0 for "In Studio").
+	 * @param {string} durStr
+	 * @returns {number}
+	 */
+	function parseDurationSeconds(durStr) {
+		if (!durStr || typeof durStr !== 'string' || !durStr.includes(':')) return 0;
+		const parts = durStr
+			.trim()
+			.split(':')
+			.map((n) => parseInt(n, 10));
+		if (parts.some((n) => Number.isNaN(n))) return 0;
+		if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+		if (parts.length === 2) return parts[0] * 60 + parts[1];
+		return 0;
+	}
+
+	/**
+	 * Formats total seconds into a compact "MM:SS" string (e.g. "60:59" for CD length comparison).
+	 * @param {number} totalSec
+	 * @returns {string}
+	 */
+	function formatCdMinutesSeconds(totalSec) {
+		if (!totalSec || totalSec <= 0) return '0:00';
+		const mins = Math.floor(totalSec / 60);
+		const secs = totalSec % 60;
+		return `${mins}:${String(secs).padStart(2, '0')}`;
+	}
+
+	// Group tracks by disc number for clean multi-disc presentation with Red Book CD runtimes
 	let discs = $derived.by(() => {
 		/** @type {Record<number, any[]>} */
 		const discMap = {};
@@ -97,11 +126,25 @@
 			}
 			discMap[dNum].push(track);
 		}
-		return Object.entries(discMap).map(([discNumStr, tracks]) => ({
-			discNum: Number(discNumStr),
-			tracks
-		}));
+		return Object.entries(discMap).map(([discNumStr, tracks]) => {
+			const totalSeconds = tracks.reduce(
+				(acc, t) => acc + parseDurationSeconds(t.duration || ''),
+				0
+			);
+			return {
+				discNum: Number(discNumStr),
+				discName: tracks[0]?.discName || '',
+				tracks,
+				totalSeconds,
+				totalDurationFormatted: formatCdMinutesSeconds(totalSeconds)
+			};
+		});
 	});
+
+	let albumTotalSeconds = $derived(
+		discs.reduce((acc, d) => acc + (d.totalSeconds || 0), 0)
+	);
+	let albumTotalDurationFormatted = $derived(formatCdMinutesSeconds(albumTotalSeconds));
 
 	// Active track expanded for lore/lyrics accordion view
 	let expandedTrackId = $state(/** @type {string | null} */ (null));
@@ -501,6 +544,14 @@
 								class="rounded-md border border-slate-700 bg-slate-800/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-slate-300 uppercase shadow-sm"
 							>
 								Studio Album 🎙️
+							</span>
+						{/if}
+						{#if discs.length > 1}
+							<span
+								class="rounded-md border border-cyan-500/50 bg-cyan-950/80 px-2.5 py-0.5 text-xs font-bold tracking-wider text-cyan-200 uppercase shadow-sm"
+								title="{discs.length}-Disc Red Book Digital Audio CD Release ({albumTotalDurationFormatted} total runtime)"
+							>
+								{discs.length}-Disc CD Set 💿
 							</span>
 						{/if}
 						{#if album.status === 'coming-soon'}
@@ -951,7 +1002,10 @@
 					Tracklist, Lyrics &amp; Canonical Lore
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					{album.totalTracksCount} tracks • {album.playableTrackCount} available as 128kbps web preview
+					{#if discs.length > 1}
+						<strong class="text-cyan-300">{discs.length} Digital Audio CDs (74-Min Red Book Standard)</strong> •
+					{/if}
+					{album.totalTracksCount} tracks{#if albumTotalSeconds > 0} ({albumTotalDurationFormatted} total runtime){/if} • {album.playableTrackCount} available as 128kbps web preview
 					streams &amp; CC BY-SA 4.0 downloads
 				</p>
 			</div>
@@ -1042,10 +1096,34 @@
 					class="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl"
 				>
 					{#if discs.length > 1}
-						<div class="border-b border-slate-800 bg-slate-800/50 px-6 py-3">
-							<span class="text-xs font-bold tracking-wider text-blue-400 uppercase">
-								Disc {disc.discNum}{disc.tracks[0]?.discName ? `: ${disc.tracks[0].discName}` : ''}
-							</span>
+						<div
+							class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-gradient-to-r from-slate-800/80 via-slate-900/90 to-slate-800/60 px-6 py-4"
+						>
+							<div class="flex flex-wrap items-center gap-2.5">
+								<span
+									class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-950/70 px-2.5 py-1 font-mono text-xs font-extrabold tracking-wider text-cyan-200 uppercase"
+								>
+									💿 Disc {disc.discNum} of {discs.length}
+								</span>
+								{#if disc.discName}
+									<span class="text-sm font-bold tracking-wide text-white sm:text-base">
+										{disc.discName}
+									</span>
+								{/if}
+							</div>
+							<div class="flex flex-wrap items-center gap-2 font-mono text-xs text-slate-300">
+								<span class="rounded-md border border-slate-700 bg-slate-950/80 px-2.5 py-1">
+									{disc.tracks.length} Tracks
+								</span>
+								{#if disc.totalSeconds > 0}
+									<span
+										class="rounded-md border border-emerald-500/40 bg-emerald-950/50 px-2.5 py-1 font-semibold text-emerald-300"
+										title="Fits cleanly inside the 74:00 Red Book Digital Audio CD standard"
+									>
+										⏱ {disc.totalDurationFormatted} / 74:00 CD
+									</span>
+								{/if}
+							</div>
 						</div>
 					{/if}
 
