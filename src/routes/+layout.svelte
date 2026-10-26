@@ -167,6 +167,8 @@
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com"><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a></li>
 						<li role="none"><a role="menuitem" href="https://music.raggiesoft.com" aria-current="page" class="is-active"><span aria-hidden="true">🎧</span><span>The Listening Room</span></a></li>
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists"><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"><span aria-hidden="true">🏷️</span><span>Official ISRC Registry (QTAHP)</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a></li>
 						<li class="rs-network-dropdown-divider" role="separator"></li>
 						<li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li>
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"><span aria-hidden="true">🔴</span><span>Crimson Node</span></a></li>

@@ -1059,9 +1059,26 @@
 
 								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
 									<span class="block text-xs font-medium text-slate-500 uppercase">ISRC Code</span>
-									<span class="mt-0.5 block font-mono text-xs text-blue-400">
-										{player.currentTrack.isrc || 'Pending Registration'}
-									</span>
+									{#if player.currentTrack.isrc}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -->
+										<a
+											href="https://engineroom.raggiesoft.com/isrc?code={encodeURIComponent(
+												player.currentTrack.isrc
+											)}"
+											target="_blank"
+											rel="noopener noreferrer"
+											class="mt-0.5 inline-flex items-center gap-1 font-mono text-xs text-blue-400 underline decoration-blue-500/50 underline-offset-2 transition-colors hover:text-amber-300"
+											title="Inspect ISRC {player.currentTrack.isrc} in the Official Engine Room Records ISRC Registry &amp; Decoder"
+										>
+											<span>{player.currentTrack.isrc}</span>
+											<span class="text-[10px]">↗</span>
+										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									{:else}
+										<span class="mt-0.5 block font-mono text-xs text-blue-400">
+											Pending Registration
+										</span>
+									{/if}
 								</div>
 
 								<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3.5">
@@ -1226,7 +1243,19 @@
 		<div class="truncate text-left font-medium">
 			<span class="font-bold text-white">{player.isrcNotice.title}</span>: {player.isrcNotice
 				.message}
-			<span class="ml-1 font-mono text-[10px] text-emerald-400/80">({player.isrcNotice.isrc})</span>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -->
+			<a
+				href="https://engineroom.raggiesoft.com/isrc?code={encodeURIComponent(
+					player.isrcNotice.isrc
+				)}"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="ml-1 font-mono text-[10px] text-emerald-400/90 underline decoration-emerald-500/50 underline-offset-2 hover:text-amber-300"
+				title="Inspect ISRC {player.isrcNotice.isrc} in the Official Engine Room Records ISRC Registry"
+			>
+				({player.isrcNotice.isrc})
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 		<button
 			onclick={() => player.dismissIsrcNotice()}

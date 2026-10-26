@@ -715,6 +715,21 @@
 						</button>
 
 						<div class="flex shrink-0 items-center gap-3">
+							{#if track.isrc}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									href="https://engineroom.raggiesoft.com/isrc?code={encodeURIComponent(
+										track.isrc
+									)}"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="hidden rounded border border-slate-700/80 bg-slate-800/70 px-1.5 py-0.5 font-mono text-[10px] text-slate-400 transition-colors hover:border-amber-500/50 hover:text-amber-300 md:inline-block"
+									title="Inspect ISRC {track.isrc} in the Official Engine Room Records ISRC Registry"
+								>
+									{track.isrc}
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{/if}
 							<span class="font-mono text-xs text-slate-400">{track.duration}</span>
 						</div>
 					</div>

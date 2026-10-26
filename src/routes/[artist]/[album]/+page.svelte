@@ -1230,9 +1230,19 @@
 											</div>
 											<div class="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
 												{#if track.isrc}
-													<span class="font-mono text-[11px] text-slate-400"
-														>ISRC: {track.isrc}</span
+													<!-- eslint-disable svelte/no-navigation-without-resolve -->
+													<a
+														href="https://engineroom.raggiesoft.com/isrc?code={encodeURIComponent(
+															track.isrc
+														)}"
+														target="_blank"
+														rel="noopener noreferrer"
+														class="font-mono text-[11px] text-slate-400 underline decoration-slate-600/80 underline-offset-2 transition-colors hover:text-amber-300 hover:decoration-amber-400"
+														title="Inspect ISRC {track.isrc} in the Official Engine Room Records ISRC Registry &amp; Decoder"
 													>
+														ISRC: {track.isrc}
+													</a>
+													<!-- eslint-enable svelte/no-navigation-without-resolve -->
 												{/if}
 												{#if track.vttVerified}
 													<span class="text-emerald-400/90">• ✓ Verified Synced Lyrics</span>
