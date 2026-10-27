@@ -91,10 +91,11 @@
 				>, a natural person and individual creator residing in the
 				<strong class="text-white">Commonwealth of Virginia</strong>, operating under the
 				unincorporated creative imprints <strong class="text-white">RaggieSoft</strong>,
-				<strong class="text-white">RaggieSoft Media</strong>, and
-				<strong class="text-white">Engine Room Records</strong> (strictly without “LLC”, “Inc.”, or
-				“Corp.”; any “LLC” or “Trust” names appearing in site lore are fictitious worldbuilding
-				creations).
+				<strong class="text-white">RaggieSoft Media</strong>,
+				<strong class="text-white">Engine Room Records</strong> (music imprint), and
+				<strong class="text-white">Ocean View Archives</strong> (literary/book publishing imprint)—each
+				strictly without “LLC”, “Inc.”, or “Corp.” (any “LLC” or “Trust” names appearing in site lore
+				are fictitious worldbuilding creations).
 			</p>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				I have engineered The Listening Room and the entire RaggieSoft network using a strict

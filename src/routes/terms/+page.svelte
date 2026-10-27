@@ -111,14 +111,17 @@
 					>, a natural person and individual creator residing in the
 					<strong class="text-white">Commonwealth of Virginia</strong>, operating under the
 					unincorporated creative imprints <strong class="text-white">RaggieSoft</strong>,
-					<strong class="text-white">RaggieSoft Media</strong>, and
-					<strong class="text-white">Engine Room Records</strong> (strictly without “LLC”, “Inc.”, or
-					“Corp.”).
+					<strong class="text-white">RaggieSoft Media</strong>,
+					<strong class="text-white">Engine Room Records</strong> (music imprint), and
+					<strong class="text-white">Ocean View Archives</strong> (literary/book publishing imprint)—each
+					strictly without “LLC”, “Inc.”, or “Corp.”
 				</p>
 				<p class="mt-2">
 					<strong class="text-white">Important Distinction:</strong> Neither RaggieSoft, RaggieSoft
-					Media, nor Engine Room Records is a state-registered limited liability company or
-					corporation. Any entity name containing <strong class="text-white">“LLC”</strong>,
+					Media, Engine Room Records, nor Ocean View Archives is a state-registered limited
+					liability company or corporation. Any entity name containing <strong class="text-white"
+						>“LLC”</strong
+					>,
 					<strong class="text-white">“Trust”</strong>,
 					<strong class="text-white">“Holdings”</strong>, or
 					<strong class="text-white">“Corp”</strong> appearing in album liner notes, narrative archives,
@@ -481,8 +484,9 @@
 				MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
 				<strong class="text-white">MICHAEL P. RAGSDALE</strong> (OR HIS UNINCORPORATED CREATIVE
 				IMPRINTS <strong class="text-white">RAGGIESOFT</strong>,
-				<strong class="text-white">RAGGIESOFT MEDIA</strong>, OR
-				<strong class="text-white">ENGINE ROOM RECORDS</strong>) BE PERSONALLY LIABLE FOR ANY
+				<strong class="text-white">RAGGIESOFT MEDIA</strong>,
+				<strong class="text-white">ENGINE ROOM RECORDS</strong>, OR
+				<strong class="text-white">OCEAN VIEW ARCHIVES</strong>) BE PERSONALLY LIABLE FOR ANY
 				INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR ANY LOSS OF
 				PROFITS, REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR RELATED TO YOUR ACCESS TO OR USE OF
 				(OR INABILITY TO USE) THE SERVICES OR ANY CONTENT LICENSED UNDER MIT OR CC BY-SA 4.0.
