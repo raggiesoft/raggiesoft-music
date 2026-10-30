@@ -224,6 +224,67 @@
 
 		<link rel="stylesheet" href="https://assets.raggiesoft.com/common/css/raggiesoft-network.css?v=20261029f" />
 		<script src="https://assets.raggiesoft.com/common/js/raggiesoft-network.js?v=20261029f" defer></script>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@graph": [
+					{
+						"@type": "Organization",
+						"@id": "https://engineroom.raggiesoft.com/#organization",
+						"name": "Engine Room Records",
+						"url": "https://engineroom.raggiesoft.com",
+						"parentOrganization": {
+							"@type": "Organization",
+							"@id": "https://raggiesoft.com/#organization",
+							"name": "RaggieSoft",
+							"url": "https://raggiesoft.com"
+						}
+					},
+					{
+						"@type": "WebSite",
+						"@id": "https://music.raggiesoft.com/#website",
+						"url": "https://music.raggiesoft.com",
+						"name": "The Listening Room — Engine Room Records",
+						"publisher": { "@id": "https://engineroom.raggiesoft.com/#organization" }
+					},
+					{
+						"@type": "WebApplication",
+						"@id": "https://music.raggiesoft.com/#webapp",
+						"name": "The Listening Room",
+						"url": "https://music.raggiesoft.com",
+						"applicationCategory": "MultimediaApplication",
+						"operatingSystem": "Web, macOS, Windows, Linux, iOS, Android",
+						"description": "High-resolution gapless audio player, synchronized WebVTT lyrics viewer, and CC BY-SA 4.0 master archive for Engine Room Records and The Stardust Engine.",
+						"author": {
+							"@type": "Person",
+							"@id": "https://michaelpragsdale.com/#michael-ragsdale",
+							"name": "Michael P. Ragsdale",
+							"url": "https://michaelpragsdale.com"
+						},
+						"license": "https://opensource.org/licenses/MIT",
+						"offers": {
+							"@type": "Offer",
+							"price": "0",
+							"priceCurrency": "USD"
+						},
+						"mentions": [
+							{
+								"@type": "Article",
+								"@id": "https://raggiesoft.com/in-memoriam#article",
+								"headline": "In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026)",
+								"url": "https://raggiesoft.com/in-memoriam"
+							},
+							{
+								"@type": "CreativeWork",
+								"@id": "https://nebulae.raggiesoft.com/#short-film-experience",
+								"name": "Escape Velocity (Ad Astra) — Caelum-IV Planetary Survey",
+								"url": "https://nebulae.raggiesoft.com/"
+							}
+						]
+					}
+				]
+			}
+		</script>
 		<script>
 			(function () {
 				try {
@@ -290,15 +351,15 @@
 			
 			<script>
 				{
-					__sveltekit_19a9s9l = {
+					__sveltekit_ptn20u = {
 						base: new URL("../..", location).pathname.slice(0, -1),
-						version: "1793322378438"
+						version: "1793323313235"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.BpD3J1gm.js").then(async (kit) => {
-						kit.init(__sveltekit_19a9s9l);
+						kit.init(__sveltekit_ptn20u);
 						const app = await import("/_app/immutable/entry/app.gzU0JBrx.js");
 						kit.start(app, element, {
 							node_ids: [0, 4],
