@@ -122,9 +122,9 @@
 				slug: '2011-starfield-calibration',
 				displayTitle: 'Starfield Calibration',
 				cosmicRole: 'Cosmic Tidal Lock™ Remix Album (2011)',
-				cosmicSubtitle: '14 Classic Stardust Songs Rebuilt in Zero-G (2011)',
+				cosmicSubtitle: 'Led by “The Stardust Engine (Cosmic Tidal Lock Mix)” (2011)',
 				cosmicNote:
-					'A Cosmic Tidal Lock™ remix album of fourteen classic Stardust Engine songs—born from the curiosity to look up at the stars and wonder what is out there that Captain Picard inspired.'
+					'A Cosmic Tidal Lock™ remix album of fourteen classic Stardust Engine songs led by “The Stardust Engine (Cosmic Tidal Lock Mix)”—born from the curiosity to look up at the stars and wonder what is out there that Captain Picard inspired.'
 			}
 		];
 
