@@ -425,9 +425,9 @@
 			aria-labelledby="memoriam-cosmic-showcase-heading"
 			data-memoriam-expires="2026-11-28T23:59:59-05:00"
 		>
-			<!-- Header & Creator's Personal Note -->
-			<div class="flex flex-col justify-between gap-5 border-b border-amber-500/25 pb-6 lg:flex-row lg:items-end">
-				<div class="max-w-4xl space-y-3">
+			<!-- Header, Creator's Personal Note & Framed Memorial Tribute Plaque -->
+			<div class="flex flex-col items-stretch justify-between gap-6 border-b border-amber-500/25 pb-6 lg:flex-row lg:items-center">
+				<div class="min-w-0 flex-1 space-y-4">
 					<div class="flex flex-wrap items-center gap-2">
 						<span
 							class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-950/80 px-3.5 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
@@ -463,40 +463,63 @@
 							>“Where to? Second star to the right, and straight on ’till morning.” — Ad astra per aspera, Captain.</em
 						>
 					</p>
+
+					<div class="flex flex-wrap items-center gap-2.5 pt-1">
+						<button
+							type="button"
+							onclick={playMemoriamCosmicTrilogy}
+							class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:text-sm"
+						>
+							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+								<path d="M8 5v14l11-7z" />
+							</svg>
+							<span>Play All 3 Cosmic Albums (25 Songs)</span>
+						</button>
+
+						<a
+							href="https://raggiesoft.com/in-memoriam"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/60 px-3.5 py-2.5 text-xs font-bold text-amber-200 transition-colors hover:bg-amber-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:text-sm"
+						>
+							<span>✦ Read Full Tribute</span>
+							<span aria-hidden="true">↗</span>
+						</a>
+
+						<a
+							href="https://nebulae.raggiesoft.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/60 px-3.5 py-2.5 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
+						>
+							<span>🌌 Explore Caelum-IV</span>
+							<span aria-hidden="true">↗</span>
+						</a>
+					</div>
 				</div>
 
-				<div class="flex shrink-0 flex-wrap items-center gap-2.5">
-					<button
-						type="button"
-						onclick={playMemoriamCosmicTrilogy}
-						class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:text-sm"
+				<!-- Right-Column Framed Memorial Artwork Card (Fills Negative Space & Links to Tribute) -->
+				<a
+					href="https://raggiesoft.com/in-memoriam"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group relative block w-full shrink-0 overflow-hidden rounded-2xl border border-amber-500/50 bg-slate-950 shadow-2xl transition-all hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 lg:w-[410px] xl:w-[450px]"
+					aria-label="Open In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026) Tribute Page"
+				>
+					<img
+						src="https://assets.raggiesoft.com/raggiesoft-corporate/images/og/in-memoriam-patrick-stewart-og.jpg"
+						alt="Second Star to the Right • In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026) — Ad astra per aspera"
+						width="1200"
+						height="630"
+						class="aspect-[1200/630] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+					/>
+					<div
+						class="flex items-center justify-between border-t border-amber-500/30 bg-slate-950/95 px-3.5 py-2 text-[11px] font-bold text-amber-200"
 					>
-						<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-							<path d="M8 5v14l11-7z" />
-						</svg>
-						<span>Play All 3 Cosmic Albums (25 Songs)</span>
-					</button>
-
-					<a
-						href="https://raggiesoft.com/in-memoriam"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/60 px-3.5 py-2.5 text-xs font-bold text-amber-200 transition-colors hover:bg-amber-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:text-sm"
-					>
-						<span>✦ Read Full Tribute</span>
-						<span aria-hidden="true">↗</span>
-					</a>
-
-					<a
-						href="https://nebulae.raggiesoft.com"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/60 px-3.5 py-2.5 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
-					>
-						<span>🌌 Explore Caelum-IV</span>
-						<span aria-hidden="true">↗</span>
-					</a>
-				</div>
+						<span>✦ Second Star to the Right • Creator’s Cosmic Dedication</span>
+						<span class="text-amber-400 group-hover:underline">raggiesoft.com/in-memoriam ↗</span>
+					</div>
+				</a>
 			</div>
 
 			<!-- 3-Column Cosmic Trilogy Grid -->
