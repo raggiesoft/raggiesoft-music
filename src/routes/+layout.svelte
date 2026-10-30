@@ -142,7 +142,7 @@
 </script>
 
 <div
-	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-36 text-slate-100 selection:bg-blue-600 selection:text-white"
+	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] text-slate-100 selection:bg-blue-600 selection:text-white"
 >
 	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261017j) -->
 	<nav class="rs-network-bar" aria-label="RaggieSoft Ecosystem Network">
@@ -187,9 +187,9 @@
 		</div>
 	</nav>
 
-	<!-- Primary Global Header -->
+	<!-- Primary Global Header (Respects iOS Dynamic Island & Safe-Area Insets via .er-global-header) -->
 	<header
-		class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"
+		class="er-global-header sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"
 	>
 		<div class="mx-auto flex max-w-7xl items-center justify-between gap-2">
 			<!-- Brand Logo & Home Link (Serves as the primary Home link across all viewports) -->

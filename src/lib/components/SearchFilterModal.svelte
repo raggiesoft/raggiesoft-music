@@ -116,7 +116,7 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/75 p-4 pt-12 backdrop-blur-sm sm:pt-20"
+		class="er-safe-modal-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/75 p-4 pt-12 backdrop-blur-sm sm:pt-20"
 		role="dialog"
 		aria-modal="true"
 		aria-label="Search and Filter Catalog"

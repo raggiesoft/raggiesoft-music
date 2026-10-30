@@ -90,7 +90,7 @@
 
 {#if track}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+		class="er-safe-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="add-to-playlist-title"

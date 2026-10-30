@@ -262,7 +262,7 @@
 <!-- ======================================================================= -->
 {#if player.isExpanded}
 	<div
-		class="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-md transition-opacity duration-300"
+		class="er-safe-drawer-overlay fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-md transition-opacity duration-300"
 		role="dialog"
 		aria-modal="true"
 		aria-label="Now Playing, Lore Notes, and Album Details"
@@ -276,7 +276,7 @@
 
 		<!-- Content Panel -->
 		<div
-			class="relative z-10 mx-auto flex max-h-[88vh] w-full max-w-5xl flex-col overflow-y-auto rounded-t-2xl border-t border-slate-700/80 bg-slate-900 p-6 shadow-2xl"
+			class="er-safe-drawer-panel relative z-10 mx-auto flex max-h-[88vh] w-full max-w-5xl flex-col overflow-y-auto rounded-t-2xl border-t border-slate-700/80 bg-slate-900 p-6 shadow-2xl"
 		>
 			<!-- Header / Navigation Tabs / Close button -->
 			<div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -1275,10 +1275,10 @@
 {/if}
 
 <!-- ======================================================================= -->
-<!-- PERSISTENT BOTTOM PLAYER BAR (WCAG 2.1 AA)                             -->
+<!-- PERSISTENT BOTTOM PLAYER BAR (WCAG 2.1 AA + iOS Safe-Area Inset)       -->
 <!-- ======================================================================= -->
 <nav
-	class="fixed bottom-0 left-0 z-40 w-full border-t border-slate-800/90 bg-slate-900/95 text-white shadow-2xl backdrop-blur-xl"
+	class="er-bottom-player-bar fixed bottom-0 left-0 z-40 w-full border-t border-slate-800/90 bg-slate-900/95 text-white shadow-2xl backdrop-blur-xl"
 	aria-label="Audio Player Controls"
 >
 	<!-- Continuous Progress Scrub Bar (Full Width Top Edge) -->

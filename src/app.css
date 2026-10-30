@@ -42,10 +42,17 @@ body {
 }
 
 /* ============================================================================
- * 0B. NATIVE PWA IMMERSION MODE (STANDALONE / WINDOW-CONTROLS-OVERLAY)
+ * 0B. NATIVE PWA IMMERSION MODE & iOS DYNAMIC ISLAND SAFE-AREA INSETS
  * ============================================================================
- * Hides the cross-site RaggieSoft Network Bar and mobile network switcher grid
- * when The Listening Room is running as an installed OS Progressive Web App.
+ * 1. Hides the cross-site RaggieSoft Network Bar and mobile network switcher grid
+ *    when The Listening Room is running as an installed OS Progressive Web App.
+ * 2. Offsets the sticky global header (`.er-global-header`), persistent bottom
+ *    audio player (`.er-bottom-player-bar`), and modal/drawer overlays by
+ *    `env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`,
+ *    `env(safe-area-inset-left)`, and `env(safe-area-inset-right)` so the
+ *    brand header, Search button, and Hamburger menu are NEVER occluded by the
+ *    iOS Dynamic Island, notch, status bar, or Home Indicator when running with
+ *    `viewport-fit=cover` and `apple-mobile-web-app-status-bar-style="black-translucent"`.
  */
 @media (display-mode: standalone),
        (display-mode: window-controls-overlay),
@@ -60,6 +67,42 @@ body {
 html.is-pwa-standalone .rs-network-bar,
 html.is-pwa-standalone .rs-mobile-network-section {
 	display: none !important;
+}
+
+.er-global-header {
+	padding-top: max(0.625rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+	padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+	padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+	.er-global-header {
+		padding-top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+		padding-left: max(1rem, env(safe-area-inset-left, 0px));
+		padding-right: max(1rem, env(safe-area-inset-right, 0px));
+	}
+}
+
+.er-bottom-player-bar {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+	padding-left: env(safe-area-inset-left, 0px);
+	padding-right: env(safe-area-inset-right, 0px);
+}
+
+.er-safe-modal-overlay {
+	padding-top: max(3rem, calc(env(safe-area-inset-top, 0px) + 1rem));
+	padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+	padding-left: max(1rem, env(safe-area-inset-left, 0px));
+	padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.er-safe-drawer-overlay {
+	padding-top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+}
+
+.er-safe-drawer-panel {
+	max-height: calc(100dvh - max(1.5rem, calc(env(safe-area-inset-top, 0px) + 1rem)));
+	padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));
 }
 
 /* ============================================================================
