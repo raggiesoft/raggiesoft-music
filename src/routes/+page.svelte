@@ -79,13 +79,14 @@
 
 	/**
 	 * ============================================================================
-	 * SIR PATRICK STEWART IN MEMORIAM COSMIC TRILOGY SHOWCASE (EXPIRES NOV 28, 2026)
+	 * SIR PATRICK STEWART IN MEMORIAM COSMIC QUARTET SHOWCASE (EXPIRES NOV 28, 2026)
 	 * ============================================================================
-	 * Features the three cosmic releases inspired by watching Star Trek: The Next
+	 * Features the four cosmic releases inspired by watching Star Trek: The Next
 	 * Generation as a family:
 	 *   1. Escape Velocity (Ad Astra) (1996-ad-astra-single)
 	 *   2. Moon 1: Sanctuary (Zero-G) (2003-sanctuary-zero-g)
 	 *   3. Moon 2: Mile Marker 98 (2003-mile-marker-98)
+	 *   4. Starfield Calibration (2011-starfield-calibration)
 	 * Automatically hides on or after November 29, 2026 (2026-11-28T23:59:59-05:00).
 	 */
 	const MEMORIAM_EXPIRES_MS = Date.parse('2026-11-28T23:59:59-05:00');
@@ -116,6 +117,14 @@
 				cosmicSubtitle: 'Ryan O’Connell • High-Gravity Arena Rock (2003)',
 				cosmicNote:
 					'The companion second half of the 2003 Twin Moons project: Ryan’s high-gravity propulsion engine confronting the hardships of the past to power the journey to the stars.'
+			},
+			{
+				slug: '2011-starfield-calibration',
+				displayTitle: 'Starfield Calibration',
+				cosmicRole: 'Cosmic Tidal Lock™ Remix Album (2011)',
+				cosmicSubtitle: '14 Classic Stardust Songs Rebuilt in Zero-G (2011)',
+				cosmicNote:
+					'A Cosmic Tidal Lock™ remix album of fourteen classic Stardust Engine songs—born from the curiosity to look up at the stars and wonder what is out there that Captain Picard inspired.'
 			}
 		];
 
@@ -128,8 +137,9 @@
 	});
 
 	/**
-	 * Queues all three featured Cosmic Trilogy albums (Escape Velocity (Ad Astra),
-	 * Moon 1: Sanctuary (Zero-G), and Moon 2: Mile Marker 98) back-to-back.
+	 * Queues all four featured Cosmic Quartet albums (Escape Velocity (Ad Astra),
+	 * Moon 1: Sanctuary (Zero-G), Moon 2: Mile Marker 98, and Starfield Calibration)
+	 * back-to-back.
 	 */
 	function playMemoriamCosmicTrilogy() {
 		const combinedQueue = memoriamCosmicAlbums.flatMap((album) => formatAlbumQueue(album));
@@ -446,19 +456,22 @@
 						id="memoriam-cosmic-showcase-heading"
 						class="text-2xl font-black tracking-tight text-white sm:text-3xl"
 					>
-						The Cosmic Trilogy Inspired by the <span class="italic text-amber-300">NCC-1701-D</span>:
-						<span class="text-blue-400">Escape Velocity (Ad Astra)</span> &amp;
-						<span class="text-amber-300">The Twin Moons</span>
+						The Cosmic Works Inspired by the <span class="italic text-amber-300">NCC-1701-D</span>:
+						<span class="text-blue-400">Escape Velocity (Ad Astra)</span>,
+						<span class="text-amber-300">The Twin Moons</span> &amp;
+						<span class="text-cyan-300">Starfield Calibration</span>
 					</h2>
 
 					<p class="text-sm leading-relaxed text-slate-300 sm:text-base">
 						Without watching <strong class="text-white italic">Star Trek: The Next Generation</strong>
-						as a kid with my family every weeknight evening, I never would have wanted to look up to the
-						stars and wonder what is out there—and I never would have had that spark of imagination that
-						led to the creation of
+						as a kid with my family every weeknight evening, I never would have had the curiosity to
+						look up to the stars and wonder what is out there—and I never would have had that spark of
+						imagination that led to the creation of
 						<strong class="text-white">Escape Velocity (Ad Astra)</strong> (1996),
-						<strong class="text-white">Moon 1: Sanctuary (Zero-G)</strong> (2003), and
-						<strong class="text-white">Moon 2: Mile Marker 98</strong> (2003).
+						<strong class="text-white">Moon 1: Sanctuary (Zero-G)</strong> (2003),
+						<strong class="text-white">Moon 2: Mile Marker 98</strong> (2003), and the
+						<em>Cosmic Tidal Lock™</em> remixes of classic Stardust Engine songs on
+						<strong class="text-white">Starfield Calibration</strong> (2011).
 						<em class="text-amber-300"
 							>“Where to? Second star to the right, and straight on ’till morning.” — Ad astra per aspera, Captain.</em
 						>
@@ -473,7 +486,7 @@
 							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
 								<path d="M8 5v14l11-7z" />
 							</svg>
-							<span>Play All 3 Cosmic Albums (25 Songs)</span>
+							<span>Play All 4 Cosmic Albums (39 Songs)</span>
 						</button>
 
 						<a
@@ -522,8 +535,8 @@
 				</a>
 			</div>
 
-			<!-- 3-Column Cosmic Trilogy Grid -->
-			<div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+			<!-- 2x2 Balanced Cosmic Quartet Grid -->
+			<div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
 				{#each memoriamCosmicAlbums as cosmicAlbum (cosmicAlbum.slug)}
 					<article
 						class="flex flex-col justify-between rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-xl transition-all hover:border-amber-500/50"
