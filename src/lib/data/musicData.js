@@ -39,7 +39,9 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [legacyTier]
  * @property {string} [stylePrompt]
  * @property {string} [loreNote]
+ * @property {string} [loreNoteHtml]
  * @property {string} [lyrics]
+ * @property {string} [lyricsHtml]
  * @property {string} audioUrl
  * @property {string} [vttUrl]
  * @property {boolean} [vttVerified]
@@ -1164,5 +1166,60 @@ export function buildSongFamilyComparisonQueue(
 		startIndex
 	};
 }
+
+/**
+ * Client-side StardustParsedown fallback formatter for raw Markdown strings
+ * (`loreNote` or `lyrics`) in case a track object was constructed or mutated
+ * at runtime (e.g., in `/studio`) without a pre-compiled `loreNoteHtml` or
+ * `lyricsHtml` from `stardust-parsedown.php`.
+ *
+ * @param {string | undefined | null} rawMarkdown
+ * @returns {string}
+ */
+export function formatStardustMarkdown(rawMarkdown) {
+	const raw = String(rawMarkdown || '').trim();
+	if (!raw) return '';
+
+	/** @param {string} str */
+	const escapeHtml = (str) =>
+		str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+	/** @param {string} text */
+	const formatInline = (text) => {
+		let s = escapeHtml(text);
+		s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+		s = s.replace(
+			/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g,
+			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+		);
+		s = s.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+		s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+		s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+		s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+		s = s.replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
+		return s;
+	};
+
+	const blocks = raw.replace(/\r\n/g, '\n').split(/\n{2,}/);
+	const htmlBlocks = blocks.map((block) => {
+		const lines = block.split('\n');
+		if (lines.every((l) => /^\s*\d+\.\s+/.test(l))) {
+			const items = lines
+				.map((l) => `<li>${formatInline(l.replace(/^\s*\d+\.\s+/, ''))}</li>`)
+				.join('\n');
+			return `<ol>\n${items}\n</ol>`;
+		}
+		if (lines.every((l) => /^\s*[-*]\s+/.test(l))) {
+			const items = lines
+				.map((l) => `<li>${formatInline(l.replace(/^\s*[-*]\s+/, ''))}</li>`)
+				.join('\n');
+			return `<ul>\n${items}\n</ul>`;
+		}
+		return `<p>${lines.map(formatInline).join('<br />\n')}</p>`;
+	});
+
+	return htmlBlocks.join('\n');
+}
+
 
 

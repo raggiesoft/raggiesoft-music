@@ -20,6 +20,7 @@
 	import {
 		buildSongFamilyComparisonQueue,
 		formatReleaseDate,
+		formatStardustMarkdown,
 		getRelatedSongs
 	} from '#lib/data/musicData.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
@@ -723,9 +724,12 @@
 									</svg>
 									Canonical Lore Note
 								</div>
-								<p class="text-sm leading-relaxed whitespace-pre-line text-slate-300 italic">
-									"{player.currentTrack.loreNote}"
-								</p>
+								<!-- eslint-disable svelte/no-at-html-tags -->
+								<div class="er-lore-prose text-sm">
+									{@html player.currentTrack.loreNoteHtml ||
+										formatStardustMarkdown(player.currentTrack.loreNote)}
+								</div>
+								<!-- eslint-enable svelte/no-at-html-tags -->
 							</div>
 						{/if}
 
@@ -766,16 +770,19 @@
 								</div>
 							</div>
 						{:else if player.currentTrack.lyrics}
-							<!-- Static Formatted Lyrics from metadata.json -->
+							<!-- Static Formatted Lyrics from metadata.json / lyrics/*.md -->
 							<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
 								<h3 class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase">
 									Official Song Lyrics
 								</h3>
+								<!-- eslint-disable svelte/no-at-html-tags -->
 								<div
-									class="max-h-80 space-y-2 overflow-y-auto pr-2 font-sans text-sm leading-relaxed whitespace-pre-line text-slate-300"
+									class="er-lyrics-prose max-h-80 overflow-y-auto pr-2 font-sans text-sm"
 								>
-									{player.currentTrack.lyrics}
+									{@html player.currentTrack.lyricsHtml ||
+										formatStardustMarkdown(player.currentTrack.lyrics)}
 								</div>
+								<!-- eslint-enable svelte/no-at-html-tags -->
 							</div>
 						{:else}
 							<div

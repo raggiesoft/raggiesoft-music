@@ -436,3 +436,82 @@ html[data-theme='solstice'][data-color-scheme='dark'] {
 	--color-blue-400: #34d399;
 	--color-blue-300: #6ee7b7;
 }
+
+/* ============================================================================
+ * 4. STARDUST PARSEDOWN LORE & LYRICS PROSE TYPOGRAPHY
+ *    Styles HTML compiled by `stardust-parsedown.php` (StardustParsedown)
+ *    across all 5 palettes in both Dark Mode and Light Mode.
+ * ============================================================================ */
+.er-lore-prose,
+.er-lyrics-prose {
+	color: var(--color-slate-200);
+	line-height: 1.65;
+}
+
+.er-lore-prose p,
+.er-lyrics-prose p {
+	margin: 0;
+}
+
+.er-lore-prose > * + * {
+	margin-top: 0.75rem;
+}
+
+.er-lyrics-prose > * + * {
+	margin-top: 1rem;
+}
+
+.er-lore-prose strong,
+.er-lyrics-prose strong {
+	color: var(--er-heading-color, #ffffff);
+	font-weight: 700;
+}
+
+.er-lore-prose em,
+.er-lyrics-prose em {
+	color: var(--color-indigo-200);
+	font-style: italic;
+}
+
+.er-lore-prose code,
+.er-lyrics-prose code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+		'Courier New', monospace;
+	font-size: 0.85em;
+	padding: 0.125rem 0.375rem;
+	border-radius: 0.375rem;
+	background-color: var(--color-slate-900);
+	border: 1px solid var(--color-slate-700);
+	color: var(--color-cyan-300);
+}
+
+.er-lore-prose ul,
+.er-lyrics-prose ul {
+	list-style-type: disc;
+	padding-left: 1.4rem;
+}
+
+.er-lore-prose ol,
+.er-lyrics-prose ol {
+	list-style-type: decimal;
+	padding-left: 1.4rem;
+}
+
+.er-lore-prose li + li,
+.er-lyrics-prose li + li {
+	margin-top: 0.35rem;
+}
+
+.er-lore-prose a,
+.er-lyrics-prose a {
+	color: var(--color-blue-400);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	font-weight: 600;
+}
+
+.er-lore-prose a:hover,
+.er-lyrics-prose a:hover {
+	color: var(--color-blue-300);
+}
+

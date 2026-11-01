@@ -18,6 +18,7 @@
  * ============================================================================
  */
 
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,11 +40,131 @@ const candidateAssetPaths = [
 
 // Potential candidate paths for the raggiesoft-hub repository (to verify live lore pages)
 const candidateHubPaths = [
+	path.resolve(__dirname, '../../../www'),
 	path.resolve(__dirname, '../../www'),
 	path.resolve(__dirname, '../../raggiesoft-hub'),
 	path.resolve(__dirname, '../../../raggiesoft-hub'),
 	'/var/www/raggiesoft-hub'
 ];
+
+// Potential candidate paths for stardust-parsedown.php (canonical Markdown parser)
+const candidateParsedownPaths = [
+	path.resolve(__dirname, '../../../www/includes/classes/stardust-parsedown.php'),
+	path.resolve(__dirname, '../../books/includes/classes/stardust-parsedown.php'),
+	path.resolve(__dirname, '../../../../raggiesoft.com/www/includes/classes/stardust-parsedown.php'),
+	path.resolve(
+		__dirname,
+		'../../../../raggiesoft.com/subdomains/books/includes/classes/stardust-parsedown.php'
+	),
+	'/var/www/raggiesoft-hub/includes/classes/stardust-parsedown.php',
+	'/var/www/raggiesoft-book-library/includes/classes/stardust-parsedown.php'
+];
+
+/**
+ * Resolves the canonical `stardust-parsedown.php` file on disk if available.
+ * @returns {string | null}
+ */
+function resolveStardustParsedownPath() {
+	for (const candidate of candidateParsedownPaths) {
+		if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+			return candidate;
+		}
+	}
+	return null;
+}
+
+/**
+ * Pure-JavaScript fallback renderer mirroring `StardustParsedown` in case PHP CLI
+ * is unavailable in a minimal build environment.
+ *
+ * @param {string} rawMarkdown
+ * @returns {string}
+ */
+function fallbackStardustMarkdownToHtml(rawMarkdown) {
+	if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
+	let text = rawMarkdown
+		.replace(/\r\n/g, '\n')
+		.replace(/\\?\[Note to the AI:[\s\S]*?\\?\]/gi, '')
+		.replace(/\{\{cms\}\}/g, 'https://assets.raggiesoft.com')
+		.trim();
+	if (!text) return '';
+
+	const escapeHtml = (/** @type {string} */ s) =>
+		s
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;');
+
+	const formatInline = (/** @type {string} */ line) => {
+		let out = escapeHtml(line);
+		out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+		out = out.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+		out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+		out = out.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+		out = out.replace(
+			/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)/g,
+			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+		);
+		return out;
+	};
+
+	const blocks = text.split(/\n{2,}/);
+	return blocks
+		.map((block) => {
+			const lines = block.split('\n').map((l) => formatInline(l));
+			return `<p>${lines.join('<br />\n')}</p>`;
+		})
+		.join('\n');
+}
+
+/**
+ * Batch-compiles an array of Markdown strings into formatted HTML using the canonical
+ * PHP `StardustParsedown` engine (`stardust-parsedown.php` with `setBreaksEnabled(true)`).
+ * Falls back cleanly to `fallbackStardustMarkdownToHtml` if PHP CLI is not available.
+ *
+ * @param {string[]} markdownItems
+ * @returns {string[]}
+ */
+function batchCompileStardustParsedown(markdownItems) {
+	const parsedownPath = resolveStardustParsedownPath();
+	if (parsedownPath) {
+		try {
+			const phpCode = `
+				require_once ${JSON.stringify(parsedownPath)};
+				$pd = new StardustParsedown();
+				$pd->setBreaksEnabled(true);
+				$input = json_decode(stream_get_contents(STDIN), true);
+				if (!is_array($input)) {
+					echo json_encode([]);
+					exit(0);
+				}
+				$out = [];
+				foreach ($input as $md) {
+					$trimmed = is_string($md) ? trim($md) : '';
+					$out[] = $trimmed !== '' ? $pd->text($trimmed) : '';
+				}
+				echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			`;
+			const res = spawnSync('php', ['-r', phpCode], {
+				input: JSON.stringify(markdownItems),
+				encoding: 'utf-8',
+				maxBuffer: 50 * 1024 * 1024
+			});
+			if (res.status === 0 && res.stdout) {
+				const parsed = JSON.parse(res.stdout);
+				if (Array.isArray(parsed) && parsed.length === markdownItems.length) {
+					console.log(
+						`✨ Compiled ${markdownItems.length} Markdown lore/lyric blocks via stardust-parsedown.php`
+					);
+					return parsed;
+				}
+			}
+		} catch (err) {
+			console.warn('⚠️  stardust-parsedown.php batch execution failed, using JS fallback:', err);
+		}
+	}
+	return markdownItems.map((md) => fallbackStardustMarkdownToHtml(md));
+}
 
 /**
  * Resolves the active assets directory from candidate filesystem paths.
@@ -530,7 +651,9 @@ function buildCatalog() {
 					legacyTier,
 					stylePrompt: t.stylePrompt || '',
 					loreNote,
+					loreNoteHtml: '',
 					lyrics,
+					lyricsHtml: '',
 					audioUrl,
 					vttUrl,
 					vttVerified,
@@ -667,6 +790,29 @@ function buildCatalog() {
 			});
 		}
 	}
+
+	// =========================================================================
+	// Batch-compile track loreNote & lyrics Markdown via StardustParsedown
+	// (stardust-parsedown.php) so The Listening Room renders formatted HTML
+	// while retaining raw loreNote/lyrics for search and /studio editing.
+	// =========================================================================
+	const allTracksFlat = [];
+	const markdownPayload = [];
+	for (const album of catalog) {
+		for (const track of album.tracks) {
+			allTracksFlat.push(track);
+			markdownPayload.push(track.loreNote || '');
+			markdownPayload.push(track.lyrics || '');
+		}
+	}
+	const compiledHtmlList = batchCompileStardustParsedown(markdownPayload);
+	for (let i = 0; i < allTracksFlat.length; i++) {
+		allTracksFlat[i].loreNoteHtml = compiledHtmlList[i * 2] || '';
+		allTracksFlat[i].lyricsHtml = compiledHtmlList[i * 2 + 1] || '';
+	}
+	console.log(
+		`📝 Compiled ${allTracksFlat.length} track loreNote & lyrics blocks via StardustParsedown (stardust-parsedown.php).`
+	);
 
 	// Sort catalog chronologically by ISO 8601 temporalCoverage/year, then title
 	catalog.sort((a, b) => {

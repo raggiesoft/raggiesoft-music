@@ -33,6 +33,7 @@
 		buildSongFamilyComparisonQueue,
 		formatAlbumQueue,
 		formatReleaseDate,
+		formatStardustMarkdown,
 		getRelatedSongs,
 		hasAnyDsp,
 		hasFourthwallStore
@@ -1339,11 +1340,11 @@
 													</svg>
 													In-Universe Lore Note
 												</div>
-												<p
-													class="text-sm leading-relaxed whitespace-pre-line text-slate-300 italic"
-												>
-													"{track.loreNote}"
-												</p>
+												<!-- eslint-disable svelte/no-at-html-tags -->
+												<div class="er-lore-prose text-sm">
+													{@html track.loreNoteHtml || formatStardustMarkdown(track.loreNote)}
+												</div>
+												<!-- eslint-enable svelte/no-at-html-tags -->
 											</div>
 										{/if}
 
@@ -1491,11 +1492,13 @@
 												<div class="mb-2 text-xs font-bold tracking-wider text-slate-400 uppercase">
 													Official Lyrics
 												</div>
+												<!-- eslint-disable svelte/no-at-html-tags -->
 												<div
-													class="max-h-80 overflow-y-auto pr-2 font-sans text-sm leading-relaxed whitespace-pre-line text-slate-300"
+													class="er-lyrics-prose max-h-80 overflow-y-auto pr-2 font-sans text-sm"
 												>
-													{track.lyrics}
+													{@html track.lyricsHtml || formatStardustMarkdown(track.lyrics)}
 												</div>
+												<!-- eslint-enable svelte/no-at-html-tags -->
 											</div>
 										{/if}
 									</div>

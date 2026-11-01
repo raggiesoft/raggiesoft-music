@@ -28,6 +28,7 @@
 	import { resolve } from '$app/paths';
 	import { player } from '#lib/player.svelte.js';
 	import { playlistManager } from '#lib/playlists.svelte.js';
+	import { formatStardustMarkdown } from '#lib/data/musicData.js';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 
 	let { data } = $props();
@@ -415,9 +416,11 @@
 									<h4 class="text-xs font-bold tracking-wider text-amber-400 uppercase">
 										Archival Liner Note
 									</h4>
-									<div class="whitespace-pre-line text-xs leading-relaxed text-slate-300 sm:text-sm">
-										{track.loreNote}
+									<!-- eslint-disable svelte/no-at-html-tags -->
+									<div class="er-lore-prose text-xs sm:text-sm">
+										{@html track.loreNoteHtml || formatStardustMarkdown(track.loreNote)}
 									</div>
+									<!-- eslint-enable svelte/no-at-html-tags -->
 								</div>
 							{/if}
 							{#if track.lyrics}
@@ -425,9 +428,13 @@
 									<h4 class="text-xs font-bold tracking-wider text-blue-400 uppercase">
 										Official Lyrics
 									</h4>
-									<pre
-										class="max-h-80 overflow-y-auto whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate-300 sm:text-sm"
-									>{track.lyrics}</pre>
+									<!-- eslint-disable svelte/no-at-html-tags -->
+									<div
+										class="er-lyrics-prose max-h-80 overflow-y-auto font-sans text-xs sm:text-sm"
+									>
+										{@html track.lyricsHtml || formatStardustMarkdown(track.lyrics)}
+									</div>
+									<!-- eslint-enable svelte/no-at-html-tags -->
 								</div>
 							{/if}
 						</div>

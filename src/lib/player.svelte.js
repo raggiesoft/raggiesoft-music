@@ -88,7 +88,9 @@ export class AudioPlayer {
 		audioUrl: '',
 		vttUrl: '',
 		loreNote: '',
+		loreNoteHtml: '',
 		lyrics: '',
+		lyricsHtml: '',
 		year: '',
 		temporalCoverage: '',
 		disc: 1,
@@ -324,7 +326,9 @@ export class AudioPlayer {
 			this.currentTrack.temporalCoverage =
 				track.temporalCoverage || this.currentTrack.temporalCoverage;
 			this.currentTrack.loreNote = track.loreNote || this.currentTrack.loreNote;
+			this.currentTrack.loreNoteHtml = track.loreNoteHtml || this.currentTrack.loreNoteHtml || '';
 			this.currentTrack.lyrics = track.lyrics || this.currentTrack.lyrics;
+			this.currentTrack.lyricsHtml = track.lyricsHtml || this.currentTrack.lyricsHtml || '';
 			this.currentTrack.isrc = targetIsrc;
 			this.currentTrack.legacyTier = track.legacyTier || this.currentTrack.legacyTier;
 			this.currentTrack.spotifyId = track.spotifyId || '';
@@ -382,7 +386,9 @@ export class AudioPlayer {
 			audioUrl: track.audioUrl || '',
 			vttUrl: track.vttUrl || '',
 			loreNote: track.loreNote || '',
+			loreNoteHtml: track.loreNoteHtml || '',
 			lyrics: track.lyrics || '',
+			lyricsHtml: track.lyricsHtml || '',
 			year: track.year || '',
 			temporalCoverage: track.temporalCoverage || '',
 			disc: track.disc || 1,
