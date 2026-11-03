@@ -201,28 +201,33 @@
 				class="group flex min-w-0 items-center gap-2.5 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:gap-3"
 			>
 				<div
-					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/90 p-1.5 shadow-md transition-transform group-hover:scale-105 sm:h-11 sm:w-11"
+					class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 shadow-md transition-transform group-hover:scale-105 sm:h-11 sm:w-11"
 				>
-					<!-- Light Mode Logo: Pure Black on Transparent Background -->
 					<img
-						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
-						alt="Engine Room Records Logo"
-						class="er-logo-light h-full w-full object-contain"
-					/>
-					<!-- Dark Mode Logo: Pure White on Transparent Background -->
-					<img
-						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
-						alt="Engine Room Records Logo"
-						class="er-logo-dark h-full w-full object-contain"
+						src="/icons/icon-192.png?v=3"
+						alt="The Listening Room App Icon"
+						class="h-full w-full object-cover"
 					/>
 				</div>
 				<div class="min-w-0">
 					<span class="block truncate text-sm leading-tight font-extrabold tracking-tight text-white sm:text-base"
 						>The Listening Room</span
 					>
-					<span class="block truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]"
-						>by Engine Room Records</span
-					>
+					<span class="flex items-center gap-1 truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]">
+						<img
+							src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
+							alt=""
+							aria-hidden="true"
+							class="er-logo-light inline-block h-3.5 w-3.5 shrink-0 object-contain"
+						/>
+						<img
+							src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
+							alt=""
+							aria-hidden="true"
+							class="er-logo-dark inline-block h-3.5 w-3.5 shrink-0 object-contain"
+						/>
+						<span>by Engine Room Records</span>
+					</span>
 				</div>
 			</a>
 

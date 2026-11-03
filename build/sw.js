@@ -18,16 +18,16 @@
  * ============================================================================
  */
 
-const CACHE_NAME = 'err-pwa-v4';
-const STATIC_CACHE = 'err-static-v4';
+const CACHE_NAME = 'err-pwa-v5';
+const STATIC_CACHE = 'err-static-v5';
 
 const PRECACHE_ASSETS = [
 	'/',
 	'/manifest.json',
-	'/favicon.ico?v=2',
-	'/favicon.svg?v=2',
-	'/icons/icon-192.png?v=2',
-	'/icons/icon-512.png',
+	'/favicon.ico?v=3',
+	'/favicon.svg?v=3',
+	'/icons/icon-192.png?v=3',
+	'/icons/icon-512.png?v=3',
 	'/icons/apple-touch-icon.png'
 ];
 

@@ -1,126 +1,157 @@
 #!/bin/bash
 # ============================================================================
-# ARCHITECTURAL BLOCK COMMENT: generate_pwa_assets.sh
+# ARCHITECTURAL BLOCK COMMENT: generate_pwa_assets.sh (The Listening Room / music.raggiesoft.com)
 # ============================================================================
 # Purpose:
-#     Automates the generation of Progressive Web App (PWA) icons, adaptive SVG/ICO
-#     favicons, and dual-theme (Light Mode + Dark Mode) iOS startup splash screens
-#     for Engine Room Records (`music.raggiesoft.com`).
+#     Automates the generation of Progressive Web App (PWA) icons, SVG/ICO favicons,
+#     and Option A Co-Branded ("App + Imprint") Light Mode & Dark Mode iOS/iPadOS
+#     startup splash screens for The Listening Room (`music.raggiesoft.com`).
 #
 # Design Decisions & Future Maintenance:
-#     1. Dual-Theme iOS Splash Screens (`prefers-color-scheme: light` & `dark`):
-#        Generates all 46 iOS/iPadOS device resolutions in both Light Mode
-#        (black gear logo on `#F8FAFC` light studio slate) and Dark Mode
-#        (white gear logo on `#020617` deep studio slate).
-#     2. CDN Hosting (`raggiesoft-assets/engine-room-records/images/pwa-icons/`):
-#        Stores the 92 splash screens and PWA icons on the DigitalOcean Spaces CDN
-#        (`https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/`)
-#        mirroring `books.raggiesoft.com`, while also keeping core manifest icons
-#        in `raggiesoft-music/static/icons/`.
+#     1. Separation of App Icon vs. Record Label Logo:
+#        - Uses `listening-room-app-icon.png` (polished gold-and-chrome vinyl record
+#          and studio headphones with cyan/magenta soundwaves) as the primary App Icon
+#          for favicons, Home Screen icons, and the center hero of the iOS launch screen.
+#        - Preserves `engine-room-records-logo.png` (Light Mode black gear) and
+#          `engine-room-records-logo-white.png` (Dark Mode white gear) as the corporate
+#          record label logo, co-featured in the bottom imprint attribution lockup of
+#          every iOS startup splash screen (and on `engineroom.raggiesoft.com`).
+#     2. Full 92-Screen iOS/iPadOS Matrix (46 Light Mode + 46 Dark Mode):
+#        - Generates all 23 portrait + 23 landscape device resolutions in both
+#          Light Mode (`#F8FAFC` light studio slate) and Dark Mode (`#020617` deep
+#          studio slate).
 #     3. Zero-Network Deterministic Build:
-#        Uses Python + Pillow (`PIL`) to composite high-resolution Lanczos-resampled
-#        icons and splash screens directly from the master PNG logos in `static/logos/`.
+#        - Uses Python 3 + Pillow (`PIL`) with Lanczos resampling and 2x supersampled
+#          squircle masks.
 # ============================================================================
 
 set -e
 
-# Navigate to the raggiesoft-music root directory regardless of invocation path
 cd "$(dirname "$0")/.." || exit
 
-echo "Generating Engine Room Records PWA icons and Light/Dark iOS splash screens..."
+echo "Generating The Listening Room PWA icons and 92 Light/Dark Co-Branded iOS splash screens..."
 
-python3 - << 'EOF'
+/opt/homebrew/bin/python3 - << 'EOF'
 import os, io, base64
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 music_root = os.getcwd()
-cdn_pwa_dir = os.path.abspath(os.path.join(music_root, "../raggiesoft-assets/engine-room-records/images/pwa-icons"))
+cdn_pwa_dir = os.path.abspath(os.path.join(music_root, "../../../raggiesoft-assets/engine-room-records/images/pwa-icons"))
 static_icons_dir = os.path.join(music_root, "static/icons")
+static_logos_dir = os.path.join(music_root, "static/logos")
 
 os.makedirs(cdn_pwa_dir, exist_ok=True)
 os.makedirs(static_icons_dir, exist_ok=True)
 
-logo_black = Image.open(os.path.join(music_root, "static/logos/engine-room-records-logo.png")).convert("RGBA")
-logo_white = Image.open(os.path.join(music_root, "static/logos/engine-room-records-logo-white.png")).convert("RGBA")
+app_icon = Image.open(os.path.join(static_logos_dir, "listening-room-app-icon.png")).convert("RGBA")
+logo_black = Image.open(os.path.join(static_logos_dir, "engine-room-records-logo.png")).convert("RGBA")
+logo_white = Image.open(os.path.join(static_logos_dir, "engine-room-records-logo-white.png")).convert("RGBA")
 
-# Colors matching Engine Room Records Studio Light (#F8FAFC) and Studio Dark (#020617)
-DARK_BG = (2, 6, 23)       # #020617
-LIGHT_BG = (248, 250, 252) # #F8FAFC
-
-# Tight square bounding box around the Engine Room Records gear emblem
+# Tight bounding box around the Engine Room Records gear logo
 bbox = logo_black.getbbox()
-cx = (bbox[0] + bbox[2]) // 2
-cy = (bbox[1] + bbox[3]) // 2
-half = max(bbox[2] - bbox[0], bbox[3] - bbox[1]) // 2 + 12
-crop_box = (cx - half, cy - half, cx + half, cy + half)
+cropped_gear_black = logo_black.crop(bbox)
+cropped_gear_white = logo_white.crop(bbox)
 
-cropped_black = logo_black.crop(crop_box)
-cropped_white = logo_white.crop(crop_box)
+ICON_EDGE_BG = (6, 6, 18)           # Deep obsidian-indigo matching the master icon edge
+DARK_BG = (2, 6, 23)                # #020617 (Studio Dark Mode background)
+LIGHT_BG = (248, 250, 252)          # #F8FAFC (Studio Light Mode background)
 
-# 1. Generate Adaptive SVG Favicon (switches via @media (prefers-color-scheme: dark))
-fav_black = cropped_black.resize((128, 128), Image.Resampling.LANCZOS)
-fav_white = cropped_white.resize((128, 128), Image.Resampling.LANCZOS)
+DARK_TEXT_PRIMARY = (248, 250, 252) # #F8FAFC
+DARK_TEXT_ACCENT = (56, 189, 248)   # #38BDF8 (Studio Cyan-Blue)
+DARK_TEXT_MUTED = (148, 163, 184)   # #94A3B8
 
-buf_b = io.BytesIO()
-fav_black.save(buf_b, format="PNG", optimize=True)
-b64_black = base64.b64encode(buf_b.getvalue()).decode("ascii")
+LIGHT_TEXT_PRIMARY = (15, 23, 42)   # #0F172A
+LIGHT_TEXT_ACCENT = (2, 132, 199)   # #0284C7 (Studio Deep Cyan-Blue)
+LIGHT_TEXT_MUTED = (71, 85, 105)    # #475569
 
-buf_w = io.BytesIO()
-fav_white.save(buf_w, format="PNG", optimize=True)
-b64_white = base64.b64encode(buf_w.getvalue()).decode("ascii")
+def load_font(candidates, size):
+    for path, idx in candidates:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, size=size, index=idx)
+            except Exception:
+                pass
+    return ImageFont.load_default()
+
+SANS_BOLD_CANDIDATES = [
+    ("/System/Library/Fonts/Helvetica.ttc", 1),
+    ("/System/Library/Fonts/SFNS.ttf", 0),
+]
+SANS_REG_CANDIDATES = [
+    ("/System/Library/Fonts/Helvetica.ttc", 0),
+    ("/System/Library/Fonts/SFNS.ttf", 0),
+]
+
+def make_rounded_squircle(img_rgba, size, radius_ratio=0.225, border_rgba=None):
+    """Creates a 2x-supersampled anti-aliased rounded squircle icon."""
+    ss = size * 2
+    resized = img_rgba.resize((ss, ss), Image.Resampling.LANCZOS)
+    mask = Image.new("L", (ss, ss), 0)
+    draw = ImageDraw.Draw(mask)
+    r = int(round(ss * radius_ratio))
+    draw.rounded_rectangle((0, 0, ss - 1, ss - 1), radius=r, fill=255)
+
+    out = Image.new("RGBA", (ss, ss), (0, 0, 0, 0))
+    out.paste(resized, (0, 0), mask)
+
+    if border_rgba is not None:
+        bdraw = ImageDraw.Draw(out)
+        bw = max(2, int(round(ss * 0.012)))
+        bdraw.rounded_rectangle((bw // 2, bw // 2, ss - 1 - bw // 2, ss - 1 - bw // 2), radius=r, outline=border_rgba, width=bw)
+
+    return out.resize((size, size), Image.Resampling.LANCZOS)
+
+def make_maskable_icon(img_rgba, size, safe_padding_ratio=0.10):
+    """Creates a full-bleed maskable icon with safe-zone padding so Android/OS masks never clip the headphones."""
+    canvas = Image.new("RGB", (size, size), ICON_EDGE_BG)
+    inner = int(round(size * (1.0 - 2.0 * safe_padding_ratio)))
+    resized = img_rgba.resize((inner, inner), Image.Resampling.LANCZOS)
+    offset = (size - inner) // 2
+    canvas.paste(resized, (offset, offset), resized)
+    return canvas
+
+# 1. Generate SVG Favicon (rounded squircle)
+fav_png = make_rounded_squircle(app_icon, 128, radius_ratio=0.22, border_rgba=(56, 189, 248, 150))
+buf = io.BytesIO()
+fav_png.save(buf, format="PNG", optimize=True)
+b64_fav = base64.b64encode(buf.getvalue()).decode("ascii")
 
 svg_favicon = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <title>Engine Room Records</title>
-  <style>
-    .logo-dark {{ display: none; }}
-    .logo-light {{ display: block; }}
-    @media (prefers-color-scheme: dark) {{
-      .logo-dark {{ display: block; }}
-      .logo-light {{ display: none; }}
-    }}
-  </style>
-  <image class="logo-light" width="128" height="128" href="data:image/png;base64,{b64_black}" />
-  <image class="logo-dark" width="128" height="128" href="data:image/png;base64,{b64_white}" />
+  <title>The Listening Room — Engine Room Records</title>
+  <image width="128" height="128" href="data:image/png;base64,{b64_fav}" />
 </svg>
 """
-
 with open(os.path.join(music_root, "static/favicon.svg"), "w") as f:
+    f.write(svg_favicon)
+with open(os.path.join(music_root, "src/lib/assets/favicon.svg"), "w") as f:
     f.write(svg_favicon)
 with open(os.path.join(cdn_pwa_dir, "icon.svg"), "w") as f:
     f.write(svg_favicon)
 
 # 2. Generate Multi-Resolution favicon.ico (16x16, 32x32, 48x48)
-ico_base = Image.new("RGBA", (256, 256), DARK_BG + (255,))
-gear_256 = cropped_white.resize((220, 220), Image.Resampling.LANCZOS)
-ico_base.paste(gear_256, (18, 18), gear_256)
+ico_base = make_rounded_squircle(app_icon, 256, radius_ratio=0.22, border_rgba=(56, 189, 248, 160))
 ico_base.save(os.path.join(music_root, "static/favicon.ico"), format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
+ico_base.save(os.path.join(cdn_pwa_dir, "favicon.ico"), format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
 
-# 3. Generate PWA Home Screen & Manifest Icons (180, 192, 512)
-def make_square_icon(size, padding_ratio, bg_rgb, fg_cropped):
-    canvas = Image.new("RGB", (size, size), bg_rgb)
-    logo_size = int(round(size * (1.0 - 2.0 * padding_ratio)))
-    resized = fg_cropped.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
-    offset = (size - logo_size) // 2
-    canvas.paste(resized, (offset, offset), resized)
-    return canvas
+# 3. Generate iOS Home Screen Icon (180x180 full-bleed; iOS applies its own squircle mask)
+apple_180 = app_icon.resize((180, 180), Image.Resampling.LANCZOS).convert("RGB")
+apple_180.save(os.path.join(static_icons_dir, "apple-touch-icon.png"), format="PNG", optimize=True)
+apple_180.save(os.path.join(cdn_pwa_dir, "apple-icon-180.png"), format="PNG", optimize=True)
 
-# Standard & Maskable Dark Studio Icons (with safe-zone padding for Android/iOS masks)
-icon_180 = make_square_icon(180, 0.12, DARK_BG, cropped_white)
-icon_192 = make_square_icon(192, 0.12, DARK_BG, cropped_white)
-icon_512 = make_square_icon(512, 0.12, DARK_BG, cropped_white)
-icon_192_mask = make_square_icon(192, 0.18, DARK_BG, cropped_white)
-icon_512_mask = make_square_icon(512, 0.18, DARK_BG, cropped_white)
+# 4. Generate Standard ("any") & Maskable ("maskable") Manifest Icons (192x192, 512x512)
+icon_192_any = make_rounded_squircle(app_icon, 192, radius_ratio=0.22, border_rgba=(56, 189, 248, 120))
+icon_512_any = make_rounded_squircle(app_icon, 512, radius_ratio=0.22, border_rgba=(56, 189, 248, 120))
+icon_192_any.save(os.path.join(static_icons_dir, "icon-192.png"), format="PNG", optimize=True)
+icon_512_any.save(os.path.join(static_icons_dir, "icon-512.png"), format="PNG", optimize=True)
+icon_192_any.save(os.path.join(cdn_pwa_dir, "icon-192.png"), format="PNG", optimize=True)
+icon_512_any.save(os.path.join(cdn_pwa_dir, "icon-512.png"), format="PNG", optimize=True)
 
-icon_180.save(os.path.join(static_icons_dir, "apple-touch-icon.png"), format="PNG", optimize=True)
-icon_180.save(os.path.join(cdn_pwa_dir, "apple-icon-180.png"), format="PNG", optimize=True)
-
-icon_192.save(os.path.join(static_icons_dir, "icon-192.png"), format="PNG", optimize=True)
-icon_512.save(os.path.join(static_icons_dir, "icon-512.png"), format="PNG", optimize=True)
-
+icon_192_mask = make_maskable_icon(app_icon, 192, safe_padding_ratio=0.10)
+icon_512_mask = make_maskable_icon(app_icon, 512, safe_padding_ratio=0.10)
 icon_192_mask.save(os.path.join(cdn_pwa_dir, "manifest-icon-192.maskable.png"), format="PNG", optimize=True)
 icon_512_mask.save(os.path.join(cdn_pwa_dir, "manifest-icon-512.maskable.png"), format="PNG", optimize=True)
 
-# 4. Generate All 46 iOS / iPadOS Startup Splash Screen Resolutions (Light & Dark)
+# 5. Generate All 46 iOS / iPadOS Startup Splash Screen Resolutions (Light & Dark = 92 files)
 splash_resolutions = [
     (2048, 2732), (2732, 2048),
     (2064, 2752), (2752, 2064),
@@ -147,27 +178,93 @@ splash_resolutions = [
     (640, 1136),  (1136, 640),
 ]
 
-def make_splash(w, h, bg_rgb, fg_cropped):
-    canvas = Image.new("RGB", (w, h), bg_rgb)
+def make_cobranded_splash(w, h, is_dark):
+    bg_rgb = DARK_BG if is_dark else LIGHT_BG
+    text_primary = DARK_TEXT_PRIMARY if is_dark else LIGHT_TEXT_PRIMARY
+    text_accent = DARK_TEXT_ACCENT if is_dark else LIGHT_TEXT_ACCENT
+    text_muted = DARK_TEXT_MUTED if is_dark else LIGHT_TEXT_MUTED
+    border_rgba = (56, 189, 248, 155) if is_dark else (15, 23, 42, 90)
+    gear_src = cropped_gear_white if is_dark else cropped_gear_black
+
+    canvas = Image.new("RGBA", (w, h), bg_rgb + (255,))
     short_side = min(w, h)
-    logo_dim = int(round(short_side * 0.42))
-    resized = fg_cropped.resize((logo_dim, logo_dim), Image.Resampling.LANCZOS)
-    ox = (w - logo_dim) // 2
-    oy = (h - logo_dim) // 2
-    canvas.paste(resized, (ox, oy), resized)
-    return canvas
+    is_landscape = w > h
+
+    # Center Hero App Icon size
+    icon_dim = int(round(short_side * (0.24 if is_landscape else 0.28)))
+    squircle = make_rounded_squircle(app_icon, icon_dim, radius_ratio=0.225, border_rgba=border_rgba)
+
+    # Soft elevation drop shadow behind squircle
+    shadow_pad = int(round(icon_dim * 0.18))
+    shadow = Image.new("RGBA", (icon_dim + shadow_pad * 2, icon_dim + shadow_pad * 2), (0, 0, 0, 0))
+    sdraw = ImageDraw.Draw(shadow)
+    sr = int(round(icon_dim * 0.225))
+    shadow_alpha = 145 if is_dark else 70
+    sdraw.rounded_rectangle(
+        (shadow_pad, shadow_pad, shadow_pad + icon_dim - 1, shadow_pad + icon_dim - 1),
+        radius=sr,
+        fill=(0, 0, 0, shadow_alpha),
+    )
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=max(6, int(round(icon_dim * 0.045)))))
+
+    center_x = w // 2
+    icon_y = int(round(h * (0.22 if is_landscape else 0.27))) - (icon_dim // 2)
+    shadow_offset_y = max(4, int(round(icon_dim * 0.03)))
+
+    canvas.alpha_composite(shadow, (center_x - icon_dim // 2 - shadow_pad, icon_y - shadow_pad + shadow_offset_y))
+    canvas.alpha_composite(squircle, (center_x - icon_dim // 2, icon_y))
+
+    draw = ImageDraw.Draw(canvas)
+
+    # Typography sizes scaled to short_side
+    title_sz = max(24, int(round(short_side * (0.045 if is_landscape else 0.052))))
+    sub_sz = max(13, int(round(short_side * (0.019 if is_landscape else 0.021))))
+    imp_sub_sz = max(11, int(round(short_side * (0.015 if is_landscape else 0.0165))))
+
+    font_title = load_font(SANS_BOLD_CANDIDATES, title_sz)
+    font_sub = load_font(SANS_BOLD_CANDIDATES, sub_sz)
+    font_imp_sub = load_font(SANS_REG_CANDIDATES, imp_sub_sz)
+
+    # App Title + Subtitle below squircle
+    title_text = "The Listening Room"
+    sub_text = "HI-RES NARRATIVE AUDIO & LYRICS"
+
+    title_y = icon_y + icon_dim + int(round(short_side * 0.042))
+    tb = draw.textbbox((0, 0), title_text, font=font_title)
+    tw = tb[2] - tb[0]
+    draw.text((center_x - tw // 2, title_y), title_text, font=font_title, fill=text_primary)
+
+    sub_y = title_y + (tb[3] - tb[1]) + int(round(short_side * 0.018))
+    sb = draw.textbbox((0, 0), sub_text, font=font_sub)
+    sw = sb[2] - sb[0]
+    draw.text((center_x - sw // 2, sub_y), sub_text, font=font_sub, fill=text_accent)
+
+    # Bottom Co-Branded Imprint Lockup (Engine Room Records Gear Logo + Division Label)
+    gear_h = max(36, int(round(short_side * (0.068 if is_landscape else 0.078))))
+    gear_w = int(round(gear_h * (gear_src.width / gear_src.height)))
+    gear_resized = gear_src.resize((gear_w, gear_h), Image.Resampling.LANCZOS)
+
+    imp_line2 = "Official Record Label & Audio Imprint of RaggieSoft Media"
+    ib2 = draw.textbbox((0, 0), imp_line2, font=font_imp_sub)
+    iw2, ih2 = ib2[2] - ib2[0], ib2[3] - ib2[1]
+
+    bottom_margin = int(round(h * (0.085 if is_landscape else 0.075)))
+    imp_sub_y = h - bottom_margin - ih2
+    gear_y = imp_sub_y - int(round(short_side * 0.018)) - gear_h
+
+    canvas.alpha_composite(gear_resized, (center_x - gear_w // 2, gear_y))
+    draw.text((center_x - iw2 // 2, imp_sub_y), imp_line2, font=font_imp_sub, fill=text_muted)
+
+    return canvas.convert("RGB")
 
 for (w, h) in splash_resolutions:
-    # Light Mode splash screen (apple-splash-W-H.jpg)
-    light_img = make_splash(w, h, LIGHT_BG, cropped_black)
+    light_img = make_cobranded_splash(w, h, is_dark=False)
     light_img.save(os.path.join(cdn_pwa_dir, f"apple-splash-{w}-{h}.jpg"), format="JPEG", quality=92, optimize=True)
 
-    # Dark Mode splash screen (apple-splash-dark-W-H.jpg)
-    dark_img = make_splash(w, h, DARK_BG, cropped_white)
+    dark_img = make_cobranded_splash(w, h, is_dark=True)
     dark_img.save(os.path.join(cdn_pwa_dir, f"apple-splash-dark-{w}-{h}.jpg"), format="JPEG", quality=92, optimize=True)
 
-print(f"Generated {len(splash_resolutions)} Light and {len(splash_resolutions)} Dark splash screens in {cdn_pwa_dir}")
+print(f"Generated {len(splash_resolutions)} Light and {len(splash_resolutions)} Dark Listening Room splash screens in {cdn_pwa_dir}")
 EOF
 
-echo "PWA assets generated successfully!"
-
+echo "The Listening Room PWA assets generated successfully!"
