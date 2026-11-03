@@ -90,7 +90,7 @@
 		if (activeArtistName) {
 			return `DSP Verification (${activeArtistName}) ↗`;
 		}
-		return 'DSP Verification & Master ISRC Ledger ↗';
+		return 'DSP Verification & Official Catalog Registry ↗';
 	});
 
 	onMount(() => {
@@ -167,7 +167,7 @@
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com"><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a></li>
 						<li role="none"><a role="menuitem" href="https://music.raggiesoft.com" aria-current="page" class="is-active"><span aria-hidden="true">🎧</span><span>The Listening Room</span></a></li>
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists"><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"><span aria-hidden="true">🏷️</span><span>Official ISRC Registry (QTAHP)</span></a></li>
+						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"><span aria-hidden="true">🏷️</span><span>Official Music Catalog Registry</span></a></li>
 						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a></li>
 						<li class="rs-network-dropdown-divider" role="separator"></li>
 						<li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li>
@@ -440,7 +440,7 @@
 							rel="noopener noreferrer"
 							class="text-amber-300 underline hover:text-white"
 						>
-							Full Master ISRC Ledger ↗
+							Official Catalog Registry ↗
 						</a>
 					{/if}
 					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
@@ -454,11 +454,11 @@
 			</div>
 			<p class="mt-1 text-amber-100/95">
 				{#if activeArtistName && activeAlbumTitle}
-					<strong>{activeArtistName}</strong> and the historical release date for <em>{activeAlbumTitle}</em> (<code>{activeLoreDate}</code>) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements on this release are original 2026 studio creations (<code>datePublished: {activeRealDate}</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					<strong>{activeArtistName}</strong> and the historical release date for <em>{activeAlbumTitle}</em> ({activeLoreDate}) represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements on this release are original {activeRealDate} studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{:else if activeArtistName}
-					<strong>{activeArtistName}</strong> and all historical release dates across their discography represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					<strong>{activeArtistName}</strong> and all historical release dates across their discography represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{:else}
-					All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>) represent <strong>in-universe narrative lore dates (<code>temporalCoverage</code>)</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations (<code>datePublished: 2026</code>)</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>) represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{/if}
 			</p>
 		</aside>

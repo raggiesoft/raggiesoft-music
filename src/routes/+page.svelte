@@ -1013,9 +1013,7 @@
 					In-Universe Chronological Timeline
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					Sequenced according to the in-universe historical timeline (<span
-						class="font-mono text-slate-300">temporalCoverage</span
-					>).
+					Sequenced according to the in-universe historical story timeline.
 				</p>
 			</div>
 			<a

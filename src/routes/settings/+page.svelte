@@ -38,10 +38,10 @@
 	const COLOR_MODES = [
 		{
 			id: 'auto',
-			label: 'Match System OS (Auto)',
+			label: 'Match System Appearance (Auto)',
 			icon: '🌓',
 			description:
-				'Automatically switches between Light and Dark variants based on your device’s prefers-color-scheme setting.'
+				'Automatically switches between Light and Dark variants based on your device’s system appearance setting.'
 		},
 		{
 			id: 'light',
@@ -118,8 +118,8 @@
 		dspManager.setAutoplayDeepLinks(enabled);
 		notifyChange(
 			enabled
-				? 'Deep-Link Autoplay enabled: ?track= links will start playing automatically.'
-				: 'Deep-Link Autoplay disabled (WCAG Default): ?track= links will scroll and expand without auto-starting audio.'
+				? 'Direct Song Link Autoplay enabled: shared song links will start playing automatically.'
+				: 'Direct Song Link Autoplay disabled (Default): shared song links will scroll and expand without auto-starting audio.'
 		);
 	}
 
@@ -258,31 +258,27 @@
 			{/each}
 		</div>
 
-		<!-- Deep-Link Track Autoplay Toggle (WCAG 2.1 SC 1.4.2 Audio Control) -->
+		<!-- Deep-Link Track Autoplay Toggle -->
 		<div class="mt-5 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 sm:p-5">
 			<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 				<div>
 					<div class="flex flex-wrap items-center gap-2">
 						<span class="text-xs font-extrabold tracking-wide text-white sm:text-sm">
-							Autoplay on Deep-Linked Tracks (<code class="font-mono text-xs text-blue-400"
-								>?track=...</code
-							>)
+							Autoplay on Shared Song Links
 						</span>
 						<span
 							class="rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase {dspManager.autoplayDeepLinks
 								? 'border-emerald-500/50 bg-emerald-950/60 text-emerald-300'
 								: 'border-amber-500/50 bg-amber-950/60 text-amber-300'}"
 						>
-							{dspManager.autoplayDeepLinks ? 'True (Autoplay On)' : 'False (WCAG Default)'}
+							{dspManager.autoplayDeepLinks ? 'On (Autoplay)' : 'Off (Default)'}
 						</span>
 					</div>
 					<p class="mt-1 text-xs leading-relaxed text-slate-400">
-						When following a direct song link from a story or lore page (e.g., <code
-							class="font-mono text-[11px] text-slate-300">?track=2-04-moon-1-tidal-lock</code
-						>), The Listening Room scrolls to the song and expands its Lyrics &amp; Lore. Defaults to
-						<strong class="text-slate-200">False</strong> per
-						<strong class="text-slate-200">WCAG 2.1 SC 1.4.2 (Audio Control)</strong> so screen-reader
-						and assistive-tech users are never surprised by unsolicited audio on page load.
+						When following a direct song link from a story or lore page, The Listening Room scrolls
+						to the song and expands its Lyrics &amp; Lore. Defaults to
+						<strong class="text-slate-200">Off</strong> so listeners are never surprised by
+						unexpected audio when opening a page.
 					</p>
 				</div>
 
@@ -295,7 +291,7 @@
 							? 'border-blue-500 bg-blue-600 text-white shadow-md'
 							: 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}"
 					>
-						False (Default)
+						Off (Default)
 					</button>
 					<button
 						type="button"
@@ -305,7 +301,7 @@
 							? 'border-emerald-500 bg-emerald-600 text-white shadow-md'
 							: 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}"
 					>
-						True (Autoplay)
+						On (Autoplay)
 					</button>
 				</div>
 			</div>
@@ -344,9 +340,7 @@
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<div class="mb-5">
 			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-				2. Color Scheme Mode (<code class="font-mono text-base text-blue-400"
-					>prefers-color-scheme</code
-				>)
+				2. Color Scheme Mode
 			</h2>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
 				Choose whether The Listening Room automatically follows your device’s system light/dark
@@ -407,16 +401,17 @@
 				</div>
 				<div>
 					<div class="text-xs font-bold tracking-wider text-blue-400 uppercase">
-						Active Resolved Polarity: {themeManager.resolvedColorScheme.toUpperCase()} MODE
+						Active Appearance: {themeManager.resolvedColorScheme.toUpperCase()} MODE
 					</div>
 					<p class="mt-0.5 text-xs text-slate-300">
-						Currently displaying <code class="font-mono text-slate-200">{themeManager.logoUrl}</code
-						> ({!themeManager.isDark ? 'Pure Black on Transparent' : 'Pure White on Transparent'}).
+						Currently displaying the {!themeManager.isDark
+							? 'Light Mode (Black on Transparent)'
+							: 'Dark Mode (White on Transparent)'} Engine Room Records studio emblem.
 					</p>
 				</div>
 			</div>
 			<span class="font-mono text-xs text-slate-400">
-				OS Preference: {themeManager.osPrefersDark ? 'Dark' : 'Light'}
+				Device Appearance: {themeManager.osPrefersDark ? 'Dark' : 'Light'}
 			</span>
 		</div>
 	</section>
@@ -515,8 +510,8 @@
 			4. Playback &amp; Storage Controls
 		</h2>
 		<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-			Manage your locally stored listening session and interface notices. All data is stored
-			strictly on your device via <code class="font-mono text-slate-300">localStorage</code>.
+			Manage your locally saved listening session and interface notices. All preferences are saved
+			privately on your device.
 		</p>
 
 		<div class="mt-6 flex flex-wrap items-center gap-3">

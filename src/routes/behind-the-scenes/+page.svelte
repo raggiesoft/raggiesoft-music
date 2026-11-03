@@ -172,7 +172,7 @@
 							02
 						</div>
 						<div>
-							<h3 class="text-lg font-extrabold text-white">The Co-Writer &amp; Engineer</h3>
+							<h3 class="text-lg font-extrabold text-white">The Co-Writer &amp; Arranger</h3>
 							<p class="text-xs font-semibold text-blue-300">
 								Google Antigravity (Powered by Gemini)
 							</p>
@@ -180,29 +180,26 @@
 					</div>
 
 					<p class="mt-4 text-xs font-extrabold tracking-wider text-blue-400 uppercase">
-						Code Architecture &amp; Arrangement Charts
+						Lyrical Structure &amp; Arrangement Charts
 					</p>
 					<p class="mt-2 text-sm leading-relaxed text-slate-300">
-						The full-stack pair-programmer and creative sounding board. Antigravity engineers the
-						SvelteKit 5 Progressive Web App powering The Listening Room while collaborating with
-						Michael to structure lyrics and studio arrangement roadmaps.
+						The creative co-writer and studio sounding board. Antigravity helps maintain The
+						Listening Room experience while collaborating with Michael to structure lyrics and
+						studio arrangement roadmaps.
 					</p>
 
 					<ul class="mt-4 space-y-2.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 						<li class="flex items-start gap-2">
 							<span class="mt-0.5 font-bold text-blue-400">&#10003;</span>
 							<span
-								>Builds and maintains this platform’s gapless audio engine, WebVTT synchronized
-								lyrics, Rock Opera Radio, and automated catalog compiler.</span
+								>Maintains this platform’s gapless audio player, synchronized lyrics, Rock Opera
+								Radio, and album catalog.</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
 							<span class="mt-0.5 font-bold text-blue-400">&#10003;</span>
 							<span
-								>Polishes lyrical meter, rhyme schemes, and line-by-line duet vocal handoffs (<code
-									class="font-mono text-blue-300">[male]</code
-								>
-								/ <code class="font-mono text-blue-300">[female]</code>).</span
+								>Polishes lyrical meter, rhyme schemes, and line-by-line duet vocal handoffs.</span
 							>
 						</li>
 						<li class="flex items-start gap-2">

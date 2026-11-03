@@ -738,7 +738,7 @@
 							<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
 								<div class="mb-3 flex items-center justify-between">
 									<h3 class="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-										Synchronized WebVTT Lyrics
+										Synchronized Lyrics
 									</h3>
 									<span class="flex items-center gap-1.5 text-xs text-blue-400">
 										<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400"></span>

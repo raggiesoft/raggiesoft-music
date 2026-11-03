@@ -150,7 +150,7 @@
 	<title>The Listening Room Radio | Engine Room Records</title>
 	<meta
 		name="description"
-		content="Tune into The Listening Room Radio on Engine Room Records. An uninterrupted, ISRC-deduplicated catalog broadcast that preserves full Rock Operas and multi-album Rock Opera Series in exact narrative order."
+		content="Tune into The Listening Room Radio on Engine Room Records. An uninterrupted catalog broadcast that preserves full Rock Operas and multi-album Rock Opera Series in exact narrative order."
 	/>
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
@@ -209,7 +209,7 @@
 					<span
 						class="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 font-mono text-xs font-semibold text-slate-300"
 					>
-						<span>{broadcast.stats.totalTracks} Unique ISRCs</span>
+						<span>{broadcast.stats.totalTracks} Unique Songs</span>
 					</span>
 				</div>
 
@@ -341,7 +341,7 @@
 							<span class="italic">{broadcast.stats.realityCheck}</span>
 						</p>
 						<p class="mt-2 text-[11px] text-slate-400">
-							Deduplicated by ISRC across all studio albums, rock operas, live recordings, and vault
+							Curated across all studio albums, rock operas, live recordings, and vault
 							compilations so you never hear the same master recording twice in one cycle.
 						</p>
 					</div>

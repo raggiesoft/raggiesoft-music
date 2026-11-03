@@ -35,7 +35,7 @@
 	<title>Privacy Policy | The Listening Room</title>
 	<meta
 		name="description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. Zero user accounts, zero databases, local-first storage."
+		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/privacy" />
 
@@ -45,14 +45,14 @@
 	<meta property="og:title" content="Privacy Policy | The Listening Room" />
 	<meta
 		property="og:description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. Zero user accounts, zero databases, local-first storage."
+		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Privacy Policy | The Listening Room" />
 	<meta
 		name="twitter:description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. Zero user accounts, zero databases, local-first storage."
+		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
 </svelte:head>
@@ -63,7 +63,7 @@
 		<span
 			class="inline-block rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 text-xs font-extrabold tracking-wider text-blue-300 uppercase"
 		>
-			Legal &bull; Privacy-First Zero-Database Architecture
+			Legal &bull; Privacy-First Listening Experience
 		</span>
 		<h1 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Privacy Policy</h1>
 		<p class="mt-2 font-mono text-xs text-slate-300 sm:text-sm">
@@ -81,11 +81,11 @@
 	<div class="space-y-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-10">
 		<section class="space-y-2">
 			<h2 class="text-lg font-extrabold text-white sm:text-xl">
-				1. Data Controller Identity &amp; Zero-Database Architecture
+				1. Operator Identity &amp; Account-Free Privacy Design
 			</h2>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-				Welcome to <strong class="text-white">The Listening Room</strong> (<code
-					class="font-mono text-blue-300">music.raggiesoft.com</code
+				Welcome to <strong class="text-white">The Listening Room</strong> (<strong
+					class="text-blue-300">music.raggiesoft.com</strong
 				>), part of the <strong class="text-white">RaggieSoft.com</strong> network. These web
 				properties are owned and operated by <strong class="text-white">Michael P. Ragsdale</strong
 				>, a natural person and individual creator residing in the
@@ -98,10 +98,9 @@
 				are fictitious worldbuilding creations).
 			</p>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-				I have engineered The Listening Room and the entire RaggieSoft network using a strict
-				<strong class="text-white">Zero-Database Architecture</strong>: there are no user accounts,
-				no registration forms, no password databases, no comment sections, and no customer
-				relationship databases hosted on our servers.
+				The Listening Room and the entire RaggieSoft network are designed to respect your privacy
+				without requiring an account: there are no user logins, no registration forms, no password
+				lists, no comment sections, and no customer tracking profiles hosted on our servers.
 			</p>
 		</section>
 
@@ -109,41 +108,35 @@
 
 		<section class="space-y-4">
 			<h2 class="text-lg font-extrabold text-white sm:text-xl">
-				2. Information Processed &amp; Third-Party Infrastructure
+				2. Information Processed &amp; Third-Party Services
 			</h2>
 
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
 				<h3 class="text-sm font-bold text-blue-400">
-					A. Local Browser Storage &amp; Service Worker Cache (100% On-Device)
+					A. On-Device Preferences &amp; Offline Cache (100% On Your Device)
 				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					To provide a seamless listening experience without requiring an account, The Listening
-					Room uses your browser’s local <code class="font-mono text-slate-200">localStorage</code>
-					and Progressive Web App Service Worker cache to remember:
+					Room saves your preferences directly inside your browser on your own device to remember:
 				</p>
 				<ul class="mt-2.5 list-inside list-disc space-y-1 text-xs text-slate-300 sm:text-sm">
 					<li>
-						Your last played track, queue, and timestamp (<code class="font-mono text-slate-200"
-							>raggiesoft_music_session_v1</code
-						>) so you can resume where you left off.
+						Your last played track, queue, and timestamp so you can resume where you left off.
 					</li>
 					<li>
-						Your preferred default streaming service (<code class="font-mono text-slate-200"
-							>raggiesoft_preferred_dsp</code
-						> — Spotify, Apple Music, Amazon Music, or YouTube Music).
+						Your preferred default streaming service (Spotify, Apple Music, Amazon Music, or YouTube
+						Music).
 					</li>
 					<li>
-						Your visual theme, color mode, and accessibility settings (<code
-							class="font-mono text-slate-200">engine_room_settings</code
-						>).
+						Your visual theme, color mode, and accessibility settings.
 					</li>
 					<li>
 						Dismissed notification banners so we don’t repeatedly interrupt your session.
 					</li>
 				</ul>
 				<p class="mt-2 text-xs text-slate-400">
-					This data stays strictly inside your own browser and is never transmitted to our servers.
-					You can reset or clear it at any time from the <a
+					This information stays strictly inside your own browser and is never transmitted to our
+					servers. You can reset or clear it at any time from the <a
 						href={resolve('/settings')}
 						class="text-blue-400 underline hover:text-blue-300">Settings</a
 					> page.
@@ -152,37 +145,30 @@
 
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
 				<h3 class="text-sm font-bold text-blue-400">
-					B. Origin Server Logs (“Jessica” — DigitalOcean NYC1) &amp; Asset Delivery
+					B. Standard Web Server Logs &amp; Media Delivery
 				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
-					Our origin web server (“Jessica,” hosted on <strong class="text-white">DigitalOcean</strong
-					>
-					in the NYC1 data center region) and our static media CDN (<code
-						class="font-mono text-slate-200">assets.raggiesoft.com</code
-					>
-					on DigitalOcean Spaces) automatically record standard HTTP access log entries in
-					<code class="font-mono text-slate-200">/var/log/nginx/access.log</code>. These entries
-					include the requesting IP address, HTTP method, requested URI, response status code,
-					referrer header, browser user-agent string, and timestamp. Server logs are used solely for
-					system administration, bandwidth diagnostics, and security auditing, are rotated
+					Our web server and media delivery network (hosted on <strong class="text-white"
+						>DigitalOcean</strong
+					>) automatically record standard web access log entries when your browser requests a page
+					or audio file. These entries include the requesting IP address, requested page or media
+					address, response status, referring website, browser type, and timestamp. Server logs are
+					used solely for keeping the site running reliably and preventing abuse, are rotated
 					automatically, and are never sold or shared with data brokers.
 				</p>
 			</div>
 
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
 				<h3 class="text-sm font-bold text-blue-400">
-					C. Infrastructure, Reverse-Proxy CDN &amp; Edge Security (Cloudflare)
+					C. Network Security &amp; Abuse Protection (Cloudflare)
 				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
-					All traffic to <code class="font-mono text-slate-200">raggiesoft.com</code>,
-					<code class="font-mono text-slate-200">*.raggiesoft.com</code>, and
-					<code class="font-mono text-slate-200">michaelpragsdale.com</code> passes through
-					<strong class="text-white">Cloudflare, Inc.</strong> acting as our DNS provider, Content
-					Delivery Network (CDN), and Web Application Firewall (WAF). Cloudflare processes network
-					metadata (including IP addresses and TLS/HTTP fingerprints) at the network edge to mitigate
-					DDoS attacks and malicious automated scraping, and may set strictly necessary security
-					cookies (such as <code class="font-mono text-slate-200">__cf_bm</code> or
-					<code class="font-mono text-slate-200">cf_clearance</code>) to distinguish human visitors
+					All traffic to our websites passes through <strong class="text-white"
+						>Cloudflare, Inc.</strong
+					>
+					for network security and reliable delivery. Cloudflare processes basic connection details
+					(including IP addresses) to protect the site against automated attacks and malicious
+					scraping, and may set strictly necessary security cookies to distinguish human visitors
 					from automated bots.
 				</p>
 			</div>
@@ -277,9 +263,8 @@
 				<strong class="text-white">We Do Not Sell or Share Personal Information:</strong> Michael P.
 				Ragsdale does not sell, rent, lease, or trade personal information to third parties or data
 				brokers, and does not engage in targeted cross-context behavioral advertising. Because we
-				maintain no user account database on our servers, all browser preference state resides in
-				your own browser’s <code class="font-mono text-slate-200">localStorage</code>, which you can
-				inspect or delete at any time via the
+				maintain no user account database on our servers, all browser preferences stay on your own
+				device, which you can inspect or reset at any time via the
 				<a href={resolve('/settings')} class="text-blue-400 underline hover:text-blue-300"
 					>Settings</a
 				>
@@ -295,7 +280,7 @@
 
 		<section class="space-y-3">
 			<h2 class="text-lg font-extrabold text-white sm:text-xl">
-				5. Contact &amp; Public Revision Ledger
+				5. Contact &amp; Policy Updates
 			</h2>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				If you have questions regarding this Privacy Policy, please reach out to
@@ -310,22 +295,19 @@
 			</p>
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-xs text-slate-400">
 				<h3 class="font-mono font-bold text-slate-200 uppercase">
-					Public Revision Ledger (Git-Tracked)
+					Policy Revision History
 				</h3>
 				<ul class="mt-2 list-inside list-disc space-y-1">
 					<li>
 						<strong class="text-slate-200">October 26, 2026:</strong> Added explicit natural-person
-						data controller disclosure (Michael P. Ragsdale vs. fictional in-universe LLCs),
-						Zero-Database Architecture summary, disclosures for Google Analytics 4 (<code
-							class="font-mono text-slate-200">G-P9RG9JVYB6</code
-						>), Microsoft 365 / Microsoft Bookings, and VCDPA/CCPA/GDPR no-sale rights, and
-						hardcoded effective/revision dates.
+						operator disclosure (Michael P. Ragsdale vs. fictional in-universe LLCs), account-free
+						privacy summary, disclosures for Google Analytics 4, Microsoft 365 / Microsoft Bookings,
+						and VCDPA/CCPA/GDPR no-sale rights, and effective/revision dates.
 					</li>
 					<li>
 						<strong class="text-slate-200">March 29, 2026:</strong> Initial publication of the
-						RaggieSoft &amp; Engine Room Records Privacy Policy covering on-device
-						<code class="font-mono text-slate-200">localStorage</code>, DigitalOcean NYC1 server
-						logs, Cloudflare WAF/CDN, and Fourthwall Merchant-of-Record separation.
+						RaggieSoft &amp; Engine Room Records Privacy Policy covering on-device preferences,
+						standard server logs, Cloudflare security, and Fourthwall Merchant-of-Record separation.
 					</li>
 				</ul>
 			</div>

@@ -161,18 +161,16 @@
 					>
 						Code License: MIT
 					</span>
-					<span class="font-mono text-xs text-slate-400">Software, Scripts &amp; Web Architecture</span>
+					<span class="font-mono text-xs text-slate-400">Software &amp; Web Applications</span>
 				</div>
 				<h3 class="mt-2.5 text-base font-extrabold text-white">
 					A. Source Code: MIT License
 				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
-					All source code, SvelteKit components, catalog build scripts, and web architectures
-					powering The Listening Room are released under the <strong class="text-white"
-						>MIT License</strong
-					>. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-					copies of the software, provided you include the original copyright notice (<code
-						class="font-mono text-slate-200"
+					All software and web applications powering The Listening Room are released under the
+					<strong class="text-white">MIT License</strong>. You are free to use, copy, modify, merge,
+					publish, distribute, sublicense, and/or sell copies of the software, provided you include
+					the original copyright notice (<code class="font-mono text-slate-200"
 						>Copyright &copy; Michael P. Ragsdale / RaggieSoft Media</code
 					>).
 				</p>

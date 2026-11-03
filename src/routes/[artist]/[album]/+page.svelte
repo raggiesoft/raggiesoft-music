@@ -1047,7 +1047,7 @@
 						<div class="mt-0.5 text-[11px] text-slate-300">
 							Autoplay on Deep-Links:
 							<strong class={dspManager.autoplayDeepLinks ? 'text-emerald-300' : 'text-amber-300'}>
-								{dspManager.autoplayDeepLinks ? 'On' : 'Off (WCAG Default)'}
+								{dspManager.autoplayDeepLinks ? 'On' : 'Off (Default)'}
 							</strong>
 							•
 							<a

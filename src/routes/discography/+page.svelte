@@ -218,9 +218,7 @@
 				{pageHeading}
 			</h1>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-				Sequenced by in-universe timeline (<span class="font-mono text-slate-300"
-					>temporalCoverage</span
-				>). Stream in Lossless/High-Res on your favorite app to support <strong class="text-slate-200">Michael Ragsdale</strong> &amp; <strong class="text-slate-200">Engine Room Records</strong>, or enjoy free 128kbps previews right here.
+				Sequenced by in-universe story timeline. Stream in Lossless/High-Res on your favorite app to support <strong class="text-slate-200">Michael Ragsdale</strong> &amp; <strong class="text-slate-200">Engine Room Records</strong>, or enjoy free 128kbps previews right here.
 			</p>
 		</div>
 
