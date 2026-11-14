@@ -15,6 +15,17 @@
  * 4. Dual Target Output: Emits both a local bundled JSON file
  *    (`src/lib/data/musicCatalog.json`) for zero-latency offline PWA functionality,
  *    and a public CDN manifest (`catalog.json` in assets) for dynamic client sync.
+ * 5. Canonical Track Slugs & Dual-Chronology Guardrails:
+ *    - Generates collision-free URL slugs (`track.slug`) for all 501+ catalog songs
+ *      so every track resolves to a static pre-rendered HTML route
+ *      (`/[artist]/[album]/[track]`).
+ *    - Enforces a strict real-world publication date guardrail (`year >= 2026`) on
+ *      `datePublished`, guaranteeing fictional narrative dates (`temporalCoverage`)
+ *      are never emitted as real-world phonogram release dates.
+ * 6. Truthful `<lastmod>` & Multi-File XML Sitemap Hierarchy:
+ *    - Computes truthful `YYYY-MM-DD` modification timestamps directly from physical
+ *      source asset `mtime`s (`album.json`, `tracks.json`, `lyrics/*.md`, `*.vtt`)
+ *      and generates `/sitemap.xml` + `/sitemaps/{editorial,artists,albums,tracks,playlists}.xml`.
  * ============================================================================
  */
 
@@ -29,6 +40,337 @@ const __dirname = path.dirname(__filename);
 // Base CDN domain for all hosted audio streams and album artwork
 const CDN_BASE = 'https://assets.raggiesoft.com/engine-room-records/artists';
 const HUB_BASE = 'https://raggiesoft.com';
+const SITE_ORIGIN = 'https://music.raggiesoft.com';
+
+/**
+ * Converts an arbitrary string into a clean lowercase URL slug.
+ * @param {string} raw
+ * @returns {string}
+ */
+function toUrlSlug(raw) {
+	return String(raw || '')
+		.toLowerCase()
+		.trim()
+		.replace(/[’‘']/g, '')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Derives a deterministic, human-readable canonical track slug from `fileName`
+ * (stripping leading disc-track prefixes like `1-08-` or `08-`) with a fallback
+ * to `title` + `version`, and disambiguates any within-album collision.
+ *
+ * @param {string} fileName
+ * @param {string} title
+ * @param {string} version
+ * @param {number} discNum
+ * @param {number} trackNum
+ * @param {Set<string>} seenSlugs
+ * @returns {string}
+ */
+function buildCanonicalTrackSlug(fileName, title, version, discNum, trackNum, seenSlugs) {
+	let base = '';
+	if (fileName) {
+		const stripped = String(fileName)
+			.replace(/\.mp3$/i, '')
+			.replace(/^\d+-\d+-/, '')
+			.replace(/^\d+-/, '');
+		base = toUrlSlug(stripped);
+	}
+	if (!base) {
+		base = toUrlSlug(version ? `${title}-${version}` : title);
+	}
+	if (!base) {
+		base = `track-${discNum}-${trackNum}`;
+	}
+
+	let candidate = base;
+	if (seenSlugs.has(candidate)) {
+		const versionSlug = toUrlSlug(version);
+		if (versionSlug && !candidate.endsWith(versionSlug)) {
+			candidate = `${base}-${versionSlug}`;
+		}
+	}
+	if (seenSlugs.has(candidate)) {
+		candidate =
+			discNum > 1 ? `${base}-disc-${discNum}-track-${trackNum}` : `${base}-track-${trackNum}`;
+	}
+	seenSlugs.add(candidate);
+	return candidate;
+}
+
+/**
+ * Computes the latest `YYYY-MM-DD` modification date across a set of candidate
+ * file paths on disk. Never manufactures daily timestamps for unchanged files.
+ *
+ * @param {Array<string | null | undefined>} filePaths
+ * @param {string} [fallbackDate='2026-04-01']
+ * @returns {string}
+ */
+function getLatestMtimeDate(filePaths, fallbackDate = '2026-04-01') {
+	let maxMs = 0;
+	for (const p of filePaths) {
+		if (!p) continue;
+		try {
+			if (fs.existsSync(p)) {
+				const stat = fs.statSync(p);
+				if (stat.mtimeMs > maxMs) {
+					maxMs = stat.mtimeMs;
+				}
+			}
+		} catch {
+			// Ignore stat errors on optional files
+		}
+	}
+	if (maxMs <= 0) return fallbackDate;
+	return new Date(maxMs).toISOString().slice(0, 10);
+}
+
+/**
+ * Validates whether a candidate date string represents a genuine real-world
+ * Engine Room Records publication date (`year >= 2026`), rejecting all
+ * in-universe narrative dates (`1978`–`2017`, etc.).
+ *
+ * @param {unknown} candidate
+ * @returns {string} Clean ISO date string if valid real-world date, else `""`.
+ */
+function parseValidRealWorldReleaseDate(candidate) {
+	const raw = String(candidate || '').trim();
+	if (!raw) return '';
+	const match = /^(\d{4})(?:-\d{2}(?:-\d{2})?)?$/.exec(raw);
+	if (!match) return '';
+	const yearNum = parseInt(match[1], 10);
+	if (yearNum < 2026) return '';
+	return raw;
+}
+
+/**
+ * Resolves a guaranteed real-world `datePublished` (`>= 2026`) for an album.
+ * Checks explicit `albumData` and `albums.json` fields first, then falls back
+ * to the physical `album.json` / `tracks.json` modification date (clamped to
+ * `>= 2026-03-29`), ensuring fictional dates are NEVER emitted as `datePublished`.
+ *
+ * @param {Record<string, any>} albumData
+ * @param {Record<string, any>} matchedManifestAlbum
+ * @param {string[]} fallbackFiles
+ * @returns {string}
+ */
+function resolveRealWorldDatePublished(albumData, matchedManifestAlbum, fallbackFiles) {
+	const candidates = [
+		albumData?.datePublished,
+		albumData?.realReleaseDate,
+		matchedManifestAlbum?.datePublished,
+		matchedManifestAlbum?.realReleaseDate,
+		albumData?.albumRelease?.datePublished
+	];
+	for (const candidate of candidates) {
+		const valid = parseValidRealWorldReleaseDate(candidate);
+		if (valid) return valid;
+	}
+	const derivedMtime = getLatestMtimeDate(fallbackFiles, '2026-04-01');
+	return derivedMtime < '2026-03-29' ? '2026-04-01' : derivedMtime;
+}
+
+/**
+ * Escapes special XML characters inside `<loc>` and `<lastmod>` elements.
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeXml(value) {
+	return String(value || '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&apos;');
+}
+
+/**
+ * Formats an XML `<urlset>` document from an array of `{ loc, lastmod }` entries.
+ * @param {Array<{ loc: string, lastmod: string }>} entries
+ * @returns {string}
+ */
+function renderUrlSetXml(entries) {
+	const body = entries
+		.map(
+			(item) =>
+				`  <url>\n    <loc>${escapeXml(item.loc)}</loc>\n    <lastmod>${escapeXml(item.lastmod)}</lastmod>\n  </url>`
+		)
+		.join('\n');
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+}
+
+/**
+ * Generates `/static/sitemap.xml` (sitemap index) and separate category sitemaps
+ * inside `/static/sitemaps/{editorial,artists,albums,tracks,playlists}.xml` with
+ * truthful `<lastmod>` dates derived from underlying catalog & route files.
+ *
+ * Excludes non-indexable utility routes (`/settings`, `/studio`, `/404`),
+ * query-string search URLs, API endpoints, and raw audio files.
+ *
+ * @param {Array<any>} catalog
+ */
+function writeXmlSitemaps(catalog) {
+	const projectRoot = path.resolve(__dirname, '..');
+	const staticDir = path.join(projectRoot, 'static');
+	const sitemapsDir = path.join(staticDir, 'sitemaps');
+	fs.mkdirSync(sitemapsDir, { recursive: true });
+
+	// 1. Artists Sitemap (`/sitemaps/artists.xml`)
+	/** @type {Map<string, string>} */
+	const artistLastmodMap = new Map();
+	for (const album of catalog) {
+		const prev = artistLastmodMap.get(album.artistSlug) || '';
+		const candidate = album.lastmod || album.datePublished || '2026-04-01';
+		if (candidate > prev) {
+			artistLastmodMap.set(album.artistSlug, candidate);
+		}
+	}
+	const artistRouteFile = path.join(projectRoot, 'src/routes/[artist]/+page.svelte');
+	const artistTemplateLastmod = getLatestMtimeDate([artistRouteFile], '2026-04-01');
+
+	const artistEntries = Array.from(artistLastmodMap.entries())
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([artistSlug, catMod]) => ({
+			loc: `${SITE_ORIGIN}/${artistSlug}`,
+			lastmod: catMod > artistTemplateLastmod ? catMod : artistTemplateLastmod
+		}));
+
+	// 2. Albums Sitemap (`/sitemaps/albums.xml`)
+	const albumRouteFile = path.join(projectRoot, 'src/routes/[artist]/[album]/+page.svelte');
+	const albumTemplateLastmod = getLatestMtimeDate([albumRouteFile], '2026-04-01');
+	const albumEntries = [...catalog]
+		.sort((a, b) => `${a.artistSlug}/${a.slug}`.localeCompare(`${b.artistSlug}/${b.slug}`))
+		.map((album) => {
+			const baseMod = album.lastmod || album.datePublished || '2026-04-01';
+			return {
+				loc: `${SITE_ORIGIN}/${album.artistSlug}/${album.slug}`,
+				lastmod: baseMod > albumTemplateLastmod ? baseMod : albumTemplateLastmod
+			};
+		});
+
+	// 3. Tracks Sitemap (`/sitemaps/tracks.xml`)
+	const trackRouteFile = path.join(projectRoot, 'src/routes/[artist]/[album]/[track]/+page.svelte');
+	const trackTemplateLastmod = getLatestMtimeDate([trackRouteFile], '2026-04-01');
+	/** @type {Array<{ loc: string, lastmod: string }>} */
+	const trackEntries = [];
+	for (const album of catalog) {
+		for (const track of album.tracks || []) {
+			if (!track.slug) continue;
+			const baseMod = track.lastmod || album.lastmod || album.datePublished || '2026-04-01';
+			trackEntries.push({
+				loc: `${SITE_ORIGIN}/${album.artistSlug}/${album.slug}/${track.slug}`,
+				lastmod: baseMod > trackTemplateLastmod ? baseMod : trackTemplateLastmod
+			});
+		}
+	}
+	trackEntries.sort((a, b) => a.loc.localeCompare(b.loc));
+
+	// 4. Playlists Sitemap (`/sitemaps/playlists.xml`)
+	const playlistsSourceFile = path.join(projectRoot, 'src/lib/playlists.svelte.js');
+	const playlistRouteFile = path.join(projectRoot, 'src/routes/playlists/[slug]/+page.svelte');
+	const playlistLastmod = getLatestMtimeDate(
+		[playlistsSourceFile, playlistRouteFile],
+		'2026-04-01'
+	);
+	/** @type {string[]} */
+	const playlistSlugs = [];
+	if (fs.existsSync(playlistsSourceFile)) {
+		const rawPlaylists = fs.readFileSync(playlistsSourceFile, 'utf-8');
+		const slugRegex = /^\s*slug:\s*['"]([^'"]+)['"]/gm;
+		let m;
+		while ((m = slugRegex.exec(rawPlaylists)) !== null) {
+			if (m[1] && !playlistSlugs.includes(m[1])) {
+				playlistSlugs.push(m[1]);
+			}
+		}
+	}
+	const playlistEntries = playlistSlugs.sort().map((slug) => ({
+		loc: `${SITE_ORIGIN}/playlists/${slug}`,
+		lastmod: playlistLastmod
+	}));
+
+	// 5. Editorial & Hub Sitemap (`/sitemaps/editorial.xml`)
+	const maxCatalogLastmod = albumEntries.reduce(
+		(acc, item) => (item.lastmod > acc ? item.lastmod : acc),
+		'2026-04-01'
+	);
+	const editorialRoutes = [
+		{
+			loc: `${SITE_ORIGIN}/`,
+			files: [path.join(projectRoot, 'src/routes/+page.svelte')],
+			includeCatalogMod: true
+		},
+		{
+			loc: `${SITE_ORIGIN}/discography`,
+			files: [path.join(projectRoot, 'src/routes/discography/+page.svelte')],
+			includeCatalogMod: true
+		},
+		{
+			loc: `${SITE_ORIGIN}/playlists`,
+			files: [path.join(projectRoot, 'src/routes/playlists/+page.svelte'), playlistsSourceFile],
+			includeCatalogMod: false
+		},
+		{
+			loc: `${SITE_ORIGIN}/radio`,
+			files: [path.join(projectRoot, 'src/routes/radio/+page.svelte')],
+			includeCatalogMod: true
+		},
+		{
+			loc: `${SITE_ORIGIN}/behind-the-scenes`,
+			files: [path.join(projectRoot, 'src/routes/behind-the-scenes/+page.svelte')],
+			includeCatalogMod: false
+		},
+		{
+			loc: `${SITE_ORIGIN}/privacy`,
+			files: [path.join(projectRoot, 'src/routes/privacy/+page.svelte')],
+			includeCatalogMod: false
+		},
+		{
+			loc: `${SITE_ORIGIN}/terms`,
+			files: [path.join(projectRoot, 'src/routes/terms/+page.svelte')],
+			includeCatalogMod: false
+		}
+	];
+
+	const editorialEntries = editorialRoutes.map((route) => {
+		const fileMod = getLatestMtimeDate(route.files, '2026-04-01');
+		const lastmod =
+			route.includeCatalogMod && maxCatalogLastmod > fileMod ? maxCatalogLastmod : fileMod;
+		return { loc: route.loc, lastmod };
+	});
+
+	const sitemapFiles = [
+		{ name: 'editorial.xml', entries: editorialEntries },
+		{ name: 'artists.xml', entries: artistEntries },
+		{ name: 'albums.xml', entries: albumEntries },
+		{ name: 'tracks.xml', entries: trackEntries },
+		{ name: 'playlists.xml', entries: playlistEntries }
+	];
+
+	for (const sm of sitemapFiles) {
+		fs.writeFileSync(path.join(sitemapsDir, sm.name), renderUrlSetXml(sm.entries), 'utf-8');
+	}
+
+	const indexBody = sitemapFiles
+		.map((sm) => {
+			const maxMod = sm.entries.reduce(
+				(acc, e) => (e.lastmod > acc ? e.lastmod : acc),
+				'2026-04-01'
+			);
+			return `  <sitemap>\n    <loc>${SITE_ORIGIN}/sitemaps/${sm.name}</loc>\n    <lastmod>${maxMod}</lastmod>\n  </sitemap>`;
+		})
+		.join('\n');
+
+	const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexBody}\n</sitemapindex>\n`;
+	fs.writeFileSync(path.join(staticDir, 'sitemap.xml'), sitemapIndexXml, 'utf-8');
+
+	const totalUrls = sitemapFiles.reduce((acc, s) => acc + s.entries.length, 0);
+	console.log(
+		`🗺️  Generated /sitemap.xml index + 5 category sitemaps (${totalUrls} canonical URLs: ${editorialEntries.length} editorial, ${artistEntries.length} artists, ${albumEntries.length} albums, ${trackEntries.length} tracks, ${playlistEntries.length} playlists).`
+	);
+}
 
 // Potential candidate paths for the raggiesoft-assets repository
 const candidateAssetPaths = [
@@ -90,10 +432,7 @@ function fallbackStardustMarkdownToHtml(rawMarkdown) {
 	if (!text) return '';
 
 	const escapeHtml = (/** @type {string} */ s) =>
-		s
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;');
+		s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 	const formatInline = (/** @type {string} */ line) => {
 		let out = escapeHtml(line);
@@ -267,6 +606,8 @@ function buildCatalog() {
 		console.warn('⚠️  Could not find local raggiesoft-assets directory.');
 		if (fs.existsSync(outputPath)) {
 			console.log('ℹ️  Retaining existing musicCatalog.json in src/lib/data.');
+			const existingCatalog = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
+			writeXmlSitemaps(existingCatalog);
 			return;
 		}
 		throw new Error('Assets directory not found and no existing musicCatalog.json present.');
@@ -326,8 +667,7 @@ function buildCatalog() {
 			artistName = 'The Arctic Symphony Project';
 		else if (artistSlug === 'firelight') artistName = 'Firelight';
 		else if (artistSlug === 'steel-horizon') artistName = 'Steel Horizon';
-		else if (artistSlug === 'the-hoshizora-ensemble')
-			artistName = 'The Hoshizora Ensemble';
+		else if (artistSlug === 'the-hoshizora-ensemble') artistName = 'The Hoshizora Ensemble';
 
 		// Resolve artist logo if band-logo.png or band-logo.jpg exists
 		const artistLogo = fs.existsSync(path.join(artistDir, 'band-logo.png'))
@@ -443,32 +783,41 @@ function buildCatalog() {
 					.join(' ');
 			}
 
-			// Resolve temporalCoverage and datePublished (ISO 8601)
+			// Match album against artist's albums.json manifest early so DSP & release metadata are available
+			const matchedManifestAlbum =
+				artistAlbumsManifest.find((entry) => {
+					if (entry.folder && entry.folder === albumSlug) return true;
+					if (entry.slug && entry.slug === albumSlug) return true;
+					if (entry.url && path.basename(entry.url) === albumSlug) return true;
+					if (entry.img && String(entry.img).includes(`/${albumSlug}/`)) return true;
+					if (
+						entry.title &&
+						String(entry.title).trim().toLowerCase() === albumTitle.trim().toLowerCase()
+					) {
+						return true;
+					}
+					return false;
+				}) || {};
+
+			// Resolve temporalCoverage (in-universe narrative era) and datePublished (real-world >= 2026 release)
 			const temporalCoverage = albumData.temporalCoverage
 				? String(albumData.temporalCoverage).trim()
 				: albumData.narrativeReleaseDate
 					? String(albumData.narrativeReleaseDate).trim()
 					: '';
-			const usReleaseDate = albumData.usReleaseDate
-				? String(albumData.usReleaseDate).trim()
-				: '';
-			const datePublished = albumData.datePublished
-				? String(albumData.datePublished).trim()
-				: albumData.albumRelease?.datePublished
-					? String(albumData.albumRelease.datePublished).trim()
-					: albumData.realReleaseDate
-						? String(albumData.realReleaseDate).trim()
-						: '';
+			const usReleaseDate = albumData.usReleaseDate ? String(albumData.usReleaseDate).trim() : '';
+			const datePublished = resolveRealWorldDatePublished(albumData, matchedManifestAlbum, [
+				albumFile,
+				tracksFile
+			]);
 
-			// Resolve narrative release year
+			// Resolve narrative release year strictly from albumSlug or temporalCoverage
 			let year = '';
 			const yearMatch = albumSlug.match(/^(\d{4})/);
 			if (yearMatch) {
 				year = yearMatch[1];
 			} else if (temporalCoverage) {
 				year = temporalCoverage.substring(0, 4);
-			} else if (datePublished) {
-				year = datePublished.substring(0, 4);
 			}
 
 			// Resolve genre and description
@@ -479,11 +828,11 @@ function buildCatalog() {
 			// Determine if release is an overarching rock opera
 			const isRockOperaInitial = Boolean(
 				albumData.isRockOpera ||
-					genre.toLowerCase().includes('rock opera') ||
-					description.toLowerCase().includes('rock opera') ||
-					albumTitle.toLowerCase().includes('book 1') ||
-					albumTitle.toLowerCase().includes('book 2') ||
-					albumTitle.toLowerCase().includes('book 3')
+				genre.toLowerCase().includes('rock opera') ||
+				description.toLowerCase().includes('rock opera') ||
+				albumTitle.toLowerCase().includes('book 1') ||
+				albumTitle.toLowerCase().includes('book 2') ||
+				albumTitle.toLowerCase().includes('book 3')
 			);
 
 			// Resolve album production type (StudioAlbum, LiveAlbum, CompilationAlbum)
@@ -536,6 +885,9 @@ function buildCatalog() {
 				}
 			}
 
+			/** @type {Set<string>} */
+			const seenTrackSlugs = new Set();
+
 			// Process individual tracks and check physical audio file presence
 			const formattedTracks = rawTracks.map((t, idx) => {
 				const trackNum = typeof t.track === 'number' ? t.track : idx + 1;
@@ -551,12 +903,21 @@ function buildCatalog() {
 					fileName = path.basename(t.masterWavPath);
 				}
 
+				const trackSlug = buildCanonicalTrackSlug(
+					fileName,
+					trackTitle,
+					trackVersion,
+					discNum,
+					trackNum,
+					seenTrackSlugs
+				);
+
 				// Extract lore note and lyrics from direct track definitions, per-album lyrics/*.md, or metadata.json
 				let loreNote = t.loreNote || '';
 				let lyrics = t.lyrics || '';
+				const trackMdPath = fileName ? path.join(albumDir, 'lyrics', `${fileName}.md`) : null;
 
-				if ((!loreNote || !lyrics) && fileName) {
-					const trackMdPath = path.join(albumDir, 'lyrics', `${fileName}.md`);
+				if ((!loreNote || !lyrics) && trackMdPath) {
 					if (fs.existsSync(trackMdPath)) {
 						try {
 							const mdRaw = fs.readFileSync(trackMdPath, 'utf-8');
@@ -597,9 +958,16 @@ function buildCatalog() {
 					}
 				}
 
-				const hasPhysicalMp3 = Boolean(
-					fileName && fs.existsSync(path.join(webMp3Dir, `${fileName}.mp3`))
-				);
+				// Strip any accidental WebVTT header lines so human-facing lyrics remain clean
+				if (lyrics) {
+					lyrics = lyrics
+						.replace(/^WEBVTT\b.*$/gim, '')
+						.replace(/^NOTE\s+SYNC_TYPE:.*$/gim, '')
+						.trim();
+				}
+
+				const mp3Path = fileName ? path.join(webMp3Dir, `${fileName}.mp3`) : null;
+				const hasPhysicalMp3 = Boolean(mp3Path && fs.existsSync(mp3Path));
 
 				const audioUrl = hasPhysicalMp3
 					? `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${fileName}.mp3`
@@ -608,27 +976,24 @@ function buildCatalog() {
 				// Detect WebVTT synchronized lyrics if available on disk & check HUMAN_VERIFIED status
 				let vttUrl = '';
 				let vttVerified = false;
-				if (fileName) {
-					const vttPath1 = path.join(albumDir, 'lyrics', `${fileName}.vtt`);
-					const vttPath2 = path.join(albumDir, 'streaming-services', 'lyrics', `${fileName}.vtt`);
-					if (fs.existsSync(vttPath1)) {
-						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/lyrics/${fileName}.vtt`;
-						try {
-							vttVerified = fs
-								.readFileSync(vttPath1, 'utf-8')
-								.includes('SYNC_TYPE: HUMAN_VERIFIED');
-						} catch {
-							// Ignore read errors
-						}
-					} else if (fs.existsSync(vttPath2)) {
-						vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/streaming-services/lyrics/${fileName}.vtt`;
-						try {
-							vttVerified = fs
-								.readFileSync(vttPath2, 'utf-8')
-								.includes('SYNC_TYPE: HUMAN_VERIFIED');
-						} catch {
-							// Ignore read errors
-						}
+				const vttPath1 = fileName ? path.join(albumDir, 'lyrics', `${fileName}.vtt`) : null;
+				const vttPath2 = fileName
+					? path.join(albumDir, 'streaming-services', 'lyrics', `${fileName}.vtt`)
+					: null;
+
+				if (vttPath1 && fs.existsSync(vttPath1)) {
+					vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/lyrics/${fileName}.vtt`;
+					try {
+						vttVerified = fs.readFileSync(vttPath1, 'utf-8').includes('SYNC_TYPE: HUMAN_VERIFIED');
+					} catch {
+						// Ignore read errors
+					}
+				} else if (vttPath2 && fs.existsSync(vttPath2)) {
+					vttUrl = `${CDN_BASE}/${artistSlug}/${albumSlug}/streaming-services/lyrics/${fileName}.vtt`;
+					try {
+						vttVerified = fs.readFileSync(vttPath2, 'utf-8').includes('SYNC_TYPE: HUMAN_VERIFIED');
+					} catch {
+						// Ignore read errors
 					}
 				}
 
@@ -638,8 +1003,14 @@ function buildCatalog() {
 					duration = 'In Studio';
 				}
 
+				const trackLastmod = getLatestMtimeDate(
+					[tracksFile, albumFile, trackMdPath, vttPath1, vttPath2, mp3Path],
+					datePublished
+				);
+
 				return {
 					id: `${artistSlug}-${albumSlug}-${discNum}-${trackNum}`,
+					slug: trackSlug,
 					fileName,
 					disc: discNum,
 					discName: t.discName || '',
@@ -657,7 +1028,8 @@ function buildCatalog() {
 					audioUrl,
 					vttUrl,
 					vttVerified,
-					isPlayable: hasPhysicalMp3
+					isPlayable: hasPhysicalMp3,
+					lastmod: trackLastmod
 				};
 			});
 
@@ -677,22 +1049,6 @@ function buildCatalog() {
 				status = 'in-progress';
 				statusLabel = 'In Production';
 			}
-
-			// Match album against artist's albums.json manifest for DSP & Fourthwall store metadata
-			const matchedManifestAlbum =
-				artistAlbumsManifest.find((entry) => {
-					if (entry.folder && entry.folder === albumSlug) return true;
-					if (entry.slug && entry.slug === albumSlug) return true;
-					if (entry.url && path.basename(entry.url) === albumSlug) return true;
-					if (entry.img && String(entry.img).includes(`/${albumSlug}/`)) return true;
-					if (
-						entry.title &&
-						String(entry.title).trim().toLowerCase() === albumTitle.trim().toLowerCase()
-					) {
-						return true;
-					}
-					return false;
-				}) || {};
 
 			const spotifyId = String(matchedManifestAlbum.spotifyId || albumData.spotifyId || '').trim();
 			const appleId = String(matchedManifestAlbum.appleId || albumData.appleId || '').trim();
@@ -729,13 +1085,14 @@ function buildCatalog() {
 			const loreLinks = Array.isArray(albumData.loreLinks) ? albumData.loreLinks : [];
 
 			// Resolve non-discography story lore URL on stardust.raggiesoft.com or engineroom.raggiesoft.com if present
-			const rawManifestUrl = String(
-				matchedManifestAlbum.url || albumData.loreUrl || ''
-			).trim();
+			const rawManifestUrl = String(matchedManifestAlbum.url || albumData.loreUrl || '').trim();
 
 			let loreUrl = '';
 			if (rawManifestUrl && !rawManifestUrl.includes('/discography/')) {
-				if (rawManifestUrl.startsWith('https://stardust.raggiesoft.com') || rawManifestUrl.startsWith('https://engineroom.raggiesoft.com')) {
+				if (
+					rawManifestUrl.startsWith('https://stardust.raggiesoft.com') ||
+					rawManifestUrl.startsWith('https://engineroom.raggiesoft.com')
+				) {
 					loreUrl = rawManifestUrl;
 				} else if (rawManifestUrl.startsWith(HUB_BASE)) {
 					const route = rawManifestUrl.slice(HUB_BASE.length);
@@ -744,6 +1101,16 @@ function buildCatalog() {
 					}
 				}
 			}
+
+			// Compute truthful album-level lastmod from album/tracks manifests and per-track lastmods
+			const baseAlbumLastmod = getLatestMtimeDate(
+				[albumFile, tracksFile, artistAlbumsFile],
+				datePublished
+			);
+			const albumLastmod = formattedTracks.reduce(
+				(maxDate, tr) => (tr.lastmod && tr.lastmod > maxDate ? tr.lastmod : maxDate),
+				baseAlbumLastmod
+			);
 
 			catalog.push({
 				id: `${artistSlug}-${albumSlug}`,
@@ -761,6 +1128,7 @@ function buildCatalog() {
 				temporalCoverage,
 				usReleaseDate,
 				datePublished,
+				lastmod: albumLastmod,
 				genre,
 				isRockOpera,
 				rockOperaSetId,
@@ -835,6 +1203,9 @@ function buildCatalog() {
 	} catch (err) {
 		console.warn('⚠️  Could not write to assets catalog.json:', err);
 	}
+
+	// Generate XML sitemap index + category sitemaps with truthful <lastmod> dates
+	writeXmlSitemaps(catalog);
 }
 
 // Execute compilation

@@ -30,11 +30,7 @@
  * ============================================================================
  */
 
-import {
-	allAlbums,
-	formatAlbumQueue,
-	parseDurationToSeconds
-} from '#lib/data/musicData.js';
+import { allAlbums, formatAlbumQueue, parseDurationToSeconds } from '#lib/data/musicData.js';
 
 const STORAGE_KEY = 'engine_room_user_playlists_v1';
 
@@ -126,7 +122,7 @@ export const curatedPlaylists = [
 				chapterTitle: 'The Three-Minute Bell',
 				chapterUrl:
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-1-the-three-minute-bell',
-				pov: 'John (Ryan O\'Connell)',
+				pov: "John (Ryan O'Connell)",
 				storySummary:
 					'At the Kincaid Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
 			},
@@ -138,7 +134,7 @@ export const curatedPlaylists = [
 				chapterTitle: 'Table Four',
 				chapterUrl:
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-2-table-four',
-				pov: 'John (Ryan O\'Connell)',
+				pov: "John (Ryan O'Connell)",
 				storySummary:
 					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair in Kincaid Hall, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
 			},
@@ -150,9 +146,9 @@ export const curatedPlaylists = [
 				chapterTitle: 'The Frayed Mask / When the Steel Doors Close',
 				chapterUrl:
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/before-the-distance/scene-1-the-frayed-mask',
-				pov: 'Erin (Cassidy O\'Connell)',
+				pov: "Erin (Cassidy O'Connell)",
 				storySummary:
-					'Two months later in the chaotic pre-Transit-Center curbside bus lineup along Commonwealth Mall beneath The Keystone Bridge, Erin sees the frayed mask on John\'s face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John\'s hand, and pulls him aboard with her.'
+					"Two months later in the chaotic pre-Transit-Center curbside bus lineup along Commonwealth Mall beneath The Keystone Bridge, Erin sees the frayed mask on John's face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John's hand, and pulls him aboard with her."
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -164,7 +160,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/sanctuary-in-the-storm/scene-1-the-locked-perimeter',
 				pov: 'John & Erin Duet',
 				storySummary:
-					'Twenty-four hours after their escape on the Blue Ridge Transit bus from Commonwealth Mall, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin\'s ground-floor apartment on Progress Street.'
+					"Twenty-four hours after their escape on the Blue Ridge Transit bus from Commonwealth Mall, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin's ground-floor apartment on Progress Street."
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -176,7 +172,7 @@ export const curatedPlaylists = [
 					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/not-her/scene-1-the-practiced-smile',
 				pov: 'John & Erin Duet',
 				storySummary:
-					'The following spring, John spots a slick predator boxing Erin\'s power wheelchair into a recessed Ironstone alcove outside Kincaid Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him.'
+					"The following spring, John spots a slick predator boxing Erin's power wheelchair into a recessed Ironstone alcove outside Kincaid Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him."
 			}
 		]
 	},
@@ -186,7 +182,8 @@ export const curatedPlaylists = [
 		ogTitle: 'The Cosmic Tidal Lock Sound™ — The Stardust Engine',
 		ogDescription:
 			"Stream the 20-track evolution of Cassidy O'Connell's Cosmic Tidal Lock Sound™, from Moon 1 and Escape Velocity to Starfield Calibration.",
-		subtitle: "Cassidy O'Connell's Signature Space-Synth Architecture (1997–2011 • Thematic 1986 Origin)",
+		subtitle:
+			"Cassidy O'Connell's Signature Space-Synth Architecture (1997–2011 • Thematic 1986 Origin)",
 		curator: "Cassidy O'Connell (with her Safe Person, Ryan O'Connell)",
 		artistSlug: 'the-stardust-engine',
 		year: '1997–2011 (1997 Hard Reset • 2001 Midnight Drivers • 2011 Starfield Calibration)',
@@ -253,8 +250,7 @@ export const curatedPlaylists = [
 				trackId: '2-01',
 				actLabel: 'III. The Apoapsis Suite (Part 1 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement I: The Farthest Point of the Orbit',
-				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Opening The Apoapsis Suite—the three-song suite that launches Disc 2 of Hard Reset ('The Engine Room')—'Apoapsis' captures the exact orbital moment where a spacecraft reaches its farthest distance from gravity's pull and hangs in silent, weightless equilibrium."
@@ -265,8 +261,7 @@ export const curatedPlaylists = [
 				trackId: '2-02',
 				actLabel: 'III. The Apoapsis Suite (Part 2 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement II: Stabilizing the Deep-Space Trajectory',
-				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"The second movement of The Apoapsis Suite deepens the harmonic lock. Instead of falling back toward the planet below, Cassidy's layered modular sequencers fire a secondary stabilization burn, locking the band into a permanent high-altitude orbit."
@@ -277,8 +272,7 @@ export const curatedPlaylists = [
 				trackId: '2-03',
 				actLabel: 'III. The Apoapsis Suite (Part 3 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement III: Reclaiming 1987’s "Electric Color" in Unfiltered Light',
-				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Concluding The Apoapsis Suite, 'The Spectrum (True Color)' directly answers the band's 1987 Apex Records album Electric Color. Free from corporate neon and studio tampering, Cassidy refracts the full analog frequency spectrum across the void."
@@ -299,7 +293,8 @@ export const curatedPlaylists = [
 				albumSlug: '2011-starfield-calibration',
 				trackId: '1-01',
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 1)',
-				chapterTitle: 'Written in 1986 When Evan & Tyler Joined • Released on 1987’s Electric Color',
+				chapterTitle:
+					'Written in 1986 When Evan & Tyler Joined • Released on 1987’s Electric Color',
 				chapterUrl:
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
@@ -352,7 +347,7 @@ export const curatedPlaylists = [
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
-					"Re-envisioned with deep sub-octave Moog pedals and crystalline bell arpeggios, 'My Anchor Holds' celebrates the family bond that kept Ryan and Cassidy grounded through every storm."
+					"Re-envisioned with deep sub-octave analog bass pedals and crystalline bell arpeggios, 'My Anchor Holds' celebrates the family bond that kept Ryan and Cassidy grounded through every storm."
 			},
 			{
 				artistSlug: 'the-stardust-engine',
@@ -458,7 +453,7 @@ export const curatedPlaylists = [
 				chapterTitle: 'Sunrise Over the Orbital Observatory',
 				chapterUrl:
 					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
-				pov: "The Stardust Engine",
+				pov: 'The Stardust Engine',
 				storySummary:
 					"Closing both Starfield Calibration and this 20-track journey through The Cosmic Tidal Lock Sound™, 'Fade to Dawn (Cosmic Tidal Lock Mix)' brings the orbital observatory gently into the light of a new morning."
 			}
@@ -851,9 +846,7 @@ class UserPlaylistManager {
 			t: playlist.trackSpecs.map((s) => `${s.artistSlug}/${s.albumSlug}/${s.trackId}`)
 		};
 		const encoded =
-			typeof window !== 'undefined'
-				? btoa(encodeURIComponent(JSON.stringify(payload)))
-				: '';
+			typeof window !== 'undefined' ? btoa(encodeURIComponent(JSON.stringify(payload))) : '';
 		return `https://music.raggiesoft.com/playlists?import=${encodeURIComponent(encoded)}`;
 	}
 
@@ -896,3 +889,59 @@ class UserPlaylistManager {
 
 export const playlistManager = new UserPlaylistManager();
 
+/**
+ * Finds curated story playlists that feature one or more tracks from a given album.
+ *
+ * @param {string} artistSlug
+ * @param {string} albumSlug
+ * @returns {Array<{ slug: string, title: string, subtitle: string, description: string, badge: string, trackCount: number }>}
+ */
+export function getConnectedPlaylistsForAlbum(artistSlug, albumSlug) {
+	return curatedPlaylists
+		.filter((pl) =>
+			pl.trackSpecs.some(
+				(s) => (s.artistSlug ? s.artistSlug === artistSlug : true) && s.albumSlug === albumSlug
+			)
+		)
+		.map((pl) => ({
+			slug: pl.slug,
+			title: pl.title,
+			subtitle: pl.subtitle,
+			description: pl.description,
+			badge: pl.badge,
+			trackCount: pl.trackSpecs.length
+		}));
+}
+
+/**
+ * Finds curated story playlists that explicitly include a given catalog track.
+ *
+ * @param {string} artistSlug
+ * @param {string} albumSlug
+ * @param {import('#lib/data/musicData.js').Track} track
+ * @param {import('#lib/data/musicData.js').Album} album
+ * @returns {Array<{ slug: string, title: string, subtitle: string, actLabel: string, chapterTitle: string }>}
+ */
+export function getConnectedPlaylistsForTrack(artistSlug, albumSlug, track, album) {
+	/** @type {Array<{ slug: string, title: string, subtitle: string, actLabel: string, chapterTitle: string }>} */
+	const matches = [];
+	for (const pl of curatedPlaylists) {
+		for (const spec of pl.trackSpecs) {
+			if (
+				(spec.artistSlug ? spec.artistSlug === artistSlug : true) &&
+				spec.albumSlug === albumSlug &&
+				matchesPlaylistTrackId(track, spec.trackId, album)
+			) {
+				matches.push({
+					slug: pl.slug,
+					title: pl.title,
+					subtitle: pl.subtitle,
+					actLabel: spec.actLabel || '',
+					chapterTitle: spec.chapterTitle || ''
+				});
+				break;
+			}
+		}
+	}
+	return matches;
+}

@@ -28,6 +28,7 @@
 	import {
 		allAlbums,
 		allArtists,
+		catalogStats,
 		formatAlbumQueue,
 		formatReleaseDate,
 		hasAnyDsp,
@@ -230,7 +231,7 @@
 	<title>The Listening Room | Music Discovery, Lyrics &amp; Lore by Engine Room Records</title>
 	<meta
 		name="description"
-		content="Welcome to The Listening Room by Engine Room Records. Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
+		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/" />
 
@@ -238,13 +239,10 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/" />
-	<meta
-		property="og:title"
-		content="The Listening Room | Music Discovery, Lyrics & Lore by Engine Room Records"
-	/>
+	<meta property="og:title" content="The Listening Room — Engine Room Records" />
 	<meta
 		property="og:description"
-		content="Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
+		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta property="og:image:width" content="1200" />
@@ -258,15 +256,16 @@
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:site" content="@RaggieSoft" />
 	<meta name="twitter:url" content="https://music.raggiesoft.com/" />
-	<meta
-		name="twitter:title"
-		content="The Listening Room | Music Discovery, Lyrics & Lore by Engine Room Records"
-	/>
+	<meta name="twitter:title" content="The Listening Room — Engine Room Records" />
 	<meta
 		name="twitter:description"
-		content="Explore synchronized lyrics, liner notes, and 40 years of in-universe lore. Preview 128kbps streams for free, or listen in Lossless HD on your favorite streaming app to support Michael Ragsdale."
+		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
+	<meta
+		name="twitter:image:alt"
+		content="The Listening Room — Music Discovery Hub by Engine Room Records"
+	/>
 </svelte:head>
 
 <!-- ======================================================================= -->
@@ -372,9 +371,10 @@
 						</p>
 
 						<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-							<strong class="text-white">Dual Timelines:</strong> To maintain our immersive fictional
-							universe while strictly complying with modern digital distribution standards, our catalog
-							features two timelines: a fictional <strong class="text-white">Narrative Era</strong>
+							<strong class="text-white">Dual Timelines:</strong> To maintain our immersive
+							fictional universe while strictly complying with modern digital distribution
+							standards, our catalog features two timelines: a fictional
+							<strong class="text-white">Narrative Era</strong>
 							(e.g., 1983–2008) tied to the artists' in-universe lore, and a real-world
 							<strong class="text-white">Actual Release Date</strong> (e.g., 2026) reflecting when the
 							audio was officially distributed to streaming platforms.
@@ -428,234 +428,35 @@
 		</section>
 	{/if}
 
-	<!-- 0A. IN MEMORIAM: SIR PATRICK STEWART COSMIC TRILOGY SHOWCASE (EXPIRES NOV 28, 2026) -->
+	<!-- 0A. CONCISE SIR PATRICK STEWART IN MEMORIAM DEDICATION STRIP (EXPIRES NOV 28, 2026) -->
 	{#if isMemoriamShowcaseActive && memoriamCosmicAlbums.length > 0}
-		<section
-			class="relative overflow-hidden rounded-3xl border border-amber-500/45 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/50 p-6 shadow-2xl sm:p-8"
-			aria-labelledby="memoriam-cosmic-showcase-heading"
-			data-memoriam-expires="2026-11-28T23:59:59-05:00"
+		<div
+			class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-950/25 px-4 py-3 text-xs text-amber-100 sm:text-sm"
 		>
-			<!-- Header, Creator's Personal Note & Framed Memorial Tribute Plaque -->
-			<div class="flex flex-col items-stretch justify-between gap-6 border-b border-amber-500/25 pb-6 lg:flex-row lg:items-center">
-				<div class="min-w-0 flex-1 space-y-4">
-					<div class="flex flex-wrap items-center gap-2">
-						<span
-							class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-950/80 px-3.5 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
-						>
-							<span aria-hidden="true">✦</span>
-							<span>In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026)</span>
-						</span>
-						<span
-							class="rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 font-mono text-[11px] font-bold text-blue-300"
-						>
-							Second Star to the Right • Featured Through Nov 28, 2026
-						</span>
-					</div>
-
-					<h2
-						id="memoriam-cosmic-showcase-heading"
-						class="text-2xl font-black tracking-tight text-white sm:text-3xl"
-					>
-						The Cosmic Works Inspired by the <span class="italic text-amber-300">NCC-1701-D</span>:
-						<span class="text-blue-400">Escape Velocity (Ad Astra)</span>,
-						<span class="text-amber-300">The Twin Moons</span> &amp;
-						<span class="text-cyan-300">Starfield Calibration</span>
-					</h2>
-
-					<p class="text-sm leading-relaxed text-slate-300 sm:text-base">
-						Without watching <strong class="text-white italic">Star Trek: The Next Generation</strong>
-						as a kid with my family every weeknight evening, I never would have had the curiosity to
-						look up to the stars and wonder what is out there—and I never would have had that spark of
-						imagination that led to the creation of
-						<strong class="text-white">Escape Velocity (Ad Astra)</strong> (1996),
-						<strong class="text-white">Moon 1: Sanctuary (Zero-G)</strong> (2003),
-						<strong class="text-white">Moon 2: Mile Marker 98</strong> (2003), and the
-						<em>Cosmic Tidal Lock™</em> remixes of classic Stardust Engine songs on
-						<strong class="text-white">Starfield Calibration</strong> (2011).
-						<em class="text-amber-300"
-							>“Where to? Second star to the right, and straight on ’till morning.” — Ad astra per aspera, Captain.</em
-						>
-					</p>
-
-					<div class="flex flex-wrap items-center gap-2.5 pt-1">
-						<button
-							type="button"
-							onclick={playMemoriamCosmicTrilogy}
-							class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:text-sm"
-						>
-							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							<span>Play All 4 Cosmic Albums (39 Songs)</span>
-						</button>
-
-						<a
-							href="https://raggiesoft.com/in-memoriam"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/60 px-3.5 py-2.5 text-xs font-bold text-amber-200 transition-colors hover:bg-amber-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:text-sm"
-						>
-							<span>✦ Read Full Tribute</span>
-							<span aria-hidden="true">↗</span>
-						</a>
-
-						<a
-							href="https://nebulae.raggiesoft.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/60 px-3.5 py-2.5 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
-						>
-							<span>🌌 Explore Caelum-IV</span>
-							<span aria-hidden="true">↗</span>
-						</a>
-					</div>
-				</div>
-
-				<!-- Right-Column Framed Memorial Artwork Card (Fills Negative Space & Links to Tribute) -->
+			<div class="flex flex-wrap items-center gap-2">
+				<span class="text-amber-300" aria-hidden="true">✦</span>
+				<span>
+					<strong class="text-amber-300">In Memoriam: Sir Patrick Stewart (1940–2026)</strong> — “Second
+					star to the right, and straight on ’till morning.”
+				</span>
+			</div>
+			<div class="flex flex-wrap items-center gap-3">
+				<a
+					href="#memoriam-cosmic-showcase-heading"
+					class="font-bold text-amber-300 underline decoration-amber-400/60 underline-offset-2 hover:text-white"
+				>
+					Explore the 4-Album Cosmic Quartet &darr;
+				</a>
 				<a
 					href="https://raggiesoft.com/in-memoriam"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="group relative block w-full shrink-0 overflow-hidden rounded-2xl border border-amber-500/50 bg-slate-950 shadow-2xl transition-all hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 lg:w-[410px] xl:w-[450px]"
-					aria-label="Open In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026) Tribute Page"
+					class="font-bold text-blue-300 underline decoration-blue-400/60 underline-offset-2 hover:text-white"
 				>
-					<img
-						src="https://assets.raggiesoft.com/raggiesoft-corporate/images/og/in-memoriam-patrick-stewart-og.jpg"
-						alt="Second Star to the Right • In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026) — Ad astra per aspera"
-						width="1200"
-						height="630"
-						class="aspect-[1200/630] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-					/>
-					<div
-						class="flex items-center justify-between border-t border-amber-500/30 bg-slate-950/95 px-3.5 py-2 text-[11px] font-bold text-amber-200"
-					>
-						<span>✦ Second Star to the Right • Creator’s Cosmic Dedication</span>
-						<span class="text-amber-400 group-hover:underline">raggiesoft.com/in-memoriam ↗</span>
-					</div>
+					Read Full Tribute &nearr;
 				</a>
 			</div>
-
-			<!-- 2x2 Balanced Cosmic Quartet Grid -->
-			<div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-				{#each memoriamCosmicAlbums as cosmicAlbum (cosmicAlbum.slug)}
-					<article
-						class="flex flex-col justify-between rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-xl transition-all hover:border-amber-500/50"
-					>
-						<div>
-							<div class="flex items-start gap-4">
-								<a
-									href={resolve('/[artist]/[album]', {
-										artist: cosmicAlbum.artistSlug,
-										album: cosmicAlbum.slug
-									})}
-									class="group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-amber-500/40 shadow-lg sm:h-28 sm:w-28"
-								>
-									<img
-										src={cosmicAlbum.artwork}
-										alt="Cover for {cosmicAlbum.displayTitle}"
-										class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-									/>
-									<span
-										class="absolute bottom-1.5 left-1.5 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300 backdrop-blur-sm"
-									>
-										{cosmicAlbum.year}
-									</span>
-								</a>
-
-								<div class="min-w-0 flex-1">
-									<span
-										class="inline-block rounded border border-amber-500/40 bg-amber-950/70 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-amber-300 uppercase"
-									>
-										{cosmicAlbum.cosmicRole}
-									</span>
-									<h3 class="mt-1.5 text-lg font-extrabold leading-snug text-white">
-										<a
-											href={resolve('/[artist]/[album]', {
-												artist: cosmicAlbum.artistSlug,
-												album: cosmicAlbum.slug
-											})}
-											class="transition-colors hover:text-amber-300"
-										>
-											{cosmicAlbum.displayTitle}
-										</a>
-									</h3>
-									<p class="mt-0.5 text-xs font-semibold text-blue-400">
-										{cosmicAlbum.cosmicSubtitle}
-									</p>
-									<p class="mt-1 font-mono text-[11px] text-slate-400">
-										{cosmicAlbum.tracks.length} Tracks &bull; In-Universe: {formatReleaseDate(
-											cosmicAlbum.temporalCoverage,
-											cosmicAlbum.year
-										)}
-									</p>
-								</div>
-							</div>
-
-							<p class="mt-3.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
-								{cosmicAlbum.cosmicNote}
-							</p>
-						</div>
-
-						<div class="mt-4 space-y-2.5 border-t border-slate-800 pt-3.5">
-							<div class="flex flex-wrap items-center gap-2">
-								<button
-									type="button"
-									onclick={() => playAlbum(cosmicAlbum)}
-									class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-extrabold text-white shadow-md shadow-blue-600/25 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-								>
-									<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-										<path d="M8 5v14l11-7z" />
-									</svg>
-									<span>Preview Album (128k)</span>
-								</button>
-
-								<a
-									href={resolve('/[artist]/[album]', {
-										artist: cosmicAlbum.artistSlug,
-										album: cosmicAlbum.slug
-									})}
-									class="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-amber-500/50 hover:bg-slate-700 hover:text-white"
-								>
-									<span>Lyrics &amp; Lore</span>
-									<span aria-hidden="true">&rarr;</span>
-								</a>
-							</div>
-
-							<div class="flex flex-wrap items-center justify-between gap-2">
-								<StoreButton
-									type="album"
-									size="small"
-									spotifyId={cosmicAlbum.spotifyId}
-									appleId={cosmicAlbum.appleId}
-									amazonId={cosmicAlbum.amazonId}
-									youtubeId={cosmicAlbum.youtubeId}
-									dspExempt={cosmicAlbum.dspExempt}
-									storeStandardUrl={cosmicAlbum.storeStandardUrl}
-									storeAudiophileUrl={cosmicAlbum.storeAudiophileUrl}
-								/>
-
-								<button
-									type="button"
-									onclick={() => openShareModal(cosmicAlbum)}
-									class="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
-									aria-label="Share {cosmicAlbum.displayTitle}"
-								>
-									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-										/>
-									</svg>
-									<span>Share</span>
-								</button>
-							</div>
-						</div>
-					</article>
-				{/each}
-			</div>
-		</section>
+		</div>
 	{/if}
 
 	<!-- 1. JUMP BACK IN SHELF (Session Persistence) -->
@@ -679,6 +480,9 @@
 						<img
 							src={savedSession.track.artwork}
 							alt="Artwork for {savedSession.track.title}"
+							width="64"
+							height="64"
+							decoding="async"
 							class="h-16 w-16 shrink-0 rounded-xl border border-slate-700 object-cover shadow-md"
 						/>
 					{:else}
@@ -739,103 +543,9 @@
 		</section>
 	{/if}
 
-	<!-- 1B. FEATURED STORY PLAYLIST: BEFORE THE DISTANCE (JOHN & ERIN) -->
-	{#if featuredStoryPlaylist}
-		<section
-			class="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 p-6 shadow-2xl sm:p-8"
-		>
-			<div class="flex flex-col gap-6 lg:flex-row lg:items-center">
-				<a
-					href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
-					class="group relative h-52 w-52 shrink-0 self-center overflow-hidden rounded-2xl border border-amber-500/40 shadow-2xl sm:h-60 sm:w-60 lg:self-start"
-				>
-					<img
-						src={featuredStoryPlaylist.artwork}
-						alt={featuredStoryPlaylist.title}
-						class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-					/>
-				</a>
-
-				<div class="min-w-0 flex-1 space-y-3.5">
-					<div class="flex flex-wrap items-center gap-2">
-						<span
-							class="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
-						>
-							🎧 Featured Story Playlist &amp; Book Soundtrack
-						</span>
-						<span class="text-xs font-semibold text-slate-400">
-							{featuredStoryPlaylist.tracks.length} Songs &bull; {featuredStoryPlaylist.formattedDuration}
-						</span>
-					</div>
-
-					<div>
-						<h2 class="text-2xl font-extrabold text-white sm:text-3xl">
-							<a
-								href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
-								class="transition-colors hover:text-amber-300"
-							>
-								{featuredStoryPlaylist.title}
-							</a>
-						</h2>
-						<p class="mt-0.5 text-sm font-semibold text-blue-400">
-							{featuredStoryPlaylist.subtitle} &bull; {featuredStoryPlaylist.curator}
-						</p>
-					</div>
-
-					<p class="text-sm leading-relaxed text-slate-300">
-						{featuredStoryPlaylist.description}
-					</p>
-
-					<div class="flex flex-wrap items-center gap-2.5 pt-1">
-						<button
-							type="button"
-							onclick={() => player.loadQueue(featuredStoryPlaylist.tracks, 0, true)}
-							class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500"
-						>
-							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-								<path d="M8 5v14l11-7z" />
-							</svg>
-							Play 5-Song Story Arc
-						</button>
-
-						<a
-							href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
-							class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2.5 text-xs font-bold text-slate-100 transition-colors hover:border-blue-500/50 hover:text-white"
-						>
-							<span>Open Story Playlist</span>
-							<span>&rarr;</span>
-						</a>
-
-						<a
-							href={featuredStoryPlaylist.bookUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
-						>
-							<span>📖 Read Novel (books.raggiesoft.com/erin)</span>
-							<span>↗</span>
-						</a>
-
-						<a
-							href={featuredStoryPlaylist.loreUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/40 px-3.5 py-2.5 text-xs font-bold text-blue-300 transition-colors hover:bg-blue-900/50 hover:text-white"
-						>
-							<span>🎸 Stardust Engine Lore</span>
-							<span>↗</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</section>
-	{/if}
-
-	<!-- 2. FEATURED ROCK OPERA SPOTLIGHT -->
+	<!-- 2. FEATURED ROCK OPERA SPOTLIGHT (Evergreen LCP Hero) -->
 	{#if spotlightAlbum}
-		<section
-			class="relative rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl"
-		>
+		<section class="relative rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl">
 			<div class="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
 				<div
 					class="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl"
@@ -846,7 +556,7 @@
 			</div>
 
 			<div class="relative z-10 flex flex-col gap-8 p-6 sm:p-10 lg:flex-row lg:items-center">
-				<!-- Cover Art -->
+				<!-- Cover Art (Primary LCP Image — fetchpriority="high", never lazy) -->
 				<a
 					href={resolve('/[artist]/[album]', {
 						artist: spotlightAlbum.artistSlug,
@@ -856,7 +566,11 @@
 				>
 					<img
 						src={spotlightAlbum.artwork}
-						alt="Cover for {spotlightAlbum.title}"
+						alt="Cover artwork for {spotlightAlbum.title}"
+						width="600"
+						height="600"
+						fetchpriority="high"
+						decoding="async"
 						class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 					/>
 					<div
@@ -886,7 +600,10 @@
 						<span
 							class="rounded border border-blue-700/50 bg-blue-900/60 px-2 py-0.5 font-mono text-xs text-blue-300"
 						>
-							In-Universe: {formatReleaseDate(spotlightAlbum.temporalCoverage, spotlightAlbum.year)}
+							Narrative Release: {formatReleaseDate(
+								spotlightAlbum.temporalCoverage,
+								spotlightAlbum.year
+							)}
 						</span>
 					</div>
 
@@ -906,6 +623,9 @@
 							<img
 								src={spotlightAlbum.artistLogo}
 								alt="{spotlightAlbum.artist} logo"
+								width="24"
+								height="24"
+								decoding="async"
 								class="h-6 w-6 rounded-full border border-slate-700/80 bg-slate-950 object-cover shadow-sm"
 							/>
 						{/if}
@@ -923,8 +643,8 @@
 
 					{#if hasAnyDsp(spotlightAlbum) || hasFourthwallStore(spotlightAlbum)}
 						<p class="mt-4 text-xs leading-relaxed text-slate-300">
-							<strong class="text-blue-400">Enjoying the rock opera?</strong> Streaming on your favorite
-							app or buying the digital archive directly supports
+							<strong class="text-blue-400">Enjoying the rock opera?</strong> Streaming on your
+							favorite app or buying the digital archive directly supports
 							<strong class="text-white">Michael Ragsdale</strong> &amp; funds the next
 							<strong class="text-white">Engine Room Records</strong> release.
 						</p>
@@ -1005,7 +725,168 @@
 		</section>
 	{/if}
 
-	<!-- 3. CANONICAL IN-UNIVERSE TIMELINE -->
+	<!-- 3. ARTIST ROSTER SHELF (Prominent Evergreen Links to /[artist] Hubs) -->
+	<section>
+		<div class="mb-4">
+			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+				Bands of Engine Room Records
+			</h2>
+			<p class="text-xs text-slate-400 sm:text-sm">
+				Select any band to visit their dedicated profile with full biography, featured songs,
+				discography, streaming links, and shareable cards.
+			</p>
+		</div>
+
+		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+			{#each allArtists as artist (artist.slug)}
+				<a
+					href={resolve('/[artist]', { artist: artist.slug })}
+					class="group flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+				>
+					<div class="flex min-w-0 items-center gap-3">
+						{#if artist.logo}
+							<img
+								src={artist.logo}
+								alt="{artist.name} emblem"
+								width="44"
+								height="44"
+								loading="lazy"
+								decoding="async"
+								class="h-11 w-11 shrink-0 rounded-lg border border-slate-800 bg-slate-950 object-contain p-0.5 shadow-md"
+							/>
+						{:else}
+							<div
+								class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md"
+							>
+								{artist.name.charAt(0)}
+							</div>
+						{/if}
+						<div class="min-w-0">
+							<h3 class="truncate text-sm font-bold text-white group-hover:text-blue-400">
+								{artist.name}
+							</h3>
+							<p class="truncate text-xs text-slate-400">
+								{artist.albumCount}
+								{artist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {artist.trackCount} Songs
+							</p>
+						</div>
+					</div>
+					<svg
+						class="h-5 w-5 shrink-0 text-slate-500 transition-transform group-hover:translate-x-1 group-hover:text-blue-400"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 5l7 7-7 7"
+						/>
+					</svg>
+				</a>
+			{/each}
+		</div>
+	</section>
+
+	<!-- 4. FEATURED STORY PLAYLIST: BEFORE THE DISTANCE (JOHN & ERIN) -->
+	{#if featuredStoryPlaylist}
+		<section
+			class="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 p-6 shadow-2xl sm:p-8"
+		>
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-center">
+				<a
+					href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+					class="group relative h-52 w-52 shrink-0 self-center overflow-hidden rounded-2xl border border-amber-500/40 shadow-2xl sm:h-60 sm:w-60 lg:self-start"
+				>
+					<img
+						src={featuredStoryPlaylist.artwork}
+						alt={featuredStoryPlaylist.title}
+						width="480"
+						height="480"
+						loading="lazy"
+						decoding="async"
+						class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+					/>
+				</a>
+
+				<div class="min-w-0 flex-1 space-y-3.5">
+					<div class="flex flex-wrap items-center gap-2">
+						<span
+							class="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
+						>
+							🎧 Featured Story Playlist &amp; Book Soundtrack
+						</span>
+						<span class="text-xs font-semibold text-slate-400">
+							{featuredStoryPlaylist.tracks.length} Songs &bull; {featuredStoryPlaylist.formattedDuration}
+						</span>
+					</div>
+
+					<div>
+						<h2 class="text-2xl font-extrabold text-white sm:text-3xl">
+							<a
+								href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+								class="transition-colors hover:text-amber-300"
+							>
+								{featuredStoryPlaylist.title}
+							</a>
+						</h2>
+						<p class="mt-0.5 text-sm font-semibold text-blue-400">
+							{featuredStoryPlaylist.subtitle} &bull; {featuredStoryPlaylist.curator}
+						</p>
+					</div>
+
+					<p class="text-sm leading-relaxed text-slate-300">
+						{featuredStoryPlaylist.description}
+					</p>
+
+					<div class="flex flex-wrap items-center gap-2.5 pt-1">
+						<button
+							type="button"
+							onclick={() => player.loadQueue(featuredStoryPlaylist.tracks, 0, true)}
+							class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-blue-600/30 transition-all hover:bg-blue-500"
+						>
+							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+								<path d="M8 5v14l11-7z" />
+							</svg>
+							Play 5-Song Story Arc
+						</button>
+
+						<a
+							href={resolve('/playlists/[slug]', { slug: featuredStoryPlaylist.slug })}
+							class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2.5 text-xs font-bold text-slate-100 transition-colors hover:border-blue-500/50 hover:text-white"
+						>
+							<span>Open Story Playlist</span>
+							<span>&rarr;</span>
+						</a>
+
+						<a
+							href={featuredStoryPlaylist.bookUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
+						>
+							<span>📖 Read Novel (books.raggiesoft.com/erin)</span>
+							<span>↗</span>
+						</a>
+
+						<a
+							href={featuredStoryPlaylist.loreUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/40 px-3.5 py-2.5 text-xs font-bold text-blue-300 transition-colors hover:bg-blue-900/50 hover:text-white"
+						>
+							<span>🎸 Stardust Engine Lore</span>
+							<span>↗</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+	{/if}
+
+	<!-- 5. CANONICAL IN-UNIVERSE TIMELINE -->
 	<section>
 		<div class="mb-4 flex items-center justify-between">
 			<div>
@@ -1025,7 +906,7 @@
 		</div>
 
 		<!-- Horizontal Scroll Timeline Cards -->
-		<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
+		<div class="flex scrollbar-thin gap-4 overflow-x-auto pb-4">
 			{#each timelineMilestones as album (album.id)}
 				<div
 					class="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-all hover:border-slate-700 hover:shadow-lg"
@@ -1039,7 +920,11 @@
 					>
 						<img
 							src={album.artwork}
-							alt="Cover for {album.title}"
+							alt="Cover artwork for {album.title}"
+							width="256"
+							height="256"
+							loading="lazy"
+							decoding="async"
 							class="h-full w-full object-cover transition-transform hover:scale-105"
 						/>
 						<span
@@ -1050,9 +935,13 @@
 						{#if album.artistLogo}
 							<img
 								src={album.artistLogo}
-								alt="{album.artist} logo badge"
+								alt=""
+								aria-hidden="true"
+								width="24"
+								height="24"
+								loading="lazy"
+								decoding="async"
 								class="absolute top-2 right-2 h-6 w-6 rounded-full border border-slate-700/80 bg-slate-950/80 object-cover shadow-md backdrop-blur-sm"
-								title={album.artist}
 							/>
 						{/if}
 					</a>
@@ -1074,7 +963,12 @@
 								{#if album.artistLogo}
 									<img
 										src={album.artistLogo}
-										alt="{album.artist} logo"
+										alt=""
+										aria-hidden="true"
+										width="14"
+										height="14"
+										loading="lazy"
+										decoding="async"
 										class="h-3.5 w-3.5 shrink-0 rounded-full border border-slate-700/80 bg-slate-950 object-cover"
 									/>
 								{/if}
@@ -1087,9 +981,7 @@
 							</div>
 						</div>
 
-						<div
-							class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5"
-						>
+						<div class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
 							<span class="font-mono text-[11px] text-slate-500">
 								{album.playableTrackCount} Playable (128k)
 							</span>
@@ -1114,66 +1006,246 @@
 		</div>
 	</section>
 
-	<!-- 4. ARTIST ROSTER SHELF (Direct SEO Links to /[artist]) -->
-	<section>
-		<div class="mb-4">
-			<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-				Bands of Engine Room Records
-			</h2>
-			<p class="text-xs text-slate-400 sm:text-sm">
-				Select any band to visit their dedicated profile (<code class="font-mono text-slate-300"
-					>/$artist-slug</code
-				>) with full biography, discography, streaming links, and shareable cards.
-			</p>
-		</div>
+	<!-- 6. IN MEMORIAM: SIR PATRICK STEWART COSMIC QUARTET SHOWCASE (EXPIRES NOV 28, 2026) -->
+	{#if isMemoriamShowcaseActive && memoriamCosmicAlbums.length > 0}
+		<section
+			class="relative overflow-hidden rounded-3xl border border-amber-500/45 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/50 p-6 shadow-2xl sm:p-8"
+			aria-labelledby="memoriam-cosmic-showcase-heading"
+			data-memoriam-expires="2026-11-28T23:59:59-05:00"
+		>
+			<!-- Header, Creator's Personal Note & Framed Memorial Tribute Plaque -->
+			<div
+				class="flex flex-col items-stretch justify-between gap-6 border-b border-amber-500/25 pb-6 lg:flex-row lg:items-center"
+			>
+				<div class="min-w-0 flex-1 space-y-4">
+					<div class="flex flex-wrap items-center gap-2">
+						<span
+							class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-950/80 px-3.5 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
+						>
+							<span aria-hidden="true">✦</span>
+							<span>In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026)</span>
+						</span>
+						<span
+							class="rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 font-mono text-[11px] font-bold text-blue-300"
+						>
+							Second Star to the Right • Featured Through Nov 28, 2026
+						</span>
+					</div>
 
-		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-			{#each allArtists as artist (artist.slug)}
+					<h2
+						id="memoriam-cosmic-showcase-heading"
+						class="text-2xl font-black tracking-tight text-white sm:text-3xl"
+					>
+						The Cosmic Works Inspired by the <span class="text-amber-300 italic">NCC-1701-D</span>:
+						<span class="text-blue-400">Escape Velocity (Ad Astra)</span>,
+						<span class="text-amber-300">The Twin Moons</span> &amp;
+						<span class="text-cyan-300">Starfield Calibration</span>
+					</h2>
+
+					<p class="text-sm leading-relaxed text-slate-300 sm:text-base">
+						Without watching <strong class="text-white italic"
+							>Star Trek: The Next Generation</strong
+						>
+						as a kid with my family every weeknight evening, I never would have had the curiosity to look
+						up to the stars and wonder what is out there—and I never would have had that spark of imagination
+						that led to the creation of
+						<strong class="text-white">Escape Velocity (Ad Astra)</strong> (1996),
+						<strong class="text-white">Moon 1: Sanctuary (Zero-G)</strong> (2003),
+						<strong class="text-white">Moon 2: Mile Marker 98</strong> (2003), and the
+						<em>Cosmic Tidal Lock™</em> remixes of classic Stardust Engine songs on
+						<strong class="text-white">Starfield Calibration</strong> (2011).
+						<em class="text-amber-300"
+							>“Where to? Second star to the right, and straight on ’till morning.” — Ad astra per
+							aspera, Captain.</em
+						>
+					</p>
+
+					<div class="flex flex-wrap items-center gap-2.5 pt-1">
+						<button
+							type="button"
+							onclick={playMemoriamCosmicTrilogy}
+							class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:text-sm"
+						>
+							<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+								<path d="M8 5v14l11-7z" />
+							</svg>
+							<span>Play All 4 Cosmic Albums (39 Songs)</span>
+						</button>
+
+						<a
+							href="https://raggiesoft.com/in-memoriam"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/60 px-3.5 py-2.5 text-xs font-bold text-amber-200 transition-colors hover:bg-amber-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:text-sm"
+						>
+							<span>✦ Read Full Tribute</span>
+							<span aria-hidden="true">↗</span>
+						</a>
+
+						<a
+							href="https://nebulae.raggiesoft.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/40 bg-blue-950/60 px-3.5 py-2.5 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 sm:text-sm"
+						>
+							<span>🌌 Explore Caelum-IV</span>
+							<span aria-hidden="true">↗</span>
+						</a>
+					</div>
+				</div>
+
+				<!-- Right-Column Framed Memorial Artwork Card -->
 				<a
-					href={resolve('/[artist]', { artist: artist.slug })}
-					class="group flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					href="https://raggiesoft.com/in-memoriam"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group relative block w-full shrink-0 overflow-hidden rounded-2xl border border-amber-500/50 bg-slate-950 shadow-2xl transition-all hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 lg:w-[410px] xl:w-[450px]"
+					aria-label="Open In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026) Tribute Page"
 				>
-					<div class="flex items-center gap-3">
-						{#if artist.logo}
-							<img
-								src={artist.logo}
-								alt="{artist.name} Logo"
-								class="h-11 w-11 shrink-0 rounded-lg border border-slate-800 bg-slate-950 p-0.5 object-contain shadow-md"
-							/>
-						{:else}
-							<div
-								class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-indigo-700 font-bold text-white shadow-md"
-							>
-								{artist.name.charAt(0)}
-							</div>
-						{/if}
+					<img
+						src="https://assets.raggiesoft.com/raggiesoft-corporate/images/og/in-memoriam-patrick-stewart-og.jpg"
+						alt="Second Star to the Right — In Memoriam: Sir Patrick Stewart (July 13, 1940 – October 28, 2026)"
+						width="1200"
+						height="630"
+						loading="lazy"
+						decoding="async"
+						class="aspect-[1200/630] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+					/>
+					<div
+						class="flex items-center justify-between border-t border-amber-500/30 bg-slate-950/95 px-3.5 py-2 text-[11px] font-bold text-amber-200"
+					>
+						<span>✦ Second Star to the Right • Creator’s Cosmic Dedication</span>
+						<span class="text-amber-400 group-hover:underline">raggiesoft.com/in-memoriam ↗</span>
+					</div>
+				</a>
+			</div>
+
+			<!-- 2x2 Balanced Cosmic Quartet Grid -->
+			<div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+				{#each memoriamCosmicAlbums as cosmicAlbum (cosmicAlbum.slug)}
+					<article
+						class="flex flex-col justify-between rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-xl transition-all hover:border-amber-500/50"
+					>
 						<div>
-							<h3 class="text-sm font-bold text-white group-hover:text-blue-400">
-								{artist.name}
-							</h3>
-							<p class="text-xs text-slate-400">
-								{artist.albumCount}
-								{artist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {artist.trackCount} Songs
+							<div class="flex items-start gap-4">
+								<a
+									href={resolve('/[artist]/[album]', {
+										artist: cosmicAlbum.artistSlug,
+										album: cosmicAlbum.slug
+									})}
+									class="group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-amber-500/40 shadow-lg sm:h-28 sm:w-28"
+								>
+									<img
+										src={cosmicAlbum.artwork}
+										alt="Cover artwork for {cosmicAlbum.displayTitle}"
+										width="224"
+										height="224"
+										loading="lazy"
+										decoding="async"
+										class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									<span
+										class="absolute bottom-1.5 left-1.5 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300 backdrop-blur-sm"
+									>
+										{cosmicAlbum.year}
+									</span>
+								</a>
+
+								<div class="min-w-0 flex-1">
+									<span
+										class="inline-block rounded border border-amber-500/40 bg-amber-950/70 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-amber-300 uppercase"
+									>
+										{cosmicAlbum.cosmicRole}
+									</span>
+									<h3 class="mt-1.5 text-lg leading-snug font-extrabold text-white">
+										<a
+											href={resolve('/[artist]/[album]', {
+												artist: cosmicAlbum.artistSlug,
+												album: cosmicAlbum.slug
+											})}
+											class="transition-colors hover:text-amber-300"
+										>
+											{cosmicAlbum.displayTitle}
+										</a>
+									</h3>
+									<p class="mt-0.5 text-xs font-semibold text-blue-400">
+										{cosmicAlbum.cosmicSubtitle}
+									</p>
+									<p class="mt-1 font-mono text-[11px] text-slate-400">
+										{cosmicAlbum.tracks.length} Tracks &bull; Narrative Release: {formatReleaseDate(
+											cosmicAlbum.temporalCoverage,
+											cosmicAlbum.year
+										)}
+									</p>
+								</div>
+							</div>
+
+							<p class="mt-3.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+								{cosmicAlbum.cosmicNote}
 							</p>
 						</div>
-					</div>
-					<svg
-						class="h-5 w-5 text-slate-500 transition-transform group-hover:translate-x-1 group-hover:text-blue-400"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M9 5l7 7-7 7"
-						/>
-					</svg>
-				</a>
-			{/each}
-		</div>
-	</section>
+
+						<div class="mt-4 space-y-2.5 border-t border-slate-800 pt-3.5">
+							<div class="flex flex-wrap items-center gap-2">
+								<button
+									type="button"
+									onclick={() => playAlbum(cosmicAlbum)}
+									class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-extrabold text-white shadow-md shadow-blue-600/25 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+								>
+									<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+										<path d="M8 5v14l11-7z" />
+									</svg>
+									<span>Preview Album (128k)</span>
+								</button>
+
+								<a
+									href={resolve('/[artist]/[album]', {
+										artist: cosmicAlbum.artistSlug,
+										album: cosmicAlbum.slug
+									})}
+									class="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-amber-500/50 hover:bg-slate-700 hover:text-white"
+								>
+									<span>Lyrics &amp; Lore</span>
+									<span aria-hidden="true">&rarr;</span>
+								</a>
+							</div>
+
+							<div class="flex flex-wrap items-center justify-between gap-2">
+								<StoreButton
+									type="album"
+									size="small"
+									spotifyId={cosmicAlbum.spotifyId}
+									appleId={cosmicAlbum.appleId}
+									amazonId={cosmicAlbum.amazonId}
+									youtubeId={cosmicAlbum.youtubeId}
+									dspExempt={cosmicAlbum.dspExempt}
+									storeStandardUrl={cosmicAlbum.storeStandardUrl}
+									storeAudiophileUrl={cosmicAlbum.storeAudiophileUrl}
+								/>
+
+								<button
+									type="button"
+									onclick={() => openShareModal(cosmicAlbum)}
+									class="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+									aria-label="Share {cosmicAlbum.displayTitle}"
+								>
+									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+										/>
+									</svg>
+									<span>Share</span>
+								</button>
+							</div>
+						</div>
+					</article>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<!-- 
 		5. IN-UNIVERSE LORE BRIEF & CLOSED-SYSTEM DISCLAIMER
@@ -1204,14 +1276,15 @@
 				</svg>
 				The Listening Room Sanctuary
 			</div>
-			<h3 class="text-xl font-bold text-white sm:text-2xl">Music, Lyrics &amp; Narrative Intertwined</h3>
+			<h2 class="text-xl font-bold text-white sm:text-2xl">
+				Music, Lyrics &amp; Narrative Intertwined
+			</h2>
 			<p class="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
 				The Listening Room is the official music discovery, lyrics, and lore companion for
 				<strong class="text-white">Engine Room Records</strong>, founded by
-				<strong class="text-white">Michael Ragsdale</strong> within RaggieSoft Media. Read complete
-				liner notes and synchronized lyrics while previewing our 128kbps web streams for free—or
-				listen in Lossless/High-Res on Spotify, Apple Music, Amazon Music, YouTube, or Fourthwall to
-				directly support the music.
+				<strong class="text-white">Michael Ragsdale</strong> within RaggieSoft Media. Read complete liner
+				notes and synchronized lyrics while previewing our 128kbps web streams for free—or listen in Lossless/High-Res
+				on Spotify, Apple Music, Amazon Music, YouTube, or Fourthwall to directly support the music.
 			</p>
 
 			<!-- Closed-System Policy & Exchange Transport Notice -->

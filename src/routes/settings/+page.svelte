@@ -165,6 +165,7 @@
 
 <svelte:head>
 	<title>Preferences &amp; Theme Settings | The Listening Room (Engine Room Records)</title>
+	<meta name="robots" content="noindex,follow" />
 	<meta
 		name="description"
 		content="Customize your preferred streaming service, visual theme palette, OS color scheme behavior, and audio preferences in The Listening Room."
@@ -184,7 +185,8 @@
 					Settings, Streaming &amp; Themes
 				</h1>
 				<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-					Configure your default streaming app, adaptive theme palette, and local session preferences.
+					Configure your default streaming app, adaptive theme palette, and local session
+					preferences.
 				</p>
 			</div>
 
@@ -277,8 +279,8 @@
 					<p class="mt-1 text-xs leading-relaxed text-slate-400">
 						When following a direct song link from a story or lore page, The Listening Room scrolls
 						to the song and expands its Lyrics &amp; Lore. Defaults to
-						<strong class="text-slate-200">Off</strong> so listeners are never surprised by
-						unexpected audio when opening a page.
+						<strong class="text-slate-200">Off</strong> so listeners are never surprised by unexpected
+						audio when opening a page.
 					</p>
 				</div>
 
@@ -318,7 +320,8 @@
 					{#if dspManager.canShowPlayerNudge}
 						Gentle end-of-track streaming upgrade reminders are currently enabled.
 					{:else}
-						You have dismissed the end-of-track streaming reminder—we’ve permanently hidden it so you can enjoy 128kbps web playback uninterrupted.
+						You have dismissed the end-of-track streaming reminder—we’ve permanently hidden it so
+						you can enjoy 128kbps web playback uninterrupted.
 					{/if}
 				</p>
 			</div>
@@ -391,11 +394,17 @@
 					<img
 						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
 						alt="Engine Room Records Light Mode Logo (Black on Transparent)"
+						width="40"
+						height="40"
+						decoding="async"
 						class="er-logo-light h-full w-full object-contain"
 					/>
 					<img
 						src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
 						alt="Engine Room Records Dark Mode Logo (White on Transparent)"
+						width="40"
+						height="40"
+						decoding="async"
 						class="er-logo-dark h-full w-full object-contain"
 					/>
 				</div>
@@ -549,4 +558,3 @@
 		</div>
 	</section>
 </div>
-

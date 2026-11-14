@@ -62,6 +62,38 @@ function staticPwaAdapter(options = {}) {
 				}
 			}
 			normalizeHtmlAssetPaths(out);
+
+			// Mirror prerendered `<route>.html` files (`trailingSlash = 'never'`) to
+			// `<route>/index.html` as a zero-downtime static bridge while keeping
+			// `<route>.html` at its canonical path for `try_files $uri $uri.html =404;`
+			// and `error_page 404 /404.html;`.
+			/** @param {string} dir */
+			function mirrorDirectoryIndexes(dir) {
+				for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+					const fullPath = path.join(dir, entry.name);
+					if (entry.isDirectory()) {
+						if (entry.name === '_app' || entry.name === 'sitemaps' || entry.name === 'icons') {
+							continue;
+						}
+						mirrorDirectoryIndexes(fullPath);
+					} else if (entry.isFile() && entry.name.endsWith('.html')) {
+						if (
+							entry.name === 'index.html' ||
+							entry.name === '200.html' ||
+							entry.name === '404.html'
+						) {
+							continue;
+						}
+						const baseName = entry.name.slice(0, -5);
+						const indexTarget = path.join(dir, baseName, 'index.html');
+						if (!fs.existsSync(indexTarget)) {
+							fs.mkdirSync(path.dirname(indexTarget), { recursive: true });
+							fs.copyFileSync(fullPath, indexTarget);
+						}
+					}
+				}
+			}
+			mirrorDirectoryIndexes(out);
 		}
 	};
 }
@@ -332,11 +364,7 @@ function engineRoomStudioDevApi() {
 										(/** @type {string} */ p) => p && p.trim()
 									);
 								}
-								fs.writeFileSync(
-									albumJsonPath,
-									JSON.stringify(albumJson, null, 2) + '\n',
-									'utf-8'
-								);
+								fs.writeFileSync(albumJsonPath, JSON.stringify(albumJson, null, 2) + '\n', 'utf-8');
 								savedFiles.push(albumJsonPath);
 							}
 						}
@@ -425,6 +453,9 @@ export default defineConfig({
 		tailwindcss(),
 		sveltekit({
 			adapter: staticPwaAdapter({ pages: 'build', fallback: '200.html' }),
+			paths: {
+				relative: false
+			},
 			compilerOptions: {
 				runes: true
 			}

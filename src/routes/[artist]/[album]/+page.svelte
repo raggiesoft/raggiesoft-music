@@ -38,6 +38,7 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import { buildAlbumJsonLdScript, buildAlbumSeoMeta } from '#lib/seo.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
@@ -45,47 +46,17 @@
 
 	let album = $derived(data.album);
 	let relatedAlbums = $derived(data.relatedAlbums);
+	let adjacentReleases = $derived(data.adjacentReleases || { previous: null, next: null });
+	let sameEraAlbums = $derived(data.sameEraAlbums || []);
+	let connectedPlaylists = $derived(data.connectedPlaylists || []);
+	let relatedArtists = $derived(data.relatedArtists || []);
 
-	// Canonical URL for this hierarchical album route
-	let canonicalUrl = $derived(`https://music.raggiesoft.com/${album.artistSlug}/${album.slug}`);
+	// Deterministic SEO metadata & canonical URL for this hierarchical album route
+	let seo = $derived(buildAlbumSeoMeta(album));
+	let canonicalUrl = $derived(seo.canonicalUrl);
 
-	// Canonical Schema.org JSON-LD formatted string for search engines & structured data crawlers
-	let jsonLdScript = $derived(
-		`<script type="application/ld+json">${JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'MusicAlbum',
-			name: album.title,
-			byArtist: {
-				'@type': 'MusicGroup',
-				name: album.artist,
-				url: `https://music.raggiesoft.com/${album.artistSlug}`
-			},
-			genre: album.genre,
-			albumProductionType:
-				album.albumType === 'live'
-					? 'https://schema.org/LiveAlbum'
-					: album.albumType === 'compilation'
-						? 'https://schema.org/CompilationAlbum'
-						: album.albumType === 'soundtrack'
-							? 'https://schema.org/SoundtrackAlbum'
-							: 'https://schema.org/StudioAlbum',
-			image: album.artwork,
-			datePublished: album.datePublished || album.temporalCoverage || album.year,
-			temporalCoverage: album.temporalCoverage,
-			description: album.description,
-			numTracks: album.totalTracksCount,
-			url: `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}`,
-			track: album.tracks.map((t) => ({
-				'@type': 'MusicRecording',
-				name: t.title,
-				position: t.track,
-				isrcCode: t.isrc || undefined,
-				duration: t.duration
-			}))
-		})}` +
-			'</' +
-			'script>'
-	);
+	// Canonical Schema.org @graph JSON-LD (MusicAlbum + MusicRecording list + BreadcrumbList)
+	let jsonLdScript = $derived(buildAlbumJsonLdScript(album));
 
 	/**
 	 * Parses a "MM:SS" or "HH:MM:SS" duration string into total seconds (returns 0 for "In Studio").
@@ -142,9 +113,7 @@
 		});
 	});
 
-	let albumTotalSeconds = $derived(
-		discs.reduce((acc, d) => acc + (d.totalSeconds || 0), 0)
-	);
+	let albumTotalSeconds = $derived(discs.reduce((acc, d) => acc + (d.totalSeconds || 0), 0));
 	let albumTotalDurationFormatted = $derived(formatCdMinutesSeconds(albumTotalSeconds));
 
 	// Active track expanded for lore/lyrics accordion view
@@ -186,7 +155,10 @@
 	 */
 	function findTrackByDeepLink(rawQuery, tracks) {
 		if (!rawQuery || !Array.isArray(tracks) || tracks.length === 0) return null;
-		const cleanRaw = rawQuery.trim().toLowerCase().replace(/^#?(?:track-)?/, '');
+		const cleanRaw = rawQuery
+			.trim()
+			.toLowerCase()
+			.replace(/^#?(?:track-)?/, '');
 		const cleanSlug = slugifyTrackToken(rawQuery);
 		if (!cleanRaw && !cleanSlug) return null;
 
@@ -241,8 +213,7 @@
 			page.url.searchParams.get('play') ||
 			page.url.searchParams.get('song') ||
 			'';
-		const rawHash =
-			page.url.hash && page.url.hash !== '#share-album-section' ? page.url.hash : '';
+		const rawHash = page.url.hash && page.url.hash !== '#share-album-section' ? page.url.hash : '';
 		const targetQuery = trackParam || rawHash;
 
 		if (!targetQuery) return;
@@ -271,12 +242,11 @@
 	});
 
 	/**
-	 * Copies a direct deep-link URL that starts/highlights a specific track on this album.
+	 * Copies the canonical standalone song URL for a specific track on this album.
 	 * @param {any} track
 	 */
 	async function copyTrackDeepLink(track) {
-		const slugOrId = track.fileName || track.id;
-		const shareUrl = `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}?track=${encodeURIComponent(slugOrId)}`;
+		const shareUrl = `https://music.raggiesoft.com/${album.artistSlug}/${album.slug}/${track.slug}`;
 		try {
 			await navigator.clipboard.writeText(shareUrl);
 			copiedTrackId = track.id;
@@ -404,36 +374,38 @@
 
 <svelte:head>
 	<!-- Primary Meta Tags -->
-	<title>{album.title} by {album.artist} | The Listening Room — Engine Room Records</title>
-	<meta
-		name="title"
-		content="{album.title} by {album.artist} | The Listening Room — Engine Room Records"
-	/>
-	<meta name="description" content={album.description} />
-	<link rel="canonical" href={canonicalUrl} />
+	<title>{seo.title}</title>
+	<meta name="description" content={seo.description} />
+	<link rel="canonical" href={seo.canonicalUrl} />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="music.album" />
-	<meta property="og:site_name" content="The Listening Room | Engine Room Records" />
-	<meta property="og:url" content={canonicalUrl} />
-	<meta property="og:title" content="{album.title} — {album.artist}" />
-	<meta property="og:description" content={album.description} />
+	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
+	<meta property="og:url" content={seo.canonicalUrl} />
+	<meta property="og:title" content={seo.ogTitle} />
+	<meta property="og:description" content={seo.description} />
 	<meta property="og:image" content={album.socialPreview} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
-	<meta property="og:image:alt" content="{album.title} by {album.artist} - Social Preview" />
+	<meta
+		property="og:image:alt"
+		content="{album.title} by {album.artist} — Album Cover & Lore on The Listening Room"
+	/>
 	<meta property="music:musician" content="https://music.raggiesoft.com/{album.artistSlug}" />
-	<meta property="music:release_date" content={album.temporalCoverage || album.year} />
+	<meta property="music:release_date" content={seo.releaseDate} />
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:url" content={canonicalUrl} />
-	<meta name="twitter:title" content="{album.title} — {album.artist}" />
-	<meta name="twitter:description" content={album.description} />
+	<meta name="twitter:url" content={seo.canonicalUrl} />
+	<meta name="twitter:title" content={seo.ogTitle} />
+	<meta name="twitter:description" content={seo.description} />
 	<meta name="twitter:image" content={album.socialPreview} />
-	<meta name="twitter:image:alt" content="{album.title} by {album.artist} - Social Preview" />
+	<meta
+		name="twitter:image:alt"
+		content="{album.title} by {album.artist} — Album Cover & Lore on The Listening Room"
+	/>
 
-	<!-- Structured Data (JSON-LD) for Schema.org MusicAlbum -->
+	<!-- Structured Data (JSON-LD) for Schema.org MusicAlbum + BreadcrumbList -->
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html jsonLdScript}
 </svelte:head>
@@ -441,21 +413,20 @@
 <div class="space-y-10">
 	<!-- Breadcrumb Navigation Bar -->
 	<nav
-		class="flex items-center gap-2 text-xs font-medium text-slate-400 sm:text-sm"
+		class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-400 sm:text-sm"
 		aria-label="Breadcrumb"
 	>
 		<a
-			href={resolve('/discography')}
-			class="flex items-center gap-1.5 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+			href={resolve('/')}
+			class="transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 		>
-			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M10 19l-7-7m0 0l7-7m-7 7h18"
-				/>
-			</svg>
+			Home
+		</a>
+		<span class="text-slate-600">/</span>
+		<a
+			href={resolve('/discography')}
+			class="transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+		>
 			Discography
 		</a>
 		<span class="text-slate-600">/</span>
@@ -481,6 +452,10 @@
 				<img
 					src={album.artwork}
 					alt="Cover artwork for {album.title}"
+					width="600"
+					height="600"
+					fetchpriority="high"
+					decoding="async"
 					class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 				/>
 
@@ -575,7 +550,8 @@
 							</span>
 						{/if}
 						<span class="font-mono text-xs font-semibold text-slate-400">
-							Lore Era: {formatReleaseDate(album.temporalCoverage, album.year)} • Real-World Release: {album.datePublished || '2026'} • {album.genre}
+							Narrative Release: {formatReleaseDate(album.temporalCoverage, album.year)} • Real-World
+							DSP Release: {seo.releaseDate} • {album.genre}
 							{#if album.upc}
 								• UPC: {album.upc}
 							{/if}
@@ -600,6 +576,9 @@
 							<img
 								src={album.artistLogo}
 								alt="{album.artist} logo badge"
+								width="36"
+								height="36"
+								decoding="async"
 								class="h-8 w-8 shrink-0 rounded-full border border-slate-700/80 bg-slate-950 object-cover shadow-md sm:h-9 sm:w-9"
 							/>
 						{/if}
@@ -607,6 +586,43 @@
 							{album.artist}
 						</span>
 					</a>
+
+					<!-- Explicit Dual-Timeline & Creator Attribution Strip -->
+					<div
+						class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-slate-800/90 bg-slate-950/70 px-3.5 py-2.5 text-xs text-slate-300"
+					>
+						<span>
+							<strong class="text-slate-200">Narrative Release:</strong>
+							{formatReleaseDate(album.temporalCoverage, album.year)}
+						</span>
+						<span class="text-slate-600" aria-hidden="true">•</span>
+						<span>
+							<strong class="text-slate-200">Real-World DSP Release:</strong>
+							{seo.releaseDate}
+						</span>
+						<span class="text-slate-600" aria-hidden="true">•</span>
+						<span>
+							<strong class="text-slate-200">Sound recording:</strong>
+							℗ 2026
+							<a
+								href="https://engineroom.raggiesoft.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="font-semibold text-blue-300 hover:underline"
+							>
+								Engine Room Records
+							</a>
+							(Created by
+							<a
+								href="https://michaelpragsdale.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="font-semibold text-blue-300 hover:underline"
+							>
+								Michael P. Ragsdale
+							</a>)
+						</span>
+					</div>
 
 					{#if album.linerNotes && album.linerNotes.length > 0}
 						<div class="mt-4 space-y-3">
@@ -633,7 +649,7 @@
 						<div
 							class="rounded-xl border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-xs leading-relaxed text-amber-200"
 						>
-							<strong class="font-extrabold uppercase tracking-wider text-amber-300">
+							<strong class="font-extrabold tracking-wider text-amber-300 uppercase">
 								Vault Exclusive:
 							</strong>
 							{album.dspNotice}
@@ -785,7 +801,12 @@
 								rel="noopener noreferrer"
 								class="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
 							>
-								<svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-4 w-4 text-indigo-400"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -804,7 +825,12 @@
 								rel="noopener noreferrer"
 								class="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
 							>
-								<svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-4 w-4 text-indigo-400"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -833,7 +859,8 @@
 						>
 							<p>
 								<span class="mr-1" aria-hidden="true">💛</span>
-								<strong class="text-white">CC BY-SA 4.0 Free Downloads &amp; Artist Support:</strong>
+								<strong class="text-white">CC BY-SA 4.0 Free Downloads &amp; Artist Support:</strong
+								>
 								The built-in player streams free <strong>128kbps web previews</strong>, and you can
 								freely download the
 								{#if album.freeArchiveUrl}
@@ -931,8 +958,8 @@
 					Studio Archives &amp; Liner Notes
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
-					Behind-the-scenes production logs, engineering notes, and historical context from the Engine
-					Room Records vault
+					Behind-the-scenes production logs, engineering notes, and historical context from the
+					Engine Room Records vault
 				</p>
 			</div>
 
@@ -997,17 +1024,22 @@
 
 	<!-- Tracklist & Discography Sequence -->
 	<section class="space-y-6">
-		<div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+		<div
+			class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4"
+		>
 			<div>
 				<h2 class="text-2xl font-bold tracking-tight text-white">
 					Tracklist, Lyrics &amp; Canonical Lore
 				</h2>
 				<p class="text-xs text-slate-400 sm:text-sm">
 					{#if discs.length > 1}
-						<strong class="text-cyan-300">{discs.length} Digital Audio CDs (74-Min Red Book Standard)</strong> •
+						<strong class="text-cyan-300"
+							>{discs.length} Digital Audio CDs (74-Min Red Book Standard)</strong
+						> •
 					{/if}
-					{album.totalTracksCount} tracks{#if albumTotalSeconds > 0} ({albumTotalDurationFormatted} total runtime){/if} • {album.playableTrackCount} available as 128kbps web preview
-					streams &amp; CC BY-SA 4.0 downloads
+					{album.totalTracksCount} tracks{#if albumTotalSeconds > 0}
+						({albumTotalDurationFormatted} total runtime){/if} • {album.playableTrackCount} available
+					as 128kbps web preview streams &amp; CC BY-SA 4.0 downloads
 				</p>
 			</div>
 
@@ -1042,7 +1074,9 @@
 							Featured Track Deep-Link • Disc {deepLinkedTrack.disc || 1}, Track {deepLinkedTrack.track}
 						</div>
 						<div class="text-sm font-bold text-white sm:text-base">
-							{deepLinkedTrack.title}{deepLinkedTrack.version ? ` (${deepLinkedTrack.version})` : ''}
+							{deepLinkedTrack.title}{deepLinkedTrack.version
+								? ` (${deepLinkedTrack.version})`
+								: ''}
 						</div>
 						<div class="mt-0.5 text-[11px] text-slate-300">
 							Autoplay on Deep-Links:
@@ -1177,7 +1211,16 @@
 														? 'font-bold text-blue-400'
 														: 'text-white'}"
 												>
-													{track.title}
+													<a
+														href={resolve('/[artist]/[album]/[track]', {
+															artist: album.artistSlug,
+															album: album.slug,
+															track: track.slug
+														})}
+														class="transition-colors hover:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+													>
+														{track.title}
+													</a>
 												</h3>
 												{#if track.version}
 													<span
@@ -1254,7 +1297,7 @@
 										</div>
 									</div>
 
-									<div class="flex flex-wrap shrink-0 items-center gap-2">
+									<div class="flex shrink-0 flex-wrap items-center gap-2">
 										<span class="font-mono text-xs text-slate-400">{track.duration}</span>
 
 										{#if track.isPlayable && track.audioUrl}
@@ -1272,11 +1315,23 @@
 											<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{/if}
 
+										<a
+											href={resolve('/[artist]/[album]/[track]', {
+												artist: album.artistSlug,
+												album: album.slug,
+												track: track.slug
+											})}
+											class="rounded-lg border border-blue-500/40 bg-blue-950/40 px-2.5 py-1 text-xs font-semibold text-blue-200 transition-colors hover:border-blue-400 hover:bg-blue-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+											aria-label="Open full song page for {track.title}"
+										>
+											Song Page &rarr;
+										</a>
+
 										<button
 											type="button"
 											onclick={() => copyTrackDeepLink(track)}
 											class="rounded-lg border border-slate-700/60 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 transition-colors hover:border-blue-500/50 hover:bg-slate-700 hover:text-blue-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-											title="Copy direct link to start {track.title}"
+											title="Copy direct link to {track.title}"
 										>
 											{copiedTrackId === track.id ? '✓ Link Copied' : '🔗 Link'}
 										</button>
@@ -1362,8 +1417,8 @@
 															</span>
 														</div>
 														<p class="mt-0.5 text-xs text-slate-300">
-															Explore studio originals, early demos, alternate mixes, and live concert
-															recordings of this song across the catalog.
+															Explore studio originals, early demos, alternate mixes, and live
+															concert recordings of this song across the catalog.
 														</p>
 													</div>
 
@@ -1372,9 +1427,12 @@
 															type="button"
 															onclick={() => compareAllPlayableVersions(track)}
 															class="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-600/30 transition-all hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-															title="Queue all {comparisonData.queue.length} distinct playable versions in chronological order"
+															title="Queue all {comparisonData.queue
+																.length} distinct playable versions in chronological order"
 														>
-															<span>▶ Compare All {comparisonData.queue.length} Playable Versions</span>
+															<span
+																>▶ Compare All {comparisonData.queue.length} Playable Versions</span
+															>
 														</button>
 													{/if}
 												</div>
@@ -1395,6 +1453,10 @@
 																<img
 																	src={rel.album.artwork}
 																	alt="{rel.album.title} cover art"
+																	width="48"
+																	height="48"
+																	loading="lazy"
+																	decoding="async"
 																	class="h-12 w-12 shrink-0 rounded-lg border border-slate-700/80 object-cover shadow-sm"
 																/>
 
@@ -1408,7 +1470,8 @@
 																		{#if rel.sharedMasterLabel}
 																			<span
 																				class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
-																				title="This album includes the exact same studio master recording ({rel.track.isrc})"
+																				title="This album includes the exact same studio master recording ({rel
+																					.track.isrc})"
 																			>
 																				🔗 {rel.sharedMasterLabel}
 																			</span>
@@ -1422,7 +1485,9 @@
 																		{/if}
 																	</div>
 
-																	<div class="mt-1 truncate text-xs font-bold text-white sm:text-sm">
+																	<div
+																		class="mt-1 truncate text-xs font-bold text-white sm:text-sm"
+																	>
 																		{rel.track.title}
 																	</div>
 
@@ -1441,7 +1506,9 @@
 																</div>
 															</div>
 
-															<div class="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center">
+															<div
+																class="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center"
+															>
 																{#if rel.track.isPlayable}
 																	<button
 																		type="button"
@@ -1468,18 +1535,17 @@
 																	</button>
 																{/if}
 
-																<!-- eslint-disable svelte/no-navigation-without-resolve -->
 																<a
-																	href="{resolve('/[artist]/[album]', {
+																	href={resolve('/[artist]/[album]/[track]', {
 																		artist: rel.album.artistSlug,
-																		album: rel.album.slug
-																	})}?track={encodeURIComponent(rel.deepLinkQuery)}"
+																		album: rel.album.slug,
+																		track: rel.track.slug
+																	})}
 																	class="inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-																	title="Open {rel.album.title} at {rel.track.title}"
+																	title="Open {rel.track.title} on {rel.album.title}"
 																>
-																	<span>Album &rarr;</span>
+																	<span>Song &rarr;</span>
 																</a>
-																<!-- eslint-enable svelte/no-navigation-without-resolve -->
 															</div>
 														</div>
 													{/each}
@@ -1511,6 +1577,125 @@
 		</div>
 	</section>
 
+	<!-- Previous & Next Release in Artist Chronology -->
+	{#if adjacentReleases.previous || adjacentReleases.next}
+		<section class="space-y-4 border-t border-slate-800/80 pt-8">
+			<h2 class="text-xl font-bold tracking-tight text-white">
+				{album.artist} Chronology
+			</h2>
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{#if adjacentReleases.previous}
+					<a
+						href={resolve('/[artist]/[album]', {
+							artist: adjacentReleases.previous.artistSlug,
+							album: adjacentReleases.previous.slug
+						})}
+						class="group flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-all hover:border-blue-500/60 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						<img
+							src={adjacentReleases.previous.artwork}
+							alt="Cover artwork for {adjacentReleases.previous.title}"
+							width="64"
+							height="64"
+							loading="lazy"
+							decoding="async"
+							class="h-16 w-16 shrink-0 rounded-xl border border-slate-700 object-cover"
+						/>
+						<div class="min-w-0">
+							<div class="text-xs font-bold tracking-wider text-slate-400 uppercase">
+								&larr; Earlier Release ({adjacentReleases.previous.year})
+							</div>
+							<h3
+								class="truncate text-sm font-bold text-white group-hover:text-blue-400 sm:text-base"
+							>
+								{adjacentReleases.previous.title}
+							</h3>
+							<p class="truncate text-xs text-slate-400">
+								{adjacentReleases.previous.totalTracksCount} tracks &bull; {adjacentReleases
+									.previous.genre}
+							</p>
+						</div>
+					</a>
+				{:else}
+					<div class="hidden sm:block"></div>
+				{/if}
+
+				{#if adjacentReleases.next}
+					<a
+						href={resolve('/[artist]/[album]', {
+							artist: adjacentReleases.next.artistSlug,
+							album: adjacentReleases.next.slug
+						})}
+						class="group flex items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-right transition-all hover:border-blue-500/60 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						<div class="min-w-0 flex-1">
+							<div class="text-xs font-bold tracking-wider text-slate-400 uppercase">
+								Next Release ({adjacentReleases.next.year}) &rarr;
+							</div>
+							<h3
+								class="truncate text-sm font-bold text-white group-hover:text-blue-400 sm:text-base"
+							>
+								{adjacentReleases.next.title}
+							</h3>
+							<p class="truncate text-xs text-slate-400">
+								{adjacentReleases.next.totalTracksCount} tracks &bull; {adjacentReleases.next.genre}
+							</p>
+						</div>
+						<img
+							src={adjacentReleases.next.artwork}
+							alt="Cover artwork for {adjacentReleases.next.title}"
+							width="64"
+							height="64"
+							loading="lazy"
+							decoding="async"
+							class="h-16 w-16 shrink-0 rounded-xl border border-slate-700 object-cover"
+						/>
+					</a>
+				{/if}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Connected Story Playlists -->
+	{#if connectedPlaylists.length > 0}
+		<section class="space-y-4 border-t border-slate-800/80 pt-8">
+			<div class="flex items-center justify-between gap-4">
+				<div>
+					<h2 class="text-xl font-bold tracking-tight text-white">
+						Featured in Curated Story Playlists
+					</h2>
+					<p class="mt-0.5 text-xs text-slate-400 sm:text-sm">
+						Songs from {album.title} appear in these multi-era Engine Room Records playlists
+					</p>
+				</div>
+				<a
+					href={resolve('/playlists')}
+					class="text-xs font-semibold text-blue-400 hover:text-blue-300"
+				>
+					All Playlists &rarr;
+				</a>
+			</div>
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+				{#each connectedPlaylists as pl (pl.slug)}
+					<a
+						href={resolve('/playlists/[slug]', { slug: pl.slug })}
+						class="group rounded-2xl border border-slate-800 bg-slate-900/60 p-5 transition-all hover:border-indigo-500/60 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+					>
+						<div class="text-xs font-bold tracking-wider text-indigo-300 uppercase">
+							{pl.subtitle}
+						</div>
+						<h3 class="mt-1 text-base font-bold text-white group-hover:text-indigo-300 sm:text-lg">
+							{pl.title}
+						</h3>
+						<p class="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-400 sm:text-sm">
+							{pl.description}
+						</p>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	<!-- Related Artist Releases Shelf -->
 	{#if relatedAlbums.length > 0}
 		<section class="space-y-4 border-t border-slate-800/80 pt-8">
@@ -1538,6 +1723,10 @@
 							<img
 								src={rel.artwork}
 								alt="Cover artwork for {rel.title}"
+								width="300"
+								height="300"
+								loading="lazy"
+								decoding="async"
 								class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 							/>
 						</div>
@@ -1557,6 +1746,109 @@
 		</section>
 	{/if}
 
+	<!-- Appears in the Same Narrative Era (Cross-Artist Discovery) -->
+	{#if sameEraAlbums.length > 0}
+		<section class="space-y-4 border-t border-slate-800/80 pt-8">
+			<div class="flex items-center justify-between gap-4">
+				<div>
+					<h2 class="text-xl font-bold tracking-tight text-white">From the Same Story Era</h2>
+					<p class="mt-0.5 text-xs text-slate-400 sm:text-sm">
+						Contemporary releases from fellow bands across the RaggieSoft timeline
+					</p>
+				</div>
+				<a
+					href={resolve('/discography')}
+					class="text-xs font-semibold text-blue-400 hover:text-blue-300"
+				>
+					Explore Timeline &rarr;
+				</a>
+			</div>
+
+			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+				{#each sameEraAlbums as eraAlb (eraAlb.id)}
+					<a
+						href={resolve('/[artist]/[album]', { artist: eraAlb.artistSlug, album: eraAlb.slug })}
+						class="group flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 p-3 transition-all hover:border-blue-600/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						<div
+							class="relative aspect-square w-full overflow-hidden rounded-lg border border-slate-800"
+						>
+							<img
+								src={eraAlb.artwork}
+								alt="Cover artwork for {eraAlb.title} by {eraAlb.artist}"
+								width="300"
+								height="300"
+								loading="lazy"
+								decoding="async"
+								class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+							/>
+						</div>
+						<div class="mt-2.5 min-w-0">
+							<h3
+								class="truncate text-xs font-bold text-white group-hover:text-blue-400 sm:text-sm"
+							>
+								{eraAlb.title}
+							</h3>
+							<p class="truncate text-[11px] text-slate-300">{eraAlb.artist}</p>
+							<p class="truncate text-[11px] text-slate-500">
+								{eraAlb.year} • {eraAlb.tracks.length} tracks
+							</p>
+						</div>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Related Engine Room Records Artists & Official Streaming Verification -->
+	{#if relatedArtists.length > 0}
+		<section class="space-y-4 border-t border-slate-800/80 pt-8">
+			<div class="flex flex-wrap items-center justify-between gap-4">
+				<h2 class="text-xl font-bold tracking-tight text-white">Explore Fellow Label Artists</h2>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
+				<a
+					href="https://engineroom.raggiesoft.com/verification/{album.artistSlug}/{album.slug}"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:underline"
+				>
+					Official Release &amp; Rights Verification &nearr;
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			</div>
+
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				{#each relatedArtists as relArtist (relArtist.slug)}
+					<a
+						href={resolve('/[artist]', { artist: relArtist.slug })}
+						class="group flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-3.5 transition-all hover:border-blue-500/60 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						{#if relArtist.logo}
+							<img
+								src={relArtist.logo}
+								alt="{relArtist.name} band emblem"
+								width="48"
+								height="48"
+								loading="lazy"
+								decoding="async"
+								class="h-12 w-12 shrink-0 rounded-xl border border-slate-700/80 bg-slate-950 object-contain p-1"
+							/>
+						{/if}
+						<div class="min-w-0">
+							<h3 class="truncate text-sm font-bold text-white group-hover:text-blue-400">
+								{relArtist.name}
+							</h3>
+							<p class="truncate text-xs text-slate-400">
+								{relArtist.albumCount}
+								{relArtist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {relArtist.trackCount} Songs
+							</p>
+						</div>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	<!-- Book-Reader Style Share Section for this Album -->
 	<div id="share-album-section" class="pt-4">
 		<ShareSection
@@ -1565,8 +1857,7 @@
 			description={album.description}
 			url={canonicalUrl}
 			socialPreview={album.socialPreview}
-			sharePrompt="Share this direct album link with friends. Social platforms will automatically display the custom 1200x630 OpenGraph preview card."
+			sharePrompt="Share this direct album link with friends, including full lyrics, story notes, and social preview artwork."
 		/>
 	</div>
 </div>
-

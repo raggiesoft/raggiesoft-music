@@ -29,32 +29,34 @@
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
+	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
+
+	const privacyDescription =
+		'Privacy Policy for The Listening Room (music.raggiesoft.com) by Michael P. Ragsdale: zero user accounts, no customer databases, and private settings.';
+
+	const privacyBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'Privacy Policy', url: 'https://music.raggiesoft.com/privacy' }
+	]);
 </script>
 
 <svelte:head>
 	<title>Privacy Policy | The Listening Room</title>
-	<meta
-		name="description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
-	/>
+	<meta name="description" content={privacyDescription} />
 	<link rel="canonical" href="https://music.raggiesoft.com/privacy" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/privacy" />
 	<meta property="og:title" content="Privacy Policy | The Listening Room" />
-	<meta
-		property="og:description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
-	/>
+	<meta property="og:description" content={privacyDescription} />
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Privacy Policy | The Listening Room" />
-	<meta
-		name="twitter:description"
-		content="Privacy Policy for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. No user accounts, no customer databases, and private on-device preferences."
-	/>
+	<meta name="twitter:description" content={privacyDescription} />
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html privacyBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="mx-auto max-w-4xl space-y-8">
@@ -87,8 +89,9 @@
 				Welcome to <strong class="text-white">The Listening Room</strong> (<strong
 					class="text-blue-300">music.raggiesoft.com</strong
 				>), part of the <strong class="text-white">RaggieSoft.com</strong> network. These web
-				properties are owned and operated by <strong class="text-white">Michael P. Ragsdale</strong
-				>, a natural person and individual creator residing in the
+				properties are owned and operated by
+				<strong class="text-white">Michael P. Ragsdale</strong>, a natural person and individual
+				creator residing in the
 				<strong class="text-white">Commonwealth of Virginia</strong>, operating under the
 				unincorporated creative imprints <strong class="text-white">RaggieSoft</strong>,
 				<strong class="text-white">RaggieSoft Media</strong>,
@@ -127,12 +130,8 @@
 						Your preferred default streaming service (Spotify, Apple Music, Amazon Music, or YouTube
 						Music).
 					</li>
-					<li>
-						Your visual theme, color mode, and accessibility settings.
-					</li>
-					<li>
-						Dismissed notification banners so we don’t repeatedly interrupt your session.
-					</li>
+					<li>Your visual theme, color mode, and accessibility settings.</li>
+					<li>Dismissed notification banners so we don’t repeatedly interrupt your session.</li>
 				</ul>
 				<p class="mt-2 text-xs text-slate-400">
 					This information stays strictly inside your own browser and is never transmitted to our
@@ -166,10 +165,9 @@
 					All traffic to our websites passes through <strong class="text-white"
 						>Cloudflare, Inc.</strong
 					>
-					for network security and reliable delivery. Cloudflare processes basic connection details
-					(including IP addresses) to protect the site against automated attacks and malicious
-					scraping, and may set strictly necessary security cookies to distinguish human visitors
-					from automated bots.
+					for network security and reliable delivery. Cloudflare processes basic connection details (including
+					IP addresses) to protect the site against automated attacks and malicious scraping, and may
+					set strictly necessary security cookies to distinguish human visitors from automated bots.
 				</p>
 			</div>
 
@@ -201,9 +199,9 @@
 					or <code class="font-mono text-slate-200">@engineroom-records.com</code> address, or if
 					you book a consultation through our embedded
 					<strong class="text-white">Microsoft Bookings</strong> page (hosted on
-					<strong class="text-white">Microsoft 365</strong>), the contact details and message content
-					you provide are processed via Microsoft Corporation’s enterprise cloud infrastructure
-					solely to respond to your inquiry or conduct your scheduled meeting.
+					<strong class="text-white">Microsoft 365</strong>), the contact details and message
+					content you provide are processed via Microsoft Corporation’s enterprise cloud
+					infrastructure solely to respond to your inquiry or conduct your scheduled meeting.
 				</p>
 			</div>
 
@@ -270,18 +268,16 @@
 				>
 				page. If you have voluntarily corresponded with us via email or Microsoft Bookings and wish to
 				request access to or deletion of that correspondence under applicable privacy laws (including
-				the Virginia Consumer Data Protection Act, CCPA/CPRA, or GDPR), please contact us via the
-				link below. The Services are intended for general audiences and are not directed to children
-				under the age of 13.
+				the Virginia Consumer Data Protection Act, CCPA/CPRA, or GDPR), please contact us via the link
+				below. The Services are intended for general audiences and are not directed to children under
+				the age of 13.
 			</p>
 		</section>
 
 		<hr class="border-slate-800" />
 
 		<section class="space-y-3">
-			<h2 class="text-lg font-extrabold text-white sm:text-xl">
-				5. Contact &amp; Policy Updates
-			</h2>
+			<h2 class="text-lg font-extrabold text-white sm:text-xl">5. Contact &amp; Policy Updates</h2>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				If you have questions regarding this Privacy Policy, please reach out to
 				<strong class="text-white">Michael P. Ragsdale</strong> via the official channels listed at
@@ -294,20 +290,18 @@
 				>.
 			</p>
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-xs text-slate-400">
-				<h3 class="font-mono font-bold text-slate-200 uppercase">
-					Policy Revision History
-				</h3>
+				<h3 class="font-mono font-bold text-slate-200 uppercase">Policy Revision History</h3>
 				<ul class="mt-2 list-inside list-disc space-y-1">
 					<li>
-						<strong class="text-slate-200">October 26, 2026:</strong> Added explicit natural-person
-						operator disclosure (Michael P. Ragsdale vs. fictional in-universe LLCs), account-free
-						privacy summary, disclosures for Google Analytics 4, Microsoft 365 / Microsoft Bookings,
-						and VCDPA/CCPA/GDPR no-sale rights, and effective/revision dates.
+						<strong class="text-slate-200">October 26, 2026:</strong> Added explicit natural-person operator
+						disclosure (Michael P. Ragsdale vs. fictional in-universe LLCs), account-free privacy summary,
+						disclosures for Google Analytics 4, Microsoft 365 / Microsoft Bookings, and VCDPA/CCPA/GDPR
+						no-sale rights, and effective/revision dates.
 					</li>
 					<li>
-						<strong class="text-slate-200">March 29, 2026:</strong> Initial publication of the
-						RaggieSoft &amp; Engine Room Records Privacy Policy covering on-device preferences,
-						standard server logs, Cloudflare security, and Fourthwall Merchant-of-Record separation.
+						<strong class="text-slate-200">March 29, 2026:</strong> Initial publication of the RaggieSoft
+						&amp; Engine Room Records Privacy Policy covering on-device preferences, standard server logs,
+						Cloudflare security, and Fourthwall Merchant-of-Record separation.
 					</li>
 				</ul>
 			</div>

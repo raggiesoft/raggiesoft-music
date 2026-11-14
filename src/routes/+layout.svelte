@@ -25,6 +25,7 @@
 	 */
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { themeManager } from '#lib/theme.svelte.js';
@@ -45,6 +46,7 @@
 	let currentPath = $derived(page.url?.pathname || '/');
 
 	// Context-aware metadata for the Global Dual Timelines & DSP Verification Disclaimer
+	let activeTrack = $derived(/** @type {any} */ (page.data)?.track || null);
 	let activeAlbum = $derived(/** @type {any} */ (page.data)?.album || null);
 	let activeArtist = $derived(/** @type {any} */ (page.data)?.artist || null);
 	let activeArtistSlug = $derived(
@@ -55,24 +57,28 @@
 	let activeAlbumTitle = $derived(activeAlbum?.title || '');
 	let activeLoreDate = $derived(activeAlbum?.temporalCoverage || activeAlbum?.year || '');
 	let activeRealDate = $derived(activeAlbum?.datePublished || '2026');
-	let activeTrackSlug = $state('');
+	let queryTrackSlug = $state('');
 
 	$effect(() => {
 		if (typeof window === 'undefined' || !page.url) {
-			activeTrackSlug = '';
+			queryTrackSlug = '';
 			return;
 		}
-		activeTrackSlug =
+		queryTrackSlug =
 			page.url.searchParams.get('track') ||
 			page.url.searchParams.get('play') ||
 			page.url.searchParams.get('song') ||
 			'';
 	});
 
+	let activeTrackSlug = $derived(
+		activeTrack?.fileName || page.params?.track || queryTrackSlug || ''
+	);
+
 	let dspVerificationUrl = $derived.by(() => {
 		const baseUrl = 'https://engineroom.raggiesoft.com/dsp-verification/';
 		if (!activeArtistSlug) return baseUrl;
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		params.set('artist', activeArtistSlug);
 		if (activeAlbumSlug) {
 			params.set('album', activeAlbumSlug);
@@ -100,8 +106,11 @@
 		playlistManager.init();
 
 		// Ensure the site-wide RaggieSoft Network menu dropdown & mobile drawer are bound after Svelte hydration
-		if (typeof window !== 'undefined' && typeof (/** @type {any} */ (window)).initRaggieSoftNetworkMenu === 'function') {
-			(/** @type {any} */ (window)).initRaggieSoftNetworkMenu();
+		if (
+			typeof window !== 'undefined' &&
+			typeof (/** @type {any} */ (window).initRaggieSoftNetworkMenu) === 'function'
+		) {
+			/** @type {any} */ (window).initRaggieSoftNetworkMenu();
 		}
 
 		// Register Service Worker for PWA capabilities
@@ -163,21 +172,79 @@
 						<span>Engine Room</span>
 						<span class="rs-network-caret" aria-hidden="true">▾</span>
 					</button>
-					<ul class="rs-network-dropdown-menu" role="menu" aria-label="Engine Room Records & Band Roster">
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com"><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a></li>
-						<li role="none"><a role="menuitem" href="https://music.raggiesoft.com" aria-current="page" class="is-active"><span aria-hidden="true">🎧</span><span>The Listening Room</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists"><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"><span aria-hidden="true">🏷️</span><span>Official Music Catalog Registry</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a></li>
+					<ul
+						class="rs-network-dropdown-menu"
+						role="menu"
+						aria-label="Engine Room Records & Band Roster"
+					>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com"
+								><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a
+							>
+						</li>
+						<li role="none">
+							<a
+								role="menuitem"
+								href="https://music.raggiesoft.com"
+								aria-current="page"
+								class="is-active"
+								><span aria-hidden="true">🎧</span><span>The Listening Room</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists"
+								><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"
+								><span aria-hidden="true">🏷️</span><span>Official Music Catalog Registry</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"
+								><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a
+							>
+						</li>
 						<li class="rs-network-dropdown-divider" role="separator"></li>
 						<li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"><span aria-hidden="true">🔴</span><span>Crimson Node</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/firelight"><span aria-hidden="true">🔥</span><span>Firelight</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/fractured-prisms"><span aria-hidden="true">💎</span><span>Fractured Prisms</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/mana-canvas"><span aria-hidden="true">🎨</span><span>Mana Canvas</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"><span aria-hidden="true">❄️</span><span>The Arctic Symphony Project</span></a></li>
-						<li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-paper-wall"><span aria-hidden="true">🧱</span><span>The Paper Wall</span></a></li>
-						<li role="none"><a role="menuitem" href="https://stardust.raggiesoft.com"><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a></li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"
+								><span aria-hidden="true">🔴</span><span>Crimson Node</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/firelight"
+								><span aria-hidden="true">🔥</span><span>Firelight</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/fractured-prisms"
+								><span aria-hidden="true">💎</span><span>Fractured Prisms</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/mana-canvas"
+								><span aria-hidden="true">🎨</span><span>Mana Canvas</span></a
+							>
+						</li>
+						<li role="none">
+							<a
+								role="menuitem"
+								href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"
+								><span aria-hidden="true">❄️</span><span>The Arctic Symphony Project</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-paper-wall"
+								><span aria-hidden="true">🧱</span><span>The Paper Wall</span></a
+							>
+						</li>
+						<li role="none">
+							<a role="menuitem" href="https://stardust.raggiesoft.com"
+								><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a
+							>
+						</li>
 					</ul>
 				</li>
 				<li><a href="https://corporate.raggiesoft.com">🏢 Corporate</a></li>
@@ -206,23 +273,35 @@
 					<img
 						src="/icons/icon-192.png?v=3"
 						alt="The Listening Room App Icon"
+						width="44"
+						height="44"
+						decoding="async"
 						class="h-full w-full object-cover"
 					/>
 				</div>
 				<div class="min-w-0">
-					<span class="block truncate text-sm leading-tight font-extrabold tracking-tight text-white sm:text-base"
+					<span
+						class="block truncate text-sm leading-tight font-extrabold tracking-tight text-white sm:text-base"
 						>The Listening Room</span
 					>
-					<span class="flex items-center gap-1 truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]">
+					<span
+						class="flex items-center gap-1 truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]"
+					>
 						<img
 							src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png"
 							alt=""
+							width="14"
+							height="14"
+							decoding="async"
 							aria-hidden="true"
 							class="er-logo-light inline-block h-3.5 w-3.5 shrink-0 object-contain"
 						/>
 						<img
 							src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png"
 							alt=""
+							width="14"
+							height="14"
+							decoding="async"
 							aria-hidden="true"
 							class="er-logo-dark inline-block h-3.5 w-3.5 shrink-0 object-contain"
 						/>
@@ -233,7 +312,10 @@
 
 			<!-- Trimmed Global Navigation Links & Action Controls -->
 			<div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-				<nav class="hidden md:flex items-center gap-1 text-xs font-semibold lg:gap-2 lg:text-sm" aria-label="Global Navigation">
+				<nav
+					class="hidden items-center gap-1 text-xs font-semibold md:flex lg:gap-2 lg:text-sm"
+					aria-label="Global Navigation"
+				>
 					{#if canInstall}
 						<button
 							type="button"
@@ -241,7 +323,13 @@
 							class="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 xl:flex"
 							aria-label="Install Engine Room Records as an App"
 						>
-							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+							<svg
+								class="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								aria-hidden="true"
+							>
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
@@ -302,7 +390,13 @@
 						aria-label="Theme and Preferences Settings"
 						title="Themes & Settings"
 					>
-						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+						<svg
+							class="h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							aria-hidden="true"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -324,11 +418,17 @@
 				<button
 					type="button"
 					onclick={() => (showGlobalSearch = true)}
-					class="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3"
+					class="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 sm:text-sm"
 					aria-label="Open Search and Filter Menu"
 					title="Search & Filter Catalog"
 				>
-					<svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+					<svg
+						class="h-4 w-4 text-blue-400"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -347,13 +447,29 @@
 					aria-expanded={mobileMenuOpen}
 					aria-controls="music-mobile-navigation"
 					aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-					class="flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 md:hidden"
 				>
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+					<svg
+						class="h-5 w-5"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
 						{#if mobileMenuOpen}
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M6 18L18 6M6 6l12 12" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2.25"
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						{:else}
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M4 6h16M4 12h16M4 18h16" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2.25"
+								d="M4 6h16M4 12h16M4 18h16"
+							/>
 						{/if}
 					</svg>
 				</button>
@@ -363,48 +479,75 @@
 		<!-- Unified Mobile Hamburger Menu Panel (Local Links + Auto-Injected RaggieSoft Network Grid) -->
 		<div
 			id="music-mobile-navigation"
-			class="{mobileMenuOpen ? 'block' : 'hidden'} md:hidden mx-auto max-w-7xl border-t border-slate-800 pt-3 mt-3"
+			class="{mobileMenuOpen
+				? 'block'
+				: 'hidden'} mx-auto mt-3 max-w-7xl border-t border-slate-800 pt-3 md:hidden"
 		>
-			<nav class="grid grid-cols-2 gap-2 text-xs font-bold" aria-label="Mobile Listening Room Navigation">
+			<nav
+				class="grid grid-cols-2 gap-2 text-xs font-bold"
+				aria-label="Mobile Listening Room Navigation"
+			>
 				<a
 					href={resolve('/')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath === '/' ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath === '/'
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					🏠 Home
 				</a>
 				<a
 					href={resolve('/discography')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/discography') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath.startsWith(
+						'/discography'
+					)
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					💿 Discography
 				</a>
 				<a
 					href={resolve('/playlists')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/playlists') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath.startsWith(
+						'/playlists'
+					)
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					🎶 Playlists
 				</a>
 				<a
 					href={resolve('/radio')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/radio') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath.startsWith(
+						'/radio'
+					)
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					📻 Radio
 				</a>
 				<a
 					href={resolve('/behind-the-scenes')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/behind-the-scenes') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath.startsWith(
+						'/behind-the-scenes'
+					)
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					🎚️ Studio Workflow
 				</a>
 				<a
 					href={resolve('/settings')}
 					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2 rounded-lg px-3 py-2.5 border {currentPath.startsWith('/settings') ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-slate-800 bg-slate-900/90 text-slate-200'}"
+					class="flex items-center gap-2 rounded-lg border px-3 py-2.5 {currentPath.startsWith(
+						'/settings'
+					)
+						? 'border-blue-500 bg-blue-600/20 text-blue-300'
+						: 'border-slate-800 bg-slate-900/90 text-slate-200'}"
 				>
 					⚙️ Themes &amp; Settings
 				</a>
@@ -444,21 +587,56 @@
 						</a>
 					{/if}
 					<span class="text-amber-500/60" aria-hidden="true">&bull;</span>
-					<a
-						href={resolve('/behind-the-scenes')}
-						class="text-amber-300 underline hover:text-white"
-					>
+					<a href={resolve('/behind-the-scenes')} class="text-amber-300 underline hover:text-white">
 						Behind the Scenes &rarr;
 					</a>
 				</div>
 			</div>
 			<p class="mt-1 text-amber-100/95">
 				{#if activeArtistName && activeAlbumTitle}
-					<strong>{activeArtistName}</strong> and the historical release date for <em>{activeAlbumTitle}</em> ({activeLoreDate}) represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements on this release are original {activeRealDate} studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					<strong>{activeArtistName}</strong> and the historical release date for
+					<em>{activeAlbumTitle}</em>
+					({activeLoreDate}) represent <strong>in-universe story dates</strong> within the fictional
+					RaggieSoft literary universe. In the real world,
+					<strong
+						>100% of all sound recordings, lyrics, and arrangements on this release are original {activeRealDate}
+						studio creations</strong
+					>
+					written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world
+					creative imprint <strong>Engine Room Records</strong> (<a
+						href="https://engineroom-records.com/"
+						class="text-amber-300 underline hover:text-white">engineroom-records.com</a
+					>
+					&bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{:else if activeArtistName}
-					<strong>{activeArtistName}</strong> and all historical release dates across their discography represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					<strong>{activeArtistName}</strong> and all historical release dates across their
+					discography represent <strong>in-universe story dates</strong> within the fictional
+					RaggieSoft literary universe. In the real world,
+					<strong
+						>100% of all sound recordings, lyrics, and arrangements are original 2026 studio
+						creations</strong
+					>
+					written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world
+					creative imprint <strong>Engine Room Records</strong> (<a
+						href="https://engineroom-records.com/"
+						class="text-amber-300 underline hover:text-white">engineroom-records.com</a
+					>
+					&bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{:else}
-					All bands and historical release dates across this catalog (spanning <strong>1976–2016</strong>) represent <strong>in-universe story dates</strong> within the fictional RaggieSoft literary universe. In the real world, <strong>100% of all sound recordings, lyrics, and arrangements are original 2026 studio creations</strong> written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world creative imprint <strong>Engine Room Records</strong> (<a href="https://engineroom-records.com/" class="text-amber-300 underline hover:text-white">engineroom-records.com</a> &bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
+					All bands and historical release dates across this catalog (spanning <strong
+						>1976–2016</strong
+					>) represent <strong>in-universe story dates</strong> within the fictional RaggieSoft
+					literary universe. In the real world,
+					<strong
+						>100% of all sound recordings, lyrics, and arrangements are original 2026 studio
+						creations</strong
+					>
+					written, produced, and owned by <strong>Michael P. Ragsdale</strong> under his real-world
+					creative imprint <strong>Engine Room Records</strong> (<a
+						href="https://engineroom-records.com/"
+						class="text-amber-300 underline hover:text-white">engineroom-records.com</a
+					>
+					&bull; DSP Operations Contact: <code>dsp.operations@engineroom-records.com</code>).
 				{/if}
 			</p>
 		</aside>
@@ -469,7 +647,9 @@
 	<!-- ===================================================================== -->
 	<!-- GLOBAL FOOTER: BEHIND THE SCENES, LEGAL, & HYBRID LICENSING           -->
 	<!-- ===================================================================== -->
-	<footer class="mt-12 border-t border-slate-800/80 bg-slate-900/60 px-4 py-8 text-xs text-slate-400 sm:px-6 lg:px-8">
+	<footer
+		class="mt-12 border-t border-slate-800/80 bg-slate-900/60 px-4 py-8 text-xs text-slate-400 sm:px-6 lg:px-8"
+	>
 		<div class="mx-auto flex max-w-7xl flex-col justify-between gap-6 lg:flex-row lg:items-center">
 			<div class="space-y-1.5">
 				<div class="flex flex-wrap items-center gap-2 font-bold text-slate-200">
@@ -480,7 +660,11 @@
 					<span>A Division of RaggieSoft Media</span>
 				</div>
 				<p class="leading-relaxed text-slate-400">
-					<strong>Code:</strong> <a href={resolve('/terms')} class="text-slate-300 underline hover:text-white">MIT License</a> &bull;
+					<strong>Code:</strong>
+					<a href={resolve('/terms')} class="text-slate-300 underline hover:text-white"
+						>MIT License</a
+					>
+					&bull;
 					<strong>Creative Content &amp; Music:</strong>
 					<a
 						href="https://creativecommons.org/licenses/by-sa/4.0/"
@@ -498,18 +682,20 @@
 					>)
 				</p>
 				<p class="leading-relaxed text-slate-400">
-					<strong class="text-slate-300">Fictitious Disclaimer:</strong> All bands, characters,
-					universities (including Commonwealth Polytechnic Institute / CPI, The Forgers, The
-					Ironheads, The Crucible, Virginia Dominion University / VDU, Piedmont Virginia University /
-					PVU, and Monongahela State University / MSU), corporations (including OmniCorp, Apex
-					Records, Prairie Coachworks, and Sainte-Claire), transit agencies (Blue Ridge Transit),
-					legal contracts, and historical events depicted on this site are works of fiction. Any
-					resemblance to actual persons, living or dead, businesses, institutions, or events is
-					purely coincidental.
+					<strong class="text-slate-300">Fictitious Disclaimer:</strong> All bands, characters, universities
+					(including Commonwealth Polytechnic Institute / CPI, The Forgers, The Ironheads, The Crucible,
+					Virginia Dominion University / VDU, Piedmont Virginia University / PVU, and Monongahela State
+					University / MSU), corporations (including OmniCorp, Apex Records, Prairie Coachworks, and Sainte-Claire),
+					transit agencies (Blue Ridge Transit), legal contracts, and historical events depicted on this
+					site are works of fiction. Any resemblance to actual persons, living or dead, businesses, institutions,
+					or events is purely coincidental.
 				</p>
 			</div>
 
-			<nav class="flex flex-wrap items-center gap-x-5 gap-y-2 font-semibold text-slate-300" aria-label="Footer Legal and Behind the Scenes Links">
+			<nav
+				class="flex flex-wrap items-center gap-x-5 gap-y-2 font-semibold text-slate-300"
+				aria-label="Footer Legal and Behind the Scenes Links"
+			>
 				<a href={resolve('/behind-the-scenes')} class="transition-colors hover:text-blue-400">
 					Behind the Scenes (AI &amp; Process)
 				</a>

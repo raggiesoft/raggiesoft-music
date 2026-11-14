@@ -34,6 +34,7 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import { buildBreadcrumbJsonLdScript, ensureRealWorldDate } from '#lib/seo.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
@@ -180,25 +181,36 @@
 			socialPreview: album.socialPreview
 		};
 	}
+
+	const discographyDescription = `Browse all ${catalogStats.albumCount} albums and ${catalogStats.trackCount} songs across ${catalogStats.artistCount} Engine Room Records bands with full lyrics, lore, and free previews.`;
+
+	const discographyBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'Complete Discography', url: 'https://music.raggiesoft.com/discography' }
+	]);
 </script>
 
 <svelte:head>
 	<title>{pageHeading} | The Listening Room (Engine Room Records)</title>
-	<meta
-		name="description"
-		content="Explore the complete chronological discography of Engine Room Records in The Listening Room. Read full lyrics and lore, preview 128kbps streams, or listen in Lossless HD on your favorite streaming platform."
-	/>
+	<meta name="description" content={discographyDescription} />
+	{#if activeFilterCount > 0}
+		<meta name="robots" content="noindex,follow" />
+	{/if}
 	<link rel="canonical" href="https://music.raggiesoft.com/discography" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/discography" />
-	<meta property="og:title" content="{pageHeading} | The Listening Room (Engine Room Records)" />
-	<meta
-		property="og:description"
-		content="Explore the complete chronological discography of Engine Room Records in The Listening Room. Read full lyrics and lore, preview 128kbps streams, or listen in Lossless HD on your favorite streaming platform."
-	/>
+	<meta property="og:title" content="{pageHeading} | The Listening Room" />
+	<meta property="og:description" content={discographyDescription} />
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="{pageHeading} | The Listening Room" />
+	<meta name="twitter:description" content={discographyDescription} />
+	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
+
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html discographyBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="space-y-8">
@@ -209,7 +221,9 @@
 		class="flex flex-col justify-between gap-4 border-b border-slate-800/80 pb-6 lg:flex-row lg:items-end"
 	>
 		<div>
-			<div class="flex items-center gap-2 text-xs font-bold tracking-widest text-blue-400 uppercase">
+			<div
+				class="flex items-center gap-2 text-xs font-bold tracking-widest text-blue-400 uppercase"
+			>
 				<span>The Listening Room Archive</span>
 				<span>&bull;</span>
 				<span>{filteredAlbums.length} of {currentCatalog.length} Releases</span>
@@ -218,7 +232,10 @@
 				{pageHeading}
 			</h1>
 			<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-				Sequenced by in-universe story timeline. Stream in Lossless/High-Res on your favorite app to support <strong class="text-slate-200">Michael Ragsdale</strong> &amp; <strong class="text-slate-200">Engine Room Records</strong>, or enjoy free 128kbps previews right here.
+				Sequenced by in-universe story timeline. Stream in Lossless/High-Res on your favorite app to
+				support <strong class="text-slate-200">Michael Ragsdale</strong> &amp;
+				<strong class="text-slate-200">Engine Room Records</strong>, or enjoy free 128kbps previews
+				right here.
 			</p>
 		</div>
 
@@ -269,7 +286,7 @@
 
 	<!-- Quick Artist Direct Links Bar (Navigates to /[artist]) -->
 	<section
-		class="flex items-center gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3 scrollbar-thin"
+		class="flex scrollbar-thin items-center gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3"
 		aria-label="Artist Directory Links"
 	>
 		<span class="shrink-0 px-2 text-xs font-bold tracking-wider text-slate-400 uppercase">
@@ -281,7 +298,16 @@
 				class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:border-blue-500/60 hover:bg-slate-800 hover:text-white"
 			>
 				{#if artist.logo}
-					<img src={artist.logo} alt="" class="h-4 w-4 rounded-full object-cover" />
+					<img
+						src={artist.logo}
+						alt=""
+						aria-hidden="true"
+						width="16"
+						height="16"
+						loading="lazy"
+						decoding="async"
+						class="h-4 w-4 rounded-full object-cover"
+					/>
 				{/if}
 				<span>{artist.name}</span>
 				<span class="font-mono text-[10px] text-slate-400">({artist.albumCount})</span>
@@ -291,30 +317,50 @@
 
 	<!-- Active Filter Chips (only visible when filters are active) -->
 	{#if activeFilterCount > 0}
-		<div class="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+		<div
+			class="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3"
+		>
 			<span class="text-xs font-bold tracking-wider text-slate-400 uppercase">Active Filters:</span>
 			{#if searchQuery.trim()}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300"
+				>
 					Query: "{searchQuery}"
-					<button type="button" onclick={() => (searchQuery = '')} class="hover:text-white">&times;</button>
+					<button type="button" onclick={() => (searchQuery = '')} class="hover:text-white"
+						>&times;</button
+					>
 				</span>
 			{/if}
 			{#if activeFilter !== 'all'}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300 uppercase">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300 uppercase"
+				>
 					Category: {activeFilter}
-					<button type="button" onclick={() => (activeFilter = 'all')} class="hover:text-white">&times;</button>
+					<button type="button" onclick={() => (activeFilter = 'all')} class="hover:text-white"
+						>&times;</button
+					>
 				</span>
 			{/if}
 			{#if activeTypeFilter !== 'all'}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 uppercase">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 uppercase"
+				>
 					Format: {activeTypeFilter}
-					<button type="button" onclick={() => (activeTypeFilter = 'all')} class="hover:text-white">&times;</button>
+					<button type="button" onclick={() => (activeTypeFilter = 'all')} class="hover:text-white"
+						>&times;</button
+					>
 				</span>
 			{/if}
 			{#if activeStatusFilter !== 'all'}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-2.5 py-1 text-xs font-semibold text-emerald-300 uppercase">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-2.5 py-1 text-xs font-semibold text-emerald-300 uppercase"
+				>
 					Status: {activeStatusFilter}
-					<button type="button" onclick={() => (activeStatusFilter = 'all')} class="hover:text-white">&times;</button>
+					<button
+						type="button"
+						onclick={() => (activeStatusFilter = 'all')}
+						class="hover:text-white">&times;</button
+					>
 				</span>
 			{/if}
 			<button
@@ -355,15 +401,20 @@
 		<div class="space-y-12">
 			{#each groupedAlbumSections as section (section.id)}
 				<section class="space-y-5">
-					<div class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
+					<div
+						class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between"
+					>
 						<div>
 							<div class="flex items-center gap-2">
 								<span class="text-xl">{section.icon}</span>
 								<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
 									{section.title}
 								</h2>
-								<span class="rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-300">
-									{section.albums.length} {section.albums.length === 1 ? 'Release' : 'Releases'}
+								<span
+									class="rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-300"
+								>
+									{section.albums.length}
+									{section.albums.length === 1 ? 'Release' : 'Releases'}
 								</span>
 							</div>
 							<p class="mt-1 text-xs text-slate-400 sm:text-sm">
@@ -394,6 +445,10 @@
 											<img
 												src={album.artwork}
 												alt="Cover artwork for {album.title}"
+												width="176"
+												height="176"
+												loading="lazy"
+												decoding="async"
 												class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 											/>
 										</a>
@@ -449,11 +504,14 @@
 													</span>
 												{/if}
 												<span class="font-mono text-xs font-semibold text-slate-400">
-													{formatReleaseDate(album.temporalCoverage, album.year)} &bull; {album.genre}
+													Story Year: {formatReleaseDate(album.temporalCoverage, album.year)} &bull; Released:
+													{ensureRealWorldDate(album.datePublished)} &bull; {album.genre}
 												</span>
 											</div>
 
-											<h3 class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl">
+											<h3
+												class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl"
+											>
 												<a
 													href={resolve('/[artist]/[album]', {
 														artist: album.artistSlug,
@@ -470,6 +528,10 @@
 													<img
 														src={album.artistLogo}
 														alt="{album.artist} logo badge"
+														width="16"
+														height="16"
+														loading="lazy"
+														decoding="async"
 														class="h-4 w-4 shrink-0 rounded-full border border-slate-700/80 bg-slate-950 object-cover"
 													/>
 												{/if}
@@ -481,13 +543,17 @@
 												</a>
 											</div>
 
-											<p class="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-400 sm:text-sm">
+											<p
+												class="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-400 sm:text-sm"
+											>
 												{album.description}
 											</p>
 										</div>
 
 										<!-- Card Action Bar (DSP / Fourthwall + 128kbps Preview) -->
-										<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5">
+										<div
+											class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5"
+										>
 											<StoreButton
 												type="album"
 												size="small"
@@ -535,7 +601,12 @@
 												onclick={() => openAlbumShareModal(album)}
 												class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
 											>
-												<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<svg
+													class="h-3.5 w-3.5"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
@@ -593,7 +664,10 @@
 																class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white"
 																aria-label="Preview {track.title}"
 															>
-																<svg class="h-3.5 w-3.5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
+																<svg
+																	class="h-3.5 w-3.5 translate-x-0.5 fill-current"
+																	viewBox="0 0 24 24"
+																>
 																	<path d="M8 5v14l11-7z" />
 																</svg>
 															</button>
@@ -604,11 +678,19 @@
 																{track.track}
 															</span>
 														{/if}
-														<span class="truncate text-sm font-medium">
+														<a
+															href={resolve('/[artist]/[album]/[track]', {
+																artist: album.artistSlug,
+																album: album.slug,
+																track: track.slug
+															})}
+															class="truncate text-sm font-medium transition-colors hover:text-blue-400 hover:underline"
+														>
 															{track.track}. {track.title}
-														</span>
+														</a>
 													</div>
-													<span class="ml-4 font-mono text-xs text-slate-500">{track.duration}</span>
+													<span class="ml-4 font-mono text-xs text-slate-500">{track.duration}</span
+													>
 												</div>
 											{/each}
 										</div>
@@ -627,7 +709,7 @@
 		<ShareSection
 			title={pageHeading}
 			subtitle="The Listening Room — Engine Room Records"
-			description="Explore the complete narrative discography, lyrics, and lore of Engine Room Records across all 7 bands."
+			description="Explore the complete narrative discography, lyrics, and lore of Engine Room Records across all {catalogStats.artistCount} bands."
 			url="https://music.raggiesoft.com/discography"
 			socialPreview="https://music.raggiesoft.com/og-image.jpg"
 		/>
@@ -654,4 +736,3 @@
 	url={shareModalData?.url || ''}
 	socialPreview={shareModalData?.socialPreview || ''}
 />
-

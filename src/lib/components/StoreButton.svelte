@@ -232,7 +232,7 @@
 
 					{#if menuOpen}
 						<div
-							class="absolute left-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-900 shadow-2xl"
+							class="absolute top-full left-0 z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-900 shadow-2xl"
 							role="menu"
 						>
 							<div class="border-b border-slate-800 bg-slate-950/90 px-3.5 py-2.5">
@@ -292,7 +292,7 @@
 					href={storeStandardUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-cyan-500/50 bg-cyan-950/60 font-bold text-cyan-200 shadow-md transition-all hover:border-cyan-400 hover:bg-cyan-900/70 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-cyan-500/50 bg-cyan-950/60 font-bold whitespace-nowrap text-cyan-200 shadow-md transition-all hover:border-cyan-400 hover:bg-cyan-900/70 hover:text-white {sizeClasses}"
 					title="Purchase DRM-Free High-Quality V0 MP3/OGG Archive directly via Fourthwall"
 				>
 					<span aria-hidden="true">🛍️</span>
@@ -308,7 +308,7 @@
 					href={storeAudiophileUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-amber-500/60 bg-amber-950/60 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/70 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-500/60 bg-amber-950/60 font-bold whitespace-nowrap text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/70 hover:text-white {sizeClasses}"
 					title="Purchase Uncompressed Studio Master WAV/FLAC Archive directly via Fourthwall"
 				>
 					<span aria-hidden="true">🎚️</span>
@@ -324,7 +324,7 @@
 					href={storefrontUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-amber-500/50 bg-amber-950/50 font-bold text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/60 hover:text-white {sizeClasses}"
+					class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-950/50 font-bold whitespace-nowrap text-amber-200 shadow-md transition-all hover:border-amber-400 hover:bg-amber-900/60 hover:text-white {sizeClasses}"
 					title="Visit Official Fourthwall Digital & Merch Storefront"
 				>
 					<span aria-hidden="true">🛍️</span>
@@ -335,4 +335,3 @@
 		{/if}
 	</div>
 {/if}
-

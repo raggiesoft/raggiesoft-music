@@ -9,3 +9,4 @@ bun.lockb
 /static/
 /build/
 /.svelte-kit/
+/src/lib/data/musicCatalog.json

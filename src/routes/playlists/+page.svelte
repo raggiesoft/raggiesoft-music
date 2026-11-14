@@ -29,7 +29,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { player } from '#lib/player.svelte.js';
-	import { allAlbums, formatAlbumQueue } from '#lib/data/musicData.js';
+	import { allAlbums, catalogStats, formatAlbumQueue } from '#lib/data/musicData.js';
+	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
 	import {
 		getAllCuratedPlaylists,
 		playlistManager,
@@ -150,31 +151,37 @@
 			// Fallback if clipboard API is restricted
 		}
 	}
+
+	const playlistsDescription = `Stream official story playlists linked to The Ocean View Archives or build custom mixes across all ${catalogStats.trackCount} Engine Room Records songs.`;
+
+	const playlistsBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'Playlists & Story Suites', url: 'https://music.raggiesoft.com/playlists' }
+	]);
 </script>
 
 <svelte:head>
 	<title>Story Playlists &amp; Custom Queue Builder | The Listening Room</title>
-	<meta
-		name="description"
-		content="Stream official multi-album narrative playlists like 'Before the Distance: The Story of John & Erin' by The Stardust Engine, or build and share your own custom playlists across the Engine Room Records catalog."
-	/>
+	<meta name="description" content={playlistsDescription} />
 	<link rel="canonical" href="https://music.raggiesoft.com/playlists" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room by Engine Room Records" />
-	<meta
-		property="og:title"
-		content="Story Playlists & Custom Queue Builder | The Listening Room"
-	/>
-	<meta
-		property="og:description"
-		content="Explore official narrative playlists linked directly to The Ocean View Archives and build your own custom playlists across 344 original tracks."
-	/>
+	<meta property="og:title" content="Story Playlists &amp; Queue Builder | The Listening Room" />
+	<meta property="og:description" content={playlistsDescription} />
 	<meta property="og:url" content="https://music.raggiesoft.com/playlists" />
 	<meta
 		property="og:image"
 		content="https://assets.raggiesoft.com/engine-room-records/playlists/john-and-erin/social-preview.jpg"
 	/>
 	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Story Playlists &amp; Queue Builder | The Listening Room" />
+	<meta name="twitter:description" content={playlistsDescription} />
+	<meta
+		name="twitter:image"
+		content="https://assets.raggiesoft.com/engine-room-records/playlists/john-and-erin/social-preview.jpg"
+	/>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html playlistsBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="space-y-12">
@@ -203,8 +210,8 @@
 			</h1>
 
 			<p class="text-base leading-relaxed text-slate-300 sm:text-lg">
-				Experience curated multi-album narrative arcs—starting with The Stardust Engine's
-				five-song twin saga, <strong class="text-white"
+				Experience curated multi-album narrative arcs—starting with The Stardust Engine's five-song
+				twin saga, <strong class="text-white"
 					>Before the Distance: The Story of John &amp; Erin</strong
 				>—or craft and share your own custom playlists from anywhere in the Engine Room Records
 				catalog.
@@ -225,12 +232,17 @@
 	<!-- SECTION 1: OFFICIAL CURATED STORY PLAYLISTS                           -->
 	<!-- ===================================================================== -->
 	<section class="space-y-6" aria-labelledby="official-playlists-heading">
-		<div class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-end">
+		<div
+			class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-end"
+		>
 			<div>
 				<span class="text-xs font-bold tracking-widest text-blue-400 uppercase">
 					Canonical Narrative Suites
 				</span>
-				<h2 id="official-playlists-heading" class="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+				<h2
+					id="official-playlists-heading"
+					class="mt-1 text-2xl font-extrabold text-white sm:text-3xl"
+				>
 					Official Story Playlists
 				</h2>
 			</div>
@@ -252,7 +264,11 @@
 						>
 							<img
 								src={playlist.artwork}
-								alt={playlist.title}
+								alt="{playlist.title} cover artwork"
+								width="320"
+								height="320"
+								loading="lazy"
+								decoding="async"
 								class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 							/>
 							<div
@@ -321,9 +337,7 @@
 							</p>
 
 							<!-- Direct Cross-Property Gateway Links (Book + Lore Page) -->
-							<div
-								class="rounded-2xl border border-blue-500/30 bg-blue-950/25 p-4"
-							>
+							<div class="rounded-2xl border border-blue-500/30 bg-blue-950/25 p-4">
 								<p class="mb-2.5 text-xs font-bold tracking-wider text-blue-300 uppercase">
 									📖 {playlist.bookUrl
 										? 'Read the Companion Novel & Band Lore'
@@ -359,7 +373,11 @@
 											rel="noopener noreferrer"
 											class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
 										>
-											<span>{playlist.bookUrl ? 'RaggieSoft Hub Reader' : 'Ad Astra Lore Archive'}</span>
+											<span
+												>{playlist.bookUrl
+													? 'RaggieSoft Hub Reader'
+													: 'Ad Astra Lore Archive'}</span
+											>
 											<span>↗</span>
 										</a>
 									{/if}
@@ -372,14 +390,16 @@
 							<h4 class="text-xs font-bold tracking-wider text-slate-400 uppercase">
 								Story Sequence ({playlist.tracks.length} Songs)
 							</h4>
-							<div class="divide-y divide-slate-800/80 rounded-2xl border border-slate-800 bg-slate-950/60">
+							<div
+								class="divide-y divide-slate-800/80 rounded-2xl border border-slate-800 bg-slate-950/60"
+							>
 								{#each playlist.tracks as track, idx (track.id + '-' + idx)}
 									{@const isCurrent =
 										player.currentTrack.audioUrl === track.audioUrl && player.isPlaying}
 									<div
 										class="flex flex-col justify-between gap-3 p-3.5 transition-colors hover:bg-slate-900/90 sm:flex-row sm:items-center"
 									>
-										<div class="flex items-start gap-3.5 min-w-0">
+										<div class="flex min-w-0 items-start gap-3.5">
 											<button
 												type="button"
 												onclick={() => playTrackList(playlist.tracks, idx)}
@@ -404,14 +424,26 @@
 														{track.actLabel}
 													</span>
 													<a
-														href={resolve('/[artist]/[album]', { artist: track.artistSlug, album: track.albumSlug })}
+														href={resolve('/[artist]/[album]', {
+															artist: track.artistSlug,
+															album: track.albumSlug
+														})}
 														class="text-xs font-medium text-slate-400 hover:text-blue-400 hover:underline"
 													>
 														{track.album} ({track.year})
 													</a>
 												</div>
 												<p class="mt-0.5 text-sm font-bold text-white">
-													{idx + 1}. {track.title}
+													<a
+														href={resolve('/[artist]/[album]/[track]', {
+															artist: track.artistSlug,
+															album: track.albumSlug,
+															track: track.slug
+														})}
+														class="transition-colors hover:text-blue-400 hover:underline"
+													>
+														{idx + 1}. {track.title}
+													</a>
 												</p>
 												{#if track.storySummary}
 													<p class="mt-1 text-xs leading-relaxed text-slate-400">
@@ -449,12 +481,17 @@
 	<!-- SECTION 2: CUSTOM USER PLAYLIST STUDIO                                -->
 	<!-- ===================================================================== -->
 	<section class="space-y-6" aria-labelledby="custom-playlists-heading">
-		<div class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-end">
+		<div
+			class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-end"
+		>
 			<div>
 				<span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">
 					Personal Queue Builder
 				</span>
-				<h2 id="custom-playlists-heading" class="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+				<h2
+					id="custom-playlists-heading"
+					class="mt-1 text-2xl font-extrabold text-white sm:text-3xl"
+				>
 					Your Custom Playlists
 				</h2>
 			</div>
@@ -484,7 +521,7 @@
 							bind:value={newTitle}
 							placeholder="e.g., Progress Street & CPI Favorites"
 							required
-							class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+							class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 						/>
 					</div>
 					<div>
@@ -496,7 +533,7 @@
 							type="text"
 							bind:value={newDescription}
 							placeholder="What connects these tracks?"
-							class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+							class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 						/>
 					</div>
 					<button
@@ -514,7 +551,9 @@
 					</h3>
 
 					{#if playlistManager.playlists.length === 0}
-						<div class="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center">
+						<div
+							class="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center"
+						>
 							<p class="text-sm font-semibold text-slate-300">No custom playlists yet</p>
 							<p class="mt-1 text-xs text-slate-400">
 								Use the form above to create your first playlist, or click
@@ -537,7 +576,8 @@
 									>
 										<p class="truncate text-sm font-bold text-white">{pl.name}</p>
 										<p class="truncate text-xs text-slate-400">
-											{pl.trackSpecs.length} {pl.trackSpecs.length === 1 ? 'track' : 'tracks'}
+											{pl.trackSpecs.length}
+											{pl.trackSpecs.length === 1 ? 'track' : 'tracks'}
 											{#if pl.description}
 												&bull; {pl.description}
 											{/if}
@@ -574,8 +614,10 @@
 			<!-- Right Column: Active Custom Playlist Editor & Catalog Track Picker (8 cols) -->
 			<div class="space-y-6 lg:col-span-8">
 				{#if activeCustomPlaylist}
-					<div class="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl space-y-6">
-						<div class="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+					<div class="space-y-6 rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl">
+						<div
+							class="flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center"
+						>
 							<div>
 								<span class="text-xs font-bold tracking-wider text-emerald-400 uppercase">
 									Custom Playlist
@@ -623,16 +665,20 @@
 
 						<!-- Current Tracks in Active Custom Playlist -->
 						{#if activeCustomPlaylist.tracks.length === 0}
-							<div class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/50 p-6 text-center">
+							<div
+								class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/50 p-6 text-center"
+							>
 								<p class="text-sm font-semibold text-slate-300">
 									This playlist is empty. Search the catalog below to add songs!
 								</p>
 							</div>
 						{:else}
-							<div class="divide-y divide-slate-800/80 rounded-2xl border border-slate-800 bg-slate-950/60">
+							<div
+								class="divide-y divide-slate-800/80 rounded-2xl border border-slate-800 bg-slate-950/60"
+							>
 								{#each activeCustomPlaylist.tracks as track, idx (track.id + '-' + idx)}
 									<div class="flex items-center justify-between gap-3 p-3 hover:bg-slate-900/80">
-										<div class="flex items-center gap-3 min-w-0">
+										<div class="flex min-w-0 items-center gap-3">
 											<button
 												type="button"
 												onclick={() => playTrackList(activeCustomPlaylist.tracks, idx)}
@@ -645,7 +691,11 @@
 											</button>
 											<img
 												src={track.artwork}
-												alt={track.album}
+												alt="{track.album} cover artwork"
+												width="36"
+												height="36"
+												loading="lazy"
+												decoding="async"
 												class="h-9 w-9 shrink-0 rounded-lg object-cover"
 											/>
 											<div class="min-w-0">
@@ -684,8 +734,7 @@
 											</button>
 											<button
 												type="button"
-												onclick={() =>
-													playlistManager.removeTrackAt(activeCustomPlaylist.id, idx)}
+												onclick={() => playlistManager.removeTrackAt(activeCustomPlaylist.id, idx)}
 												class="rounded p-1 text-xs text-slate-400 hover:bg-rose-950/60 hover:text-rose-300"
 												aria-label="Remove {track.title} from playlist"
 												title="Remove track"
@@ -717,16 +766,24 @@
 								type="search"
 								bind:value={trackSearchQuery}
 								placeholder="Search by song title, artist, or album (e.g., 'Before the Distance', 'Stardust Engine')..."
-								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							/>
 
-							<div class="max-h-72 divide-y divide-slate-800/70 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/80">
+							<div
+								class="max-h-72 divide-y divide-slate-800/70 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/80"
+							>
 								{#each filteredPickerTracks as item (item.artistSlug + '-' + item.albumSlug + '-' + item.id)}
-									<div class="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-900">
-										<div class="flex items-center gap-3 min-w-0">
+									<div
+										class="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-900"
+									>
+										<div class="flex min-w-0 items-center gap-3">
 											<img
 												src={item.artwork}
-												alt={item.album}
+												alt="{item.album} cover artwork"
+												width="32"
+												height="32"
+												loading="lazy"
+												decoding="async"
 												class="h-8 w-8 shrink-0 rounded object-cover"
 											/>
 											<div class="min-w-0">
@@ -754,12 +811,14 @@
 						</div>
 					</div>
 				{:else}
-					<div class="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-slate-800 bg-slate-900/40 p-10 text-center">
+					<div
+						class="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-slate-800 bg-slate-900/40 p-10 text-center"
+					>
 						<p class="text-lg font-bold text-white">Build Your Own Custom Playlists</p>
 						<p class="mt-2 max-w-md text-sm text-slate-400">
-							Create a playlist on the left to start combining songs across all 6 Engine Room Records
-							bands—or click <strong class="text-slate-200">+ Playlist</strong> on any song while browsing
-							an album.
+							Create a playlist on the left to start combining songs across all {catalogStats.artistCount}
+							Engine Room Records bands—or click <strong class="text-slate-200">+ Playlist</strong> on
+							any song while browsing an album.
 						</p>
 					</div>
 				{/if}

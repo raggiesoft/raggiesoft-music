@@ -110,7 +110,7 @@
 		const trigger = player._playTrigger;
 		if (!audioElement || !url) return;
 
-		if (playing || trigger > 0 && player.isPlaying) {
+		if (playing || (trigger > 0 && player.isPlaying)) {
 			const playPromise = audioElement.play();
 			if (playPromise !== undefined) {
 				playPromise.catch((err) => {
@@ -225,12 +225,12 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- Invisible HTML5 Audio Engine -->
+<!-- Invisible HTML5 Audio Engine (preload="none" while idle so page load never fetches full audio) -->
 <audio
 	bind:this={audioElement}
-	src={player.currentTrack.audioUrl}
+	src={player.currentTrack.audioUrl || undefined}
 	loop={player.repeatMode === 'one'}
-	preload="auto"
+	preload={player.isPlaying ? 'auto' : 'none'}
 	ontimeupdate={() => {
 		if (!isScrubbing && audioElement) {
 			player.currentTime = audioElement.currentTime;
@@ -385,6 +385,9 @@
 								<img
 									src={player.currentTrack.artwork}
 									alt="Cover artwork for {player.currentTrack.album}"
+									width="320"
+									height="320"
+									decoding="async"
 									class="h-64 w-64 rounded-2xl border border-slate-800 object-cover shadow-2xl transition-transform md:h-80 md:w-80 {player.isPlaying
 										? 'shadow-blue-500/10'
 										: ''}"
@@ -439,12 +442,15 @@
 						<h2 class="text-2xl font-bold tracking-tight text-white">
 							{player.currentTrack.title || 'The Listening Room'}
 						</h2>
-						<div class="mt-1 flex items-center justify-center md:justify-start gap-2">
+						<div class="mt-1 flex items-center justify-center gap-2 md:justify-start">
 							{#if player.currentTrack.artistLogo}
 								<img
 									src={player.currentTrack.artistLogo}
 									alt="{player.currentTrack.artist} logo"
-									class="h-6 w-6 rounded-full object-cover border border-slate-700/80 shadow-sm bg-slate-950 shrink-0"
+									width="24"
+									height="24"
+									decoding="async"
+									class="h-6 w-6 shrink-0 rounded-full border border-slate-700/80 bg-slate-950 object-cover shadow-sm"
 								/>
 							{/if}
 							{#if player.currentTrack.artistSlug}
@@ -512,9 +518,11 @@
 								class="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 text-left shadow-inner"
 							>
 								<p class="mb-2.5 text-[11px] leading-relaxed text-slate-300">
-									<strong class="text-white">Enjoying the preview?</strong> Listening in lossless/high-res
-									on your favorite streaming app or purchasing the digital archive on Fourthwall directly
-									supports <strong class="text-blue-300">Michael Ragsdale</strong> &amp;
+									<strong class="text-white">Enjoying the preview?</strong> Listening in
+									lossless/high-res on your favorite streaming app or purchasing the digital archive
+									on Fourthwall directly supports
+									<strong class="text-blue-300">Michael Ragsdale</strong>
+									&amp;
 									<strong class="text-blue-300">Engine Room Records</strong>.
 								</p>
 								<StoreButton
@@ -574,7 +582,12 @@
 								aria-pressed={player.isShuffle}
 							>
 								<!-- Criss-Crossing Shuffle Arrows Icon -->
-								<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-3.5 w-3.5 shrink-0"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -648,7 +661,12 @@
 								aria-label="Toggle repeat mode (currently {player.repeatMode})"
 							>
 								<!-- Rectangular Loop Icon -->
-								<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-3.5 w-3.5 shrink-0"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -747,7 +765,7 @@
 								</div>
 								<div
 									bind:this={lyricsContainer}
-									class="relative max-h-72 space-y-2.5 overflow-y-auto pr-2 scroll-smooth"
+									class="relative max-h-72 space-y-2.5 overflow-y-auto scroll-smooth pr-2"
 								>
 									{#each player.cues as cue, idx (cue.start + '-' + idx)}
 										{@const isActive =
@@ -759,7 +777,7 @@
 												player.seek(cue.start);
 												if (audioElement) audioElement.currentTime = cue.start;
 											}}
-											class="block w-full text-left rounded-lg px-3 py-2 text-sm transition-all duration-200 cursor-pointer hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {isActive
+											class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm transition-all duration-200 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {isActive
 												? 'scale-102 border-l-4 border-blue-500 bg-blue-950/30 pl-3 text-base font-bold text-white shadow-sm'
 												: 'text-slate-400 hover:text-slate-200'}"
 											aria-current={isActive ? 'true' : undefined}
@@ -776,9 +794,7 @@
 									Official Song Lyrics
 								</h3>
 								<!-- eslint-disable svelte/no-at-html-tags -->
-								<div
-									class="er-lyrics-prose max-h-80 overflow-y-auto pr-2 font-sans text-sm"
-								>
+								<div class="er-lyrics-prose max-h-80 overflow-y-auto pr-2 font-sans text-sm">
 									{@html player.currentTrack.lyricsHtml ||
 										formatStardustMarkdown(player.currentTrack.lyrics)}
 								</div>
@@ -828,6 +844,10 @@
 												<img
 													src={rel.album.artwork}
 													alt="{rel.album.title} cover art"
+													width="40"
+													height="40"
+													loading="lazy"
+													decoding="async"
 													class="h-10 w-10 shrink-0 rounded border border-slate-700 object-cover"
 												/>
 												<div class="min-w-0">
@@ -840,7 +860,8 @@
 														{#if rel.sharedMasterLabel}
 															<span
 																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
-																title="This album includes the exact same studio master recording ({rel.track.isrc})"
+																title="This album includes the exact same studio master recording ({rel
+																	.track.isrc})"
 															>
 																🔗 {rel.sharedMasterLabel}
 															</span>
@@ -872,18 +893,17 @@
 														▶ Play
 													</button>
 												{/if}
-												<!-- eslint-disable svelte/no-navigation-without-resolve -->
 												<a
-													href="{resolve('/[artist]/[album]', {
+													href={resolve('/[artist]/[album]/[track]', {
 														artist: rel.album.artistSlug,
-														album: rel.album.slug
-													})}?track={encodeURIComponent(rel.deepLinkQuery)}"
+														album: rel.album.slug,
+														track: rel.track.slug
+													})}
 													onclick={() => (player.isExpanded = false)}
 													class="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
 												>
-													Album &rarr;
+													Song &rarr;
 												</a>
-												<!-- eslint-enable svelte/no-navigation-without-resolve -->
 											</div>
 										</div>
 									{/each}
@@ -911,7 +931,8 @@
 										onclick={compareCurrentSongVersions}
 										class="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-600/30 transition-all hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
 									>
-										<span>▶ Compare All {currentComparisonData.queue.length} Playable Versions</span>
+										<span>▶ Compare All {currentComparisonData.queue.length} Playable Versions</span
+										>
 									</button>
 								{/if}
 							</div>
@@ -926,6 +947,10 @@
 												<img
 													src={rel.album.artwork}
 													alt="{rel.album.title} cover art"
+													width="48"
+													height="48"
+													loading="lazy"
+													decoding="async"
 													class="h-12 w-12 shrink-0 rounded-lg border border-slate-700 object-cover"
 												/>
 												<div class="min-w-0">
@@ -938,7 +963,8 @@
 														{#if rel.sharedMasterLabel}
 															<span
 																class="rounded border border-emerald-600/50 bg-emerald-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300"
-																title="This album includes the exact same studio master recording ({rel.track.isrc})"
+																title="This album includes the exact same studio master recording ({rel
+																	.track.isrc})"
 															>
 																🔗 {rel.sharedMasterLabel}
 															</span>
@@ -955,8 +981,8 @@
 														{rel.track.title}
 													</div>
 													<div class="truncate text-[11px] text-slate-300">
-														{rel.album.artist} • {rel.album.title} (Disc {rel.track.disc || 1}, Track {rel
-															.track.track})
+														{rel.album.artist} • {rel.album.title} (Disc {rel.track.disc || 1},
+														Track {rel.track.track})
 													</div>
 												</div>
 											</div>
@@ -971,18 +997,17 @@
 														▶ Play
 													</button>
 												{/if}
-												<!-- eslint-disable svelte/no-navigation-without-resolve -->
 												<a
-													href="{resolve('/[artist]/[album]', {
+													href={resolve('/[artist]/[album]/[track]', {
 														artist: rel.album.artistSlug,
-														album: rel.album.slug
-													})}?track={encodeURIComponent(rel.deepLinkQuery)}"
+														album: rel.album.slug,
+														track: rel.track.slug
+													})}
 													onclick={() => (player.isExpanded = false)}
 													class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
 												>
-													Album &rarr;
+													Song &rarr;
 												</a>
-												<!-- eslint-enable svelte/no-navigation-without-resolve -->
 											</div>
 										</div>
 									{/each}
@@ -1075,7 +1100,8 @@
 											target="_blank"
 											rel="noopener noreferrer"
 											class="mt-0.5 inline-flex items-center gap-1 font-mono text-xs text-blue-400 underline decoration-blue-500/50 underline-offset-2 transition-colors hover:text-amber-300"
-											title="Inspect ISRC {player.currentTrack.isrc} in the Official Engine Room Records ISRC Registry &amp; Decoder"
+											title="Inspect ISRC {player.currentTrack
+												.isrc} in the Official Engine Room Records ISRC Registry &amp; Decoder"
 										>
 											<span>{player.currentTrack.isrc}</span>
 											<span class="text-[10px]">↗</span>
@@ -1101,11 +1127,14 @@
 							<div
 								class="rounded-lg border border-slate-800/60 bg-slate-900/30 p-3.5 text-xs leading-relaxed text-slate-400"
 							>
-								<p class="font-semibold text-slate-300">The Listening Room • Preview Specification:</p>
+								<p class="font-semibold text-slate-300">
+									The Listening Room • Preview Specification:
+								</p>
 								<p class="mt-1">
-									Onsite audio is served via <code class="text-blue-400">assets.raggiesoft.com</code>
-									as a free <strong>128kbps MP3 Preview Stream</strong> for exploring lyrics and canonical
-									lore. To experience full lossless/high-res audio and support
+									Onsite audio is served via <code class="text-blue-400">assets.raggiesoft.com</code
+									>
+									as a free <strong>128kbps MP3 Preview Stream</strong> for exploring lyrics and
+									canonical lore. To experience full lossless/high-res audio and support
 									<strong class="text-slate-200">Michael Ragsdale</strong> &amp;
 									<strong class="text-slate-200">Engine Room Records</strong>, stream on your
 									preferred DSP or purchase the DRM-free digital archive (High-Quality MP3/OGG or
@@ -1179,9 +1208,9 @@
 
 			<!-- Full-Width Body Copy (Never Crushed by Action Buttons) -->
 			<p class="text-xs leading-relaxed text-slate-300">
-				We’re keeping the free <strong class="text-white">128kbps preview stream</strong> playing for
-				you! If you use a streaming app—or want to own the High-Quality MP3/OGG or Studio Master WAV/FLAC
-				via Fourthwall—listening there upgrades your audio and directly supports
+				We’re keeping the free <strong class="text-white">128kbps preview stream</strong> playing
+				for you! If you use a streaming app—or want to own the High-Quality MP3/OGG or Studio Master
+				WAV/FLAC via Fourthwall—listening there upgrades your audio and directly supports
 				<strong class="text-white">Michael Ragsdale</strong> &amp;
 				<strong class="text-white">Engine Room Records</strong>.
 			</p>
@@ -1206,7 +1235,7 @@
 					<button
 						type="button"
 						onclick={() => player.dismissDspNudge(false)}
-						class="whitespace-nowrap rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+						class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
 						title="Keep listening to the 128kbps preview stream"
 					>
 						Keep Previewing
@@ -1215,7 +1244,7 @@
 					<button
 						type="button"
 						onclick={() => player.dismissDspNudge(true)}
-						class="whitespace-nowrap px-1.5 py-1 text-[11px] font-medium text-slate-400 underline decoration-slate-600 underline-offset-2 transition-colors hover:text-slate-200"
+						class="px-1.5 py-1 text-[11px] font-medium whitespace-nowrap text-slate-400 underline decoration-slate-600 underline-offset-2 transition-colors hover:text-slate-200"
 						title="Don't show this reminder again"
 					>
 						Don’t remind me
@@ -1258,7 +1287,8 @@
 				target="_blank"
 				rel="noopener noreferrer"
 				class="ml-1 font-mono text-[10px] text-emerald-400/90 underline decoration-emerald-500/50 underline-offset-2 hover:text-amber-300"
-				title="Inspect ISRC {player.isrcNotice.isrc} in the Official Engine Room Records ISRC Registry"
+				title="Inspect ISRC {player.isrcNotice
+					.isrc} in the Official Engine Room Records ISRC Registry"
 			>
 				({player.isrcNotice.isrc})
 			</a>
@@ -1317,7 +1347,9 @@
 	</div>
 
 	<!-- Controls & Metadata Grid -->
-	<div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-4 sm:py-2.5">
+	<div
+		class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-4 sm:py-2.5"
+	>
 		<!-- 1. LEFT: Album Art & Track Info -->
 		<div class="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3.5">
 			<!-- Clickable thumbnail toggles Expanded Drawer -->
@@ -1330,6 +1362,9 @@
 					<img
 						src={player.currentTrack.artwork}
 						alt="Cover artwork for {player.currentTrack.title}"
+						width="52"
+						height="52"
+						decoding="async"
 						class="h-11 w-11 rounded-md object-cover shadow-md transition-opacity group-hover:opacity-85 sm:h-13 sm:w-13"
 					/>
 				{:else}
@@ -1353,7 +1388,7 @@
 				</div>
 			</button>
 
-			<div class="truncate text-left min-w-0">
+			<div class="min-w-0 truncate text-left">
 				<div class="flex items-center gap-1.5 truncate">
 					<h3 class="truncate text-xs leading-snug font-bold text-white sm:text-sm">
 						{player.currentTrack.title || 'The Listening Room'}{player.currentTrack.version
@@ -1390,7 +1425,10 @@
 						<img
 							src={player.currentTrack.artistLogo}
 							alt="{player.currentTrack.artist} logo"
-							class="h-3.5 w-3.5 shrink-0 rounded-full object-cover border border-slate-700/80 bg-slate-950"
+							width="14"
+							height="14"
+							decoding="async"
+							class="h-3.5 w-3.5 shrink-0 rounded-full border border-slate-700/80 bg-slate-950 object-cover"
 						/>
 					{/if}
 					<p class="truncate text-[11px] text-slate-400 sm:text-xs">
@@ -1520,7 +1558,9 @@
 			</div>
 
 			<!-- Timestamp Counters -->
-			<div class="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-slate-400 sm:mt-1 sm:gap-2 sm:text-xs">
+			<div
+				class="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] text-slate-400 sm:mt-1 sm:gap-2 sm:text-xs"
+			>
 				<span>{player.formattedCurrentTime}</span>
 				<span>/</span>
 				<span>{player.formattedDuration}</span>

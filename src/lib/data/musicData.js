@@ -28,6 +28,7 @@ import rawCatalog from './musicCatalog.json';
 /**
  * @typedef {Object} Track
  * @property {string} id
+ * @property {string} slug
  * @property {string} [fileName]
  * @property {number} disc
  * @property {string} [discName]
@@ -46,6 +47,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} [vttUrl]
  * @property {boolean} [vttVerified]
  * @property {boolean} [isPlayable]
+ * @property {string} [lastmod]
  */
 
 /**
@@ -63,6 +65,7 @@ import rawCatalog from './musicCatalog.json';
  * @property {string} year
  * @property {string} [temporalCoverage]
  * @property {string} [datePublished]
+ * @property {string} [lastmod]
  * @property {string} [upc]
  * @property {string} genre
  * @property {boolean} isRockOpera
@@ -180,7 +183,7 @@ export const artistLoreMetadata = {
 	},
 	'mana-canvas': {
 		description:
-			'Blending authentic 16-bit Super Famicom / SNES JRPG chiptune synthesis with sweeping live symphonic rock and progressive metal, Mana Canvas bridges the worlds of classic fantasy video game soundtracks and high-voltage arena concerts.',
+			'Blending authentic 16-bit console JRPG chiptune synthesis with sweeping live symphonic rock and progressive metal, Mana Canvas bridges the worlds of classic fantasy video game soundtracks and high-voltage arena concerts.',
 		genres: ['16-Bit Symphonic Prog', 'JRPG Soundtrack', 'Fantasy Rock Opera'],
 		yearsActive: '1992–Present',
 		flagshipAlbumSlug: '1992-runebreaker-ost',
@@ -209,8 +212,13 @@ export const artistLoreMetadata = {
 	},
 	firelight: {
 		description:
-			'The official 1980s motion picture soundtrack ensemble behind The Silver Gauntlet of Aethel—Michael P. Ragsdale\'s love letter to 1980s fantasy-adventure cinema. Anchored by its flagship main theme "A Sister\'s Love" (heavily inspired by Limahl\'s NeverEnding Story theme song), Firelight fuses shimmering 1980s synth-pop arpeggios and soaring melodic hooks with widescreen fantasy orchestration.',
-		genres: ['80s Movie Soundtracks', '80s Synth-Pop', 'Fantasy-Adventure Score', 'Orchestral Rock'],
+			'The official 1980s motion picture soundtrack ensemble behind The Silver Gauntlet of Aethel—Michael P. Ragsdale\'s love letter to 1980s fantasy-adventure cinema. Anchored by its flagship main theme "A Sister\'s Love" (inspired by classic mid-1980s fantasy cinema title anthems), Firelight fuses shimmering 1980s synth-pop arpeggios and soaring melodic hooks with widescreen fantasy orchestration.',
+		genres: [
+			'80s Movie Soundtracks',
+			'80s Synth-Pop',
+			'Fantasy-Adventure Score',
+			'Orchestral Rock'
+		],
 		yearsActive: '1987–Present',
 		flagshipAlbumSlug: '2017-silver-gauntlet-of-aethel-book-i',
 		socialPreview:
@@ -224,6 +232,15 @@ export const artistLoreMetadata = {
 		flagshipAlbumSlug: '2007-tales-from-the-solstice',
 		socialPreview:
 			'https://assets.raggiesoft.com/engine-room-records/artists/the-arctic-symphony-project/social-preview.jpg'
+	},
+	'the-hoshizora-ensemble': {
+		description:
+			'Originally recorded in Osaka in 1978 as the official shipboard acoustic-pop soundtrack for the overnight Seto Inland Sea car ferry Ferry Hoshizora, The Hoshizora Ensemble pairs gentle maritime folk-pop with warm 1970s Japanese studio arrangements—later licensed for U.S. release by Engine Room Records after inspiring The Stardust Engine during their 2001–2002 Japanese tour.',
+		genres: ['70s Japanese Folk-Pop', 'City Pop', 'Maritime Acoustic'],
+		yearsActive: '1978–2002',
+		flagshipAlbumSlug: '1978-voyages-on-the-seto-inland-sea',
+		socialPreview:
+			'https://assets.raggiesoft.com/engine-room-records/artists/the-hoshizora-ensemble/social-preview.jpg'
 	}
 };
 
@@ -239,9 +256,9 @@ export function hasAnyDsp(item) {
 	if ('dspExempt' in item && item.dspExempt) return false;
 	return Boolean(
 		(item.spotifyId && item.spotifyId.trim()) ||
-			(item.appleId && item.appleId.trim()) ||
-			(item.amazonId && item.amazonId.trim()) ||
-			(item.youtubeId && item.youtubeId.trim())
+		(item.appleId && item.appleId.trim()) ||
+		(item.amazonId && item.amazonId.trim()) ||
+		(item.youtubeId && item.youtubeId.trim())
 	);
 }
 
@@ -256,7 +273,7 @@ export function hasFourthwallStore(item) {
 	if (!item) return false;
 	return Boolean(
 		(item.storeStandardUrl && item.storeStandardUrl.trim()) ||
-			(item.storeAudiophileUrl && item.storeAudiophileUrl.trim())
+		(item.storeAudiophileUrl && item.storeAudiophileUrl.trim())
 	);
 }
 
@@ -330,10 +347,26 @@ export const allArtists = (() => {
 					lore?.socialPreview ||
 					album.socialPreview ||
 					'https://music.raggiesoft.com/og-image.jpg',
-				spotifyId: hasArtistLevelDsp ? lore?.spotifyId || '' : fallbackAlbumDsp ? album.spotifyId || '' : '',
-				appleId: hasArtistLevelDsp ? lore?.appleId || '' : fallbackAlbumDsp ? album.appleId || '' : '',
-				amazonId: hasArtistLevelDsp ? lore?.amazonId || '' : fallbackAlbumDsp ? album.amazonId || '' : '',
-				youtubeId: hasArtistLevelDsp ? lore?.youtubeId || '' : fallbackAlbumDsp ? album.youtubeId || '' : '',
+				spotifyId: hasArtistLevelDsp
+					? lore?.spotifyId || ''
+					: fallbackAlbumDsp
+						? album.spotifyId || ''
+						: '',
+				appleId: hasArtistLevelDsp
+					? lore?.appleId || ''
+					: fallbackAlbumDsp
+						? album.appleId || ''
+						: '',
+				amazonId: hasArtistLevelDsp
+					? lore?.amazonId || ''
+					: fallbackAlbumDsp
+						? album.amazonId || ''
+						: '',
+				youtubeId: hasArtistLevelDsp
+					? lore?.youtubeId || ''
+					: fallbackAlbumDsp
+						? album.youtubeId || ''
+						: '',
 				storefrontUrl: lore?.storefrontUrl || '',
 				dspTargetType: hasArtistLevelDsp ? 'artist' : 'album'
 			});
@@ -389,14 +422,19 @@ export function getArtistBySlug(slug, catalog = allAlbums) {
 	};
 }
 
+const totalTracksCount = allAlbums.reduce((acc, curr) => acc + curr.tracks.length, 0);
+
 /**
- * Aggregated discography statistics for the platform header.
+ * Aggregated discography statistics for the platform header and SEO templates.
  */
 export const catalogStats = {
 	totalArtists: allArtists.length,
 	totalAlbums: allAlbums.length,
-	totalTracks: allAlbums.reduce((acc, curr) => acc + curr.tracks.length, 0),
-	playableTracks: allAlbums.reduce((acc, curr) => acc + (curr.playableTrackCount || 0), 0)
+	totalTracks: totalTracksCount,
+	playableTracks: allAlbums.reduce((acc, curr) => acc + (curr.playableTrackCount || 0), 0),
+	artistCount: allArtists.length,
+	albumCount: allAlbums.length,
+	trackCount: totalTracksCount
 };
 
 /**
@@ -664,7 +702,7 @@ export function buildRadioBroadcast(catalog = allAlbums) {
 	const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
 
 	// Thematic Engine Room Records reality-check comparison
-	let realityCheck = '';
+	let realityCheck;
 	if (totalDurationSeconds < 3600) {
 		realityCheck = 'Shorter than a typical band rehearsal in the Blacksburg warehouse.';
 	} else if (totalDurationSeconds < 10800) {
@@ -766,10 +804,7 @@ export function formatReleaseDate(rawDate, fallbackYear = '', style = 'long') {
  * "The Flight Path" and The Stardust Engine's live concert performances of it).
  * @type {Set<string>}
  */
-const CROSS_ARTIST_SHARED_SONG_SLUGS = new Set([
-	'the-flight-path',
-	'homeward-on-this-day'
-]);
+const CROSS_ARTIST_SHARED_SONG_SLUGS = new Set(['the-flight-path', 'homeward-on-this-day']);
 
 /**
  * Canonical song family alias map unifying tracks whose titles evolved across eras
@@ -1221,5 +1256,170 @@ export function formatStardustMarkdown(rawMarkdown) {
 	return htmlBlocks.join('\n');
 }
 
+/**
+ * Selects up to `maxCount` representative featured songs for an Artist Hub
+ * (`/[artist]`), prioritizing playable studio songs with rich lore/lyrics and
+ * high legacy tiers (`Smash`, `Anthem`, `Classic`, `Masterpiece`) across the
+ * artist's albums so crawlers and listeners get immediate entry points into
+ * canonical track pages.
+ *
+ * @param {string} artistSlug
+ * @param {Album[]} [catalog=allAlbums]
+ * @param {number} [maxCount=8]
+ * @returns {Array<{ track: Track, album: Album }>}
+ */
+export function getFeaturedTracksForArtist(artistSlug, catalog = allAlbums, maxCount = 8) {
+	const artistAlbums = catalog.filter((a) => a.artistSlug === artistSlug);
+	/** @type {Array<{ track: Track, album: Album, score: number }>} */
+	const candidates = [];
 
+	for (const album of artistAlbums) {
+		for (const track of album.tracks || []) {
+			if (!track.slug) continue;
+			let score = 0;
+			if (track.isPlayable) score += 50;
+			if (album.albumType === 'studio' || album.albumType === 'soundtrack') score += 20;
+			if (track.loreNote) score += 15;
+			if (track.lyrics) score += 10;
+			const tier = (track.legacyTier || '').toLowerCase();
+			if (tier.includes('smash') || tier.includes('masterpiece')) score += 25;
+			else if (tier.includes('anthem') || tier.includes('classic') || tier.includes('favorite'))
+				score += 15;
+			if (track.track === 1) score += 5;
+			candidates.push({ track, album, score });
+		}
+	}
 
+	candidates.sort((a, b) => {
+		if (b.score !== a.score) return b.score - a.score;
+		return a.album.slug.localeCompare(b.album.slug);
+	});
+
+	// Spread featured tracks across distinct albums first before taking second picks
+	/** @type {Array<{ track: Track, album: Album }>} */
+	const selected = [];
+	/** @type {Set<string>} */
+	const usedAlbumSlugs = new Set();
+	/** @type {Set<string>} */
+	const usedTrackIds = new Set();
+
+	for (const item of candidates) {
+		if (selected.length >= maxCount) break;
+		if (!usedAlbumSlugs.has(item.album.slug)) {
+			usedAlbumSlugs.add(item.album.slug);
+			usedTrackIds.add(item.track.id);
+			selected.push({ track: item.track, album: item.album });
+		}
+	}
+	for (const item of candidates) {
+		if (selected.length >= maxCount) break;
+		if (!usedTrackIds.has(item.track.id)) {
+			usedTrackIds.add(item.track.id);
+			selected.push({ track: item.track, album: item.album });
+		}
+	}
+
+	return selected;
+}
+
+/**
+ * Returns chronological previous and next releases within the same artist's
+ * discography for contextual album-to-album navigation.
+ *
+ * @param {Album} album
+ * @param {Album[]} [catalog=allAlbums]
+ * @returns {{ prevAlbum: Album | null, nextAlbum: Album | null, previous: Album | null, next: Album | null }}
+ */
+export function getAdjacentArtistReleases(album, catalog = allAlbums) {
+	const artistAlbums = catalog
+		.filter((a) => a.artistSlug === album.artistSlug)
+		.sort((a, b) => {
+			const da = a.temporalCoverage || a.year || '9999';
+			const db = b.temporalCoverage || b.year || '9999';
+			if (da !== db) return da.localeCompare(db);
+			return a.slug.localeCompare(b.slug);
+		});
+	const idx = artistAlbums.findIndex((a) => a.slug === album.slug);
+	if (idx === -1) {
+		return { prevAlbum: null, nextAlbum: null, previous: null, next: null };
+	}
+	const prevAlbum = idx > 0 ? artistAlbums[idx - 1] : null;
+	const nextAlbum = idx < artistAlbums.length - 1 ? artistAlbums[idx + 1] : null;
+	return {
+		prevAlbum,
+		nextAlbum,
+		previous: prevAlbum,
+		next: nextAlbum
+	};
+}
+
+/**
+ * Finds other releases across the Engine Room Records catalog from the same or
+ * closest narrative era (`year` within +/- 6 years, preferring cross-band peers)
+ * for the "Appears in the Same Narrative Era" discovery module.
+ *
+ * @param {Album} album
+ * @param {Album[] | number} [catalogOrMaxCount=allAlbums]
+ * @param {number} [maxCount=4]
+ * @returns {Album[]}
+ */
+export function getSameNarrativeEraAlbums(album, catalogOrMaxCount = allAlbums, maxCount = 4) {
+	const catalog = Array.isArray(catalogOrMaxCount) ? catalogOrMaxCount : allAlbums;
+	const limit = typeof catalogOrMaxCount === 'number' ? catalogOrMaxCount : maxCount;
+	const targetYear = parseInt(album.year || '2000', 10) || 2000;
+	return catalog
+		.filter((a) => a.id !== album.id)
+		.map((a) => {
+			const yr = parseInt(a.year || '2000', 10) || 2000;
+			const diff = Math.abs(yr - targetYear);
+			const crossBandBonus = a.artistSlug !== album.artistSlug ? -0.5 : 0;
+			return { album: a, distance: diff + crossBandBonus, rawDiff: diff };
+		})
+		.filter((item) => item.rawDiff <= 6)
+		.sort((a, b) => {
+			if (a.distance !== b.distance) return a.distance - b.distance;
+			return a.album.title.localeCompare(b.album.title);
+		})
+		.slice(0, limit)
+		.map((item) => item.album);
+}
+
+/**
+ * Returns other Engine Room Records artists sorted by genre affinity for
+ * cross-roster internal linking on Artist Hub and Album pages.
+ *
+ * @param {string} currentArtistSlug
+ * @param {number} [maxCount=4]
+ * @returns {ArtistSummary[]}
+ */
+export function getRelatedArtists(currentArtistSlug, maxCount = 4) {
+	const current = allArtists.find((a) => a.slug === currentArtistSlug);
+	const currentTokens = new Set(
+		(current?.genres || [])
+			.join(' ')
+			.toLowerCase()
+			.split(/[^a-z0-9]+/)
+			.filter((w) => w.length > 2)
+	);
+
+	return allArtists
+		.filter((a) => a.slug !== currentArtistSlug)
+		.map((candidate) => {
+			const tokens = candidate.genres
+				.join(' ')
+				.toLowerCase()
+				.split(/[^a-z0-9]+/)
+				.filter((w) => w.length > 2);
+			let overlap = 0;
+			for (const t of tokens) {
+				if (currentTokens.has(t)) overlap += 1;
+			}
+			return { candidate, overlap };
+		})
+		.sort((a, b) => {
+			if (b.overlap !== a.overlap) return b.overlap - a.overlap;
+			return b.candidate.albumCount - a.candidate.albumCount;
+		})
+		.slice(0, maxCount)
+		.map((x) => x.candidate);
+}

@@ -45,9 +45,7 @@
 		allArtists.find((a) => a.slug === selectedArtistSlug) || allArtists[0]
 	);
 
-	let artistAlbums = $derived(
-		allAlbums.filter((al) => al.artistSlug === selectedArtist?.slug)
-	);
+	let artistAlbums = $derived(allAlbums.filter((al) => al.artistSlug === selectedArtist?.slug));
 
 	let selectedAlbumId = $state(allAlbums[0]?.id || '');
 	let selectedAlbum = $derived(
@@ -135,10 +133,7 @@
 			const cleanText = cue.text.trim();
 			if (!cleanText) continue;
 			const start = cue.startTime !== null ? cue.startTime : 0;
-			const end =
-				cue.endTime !== null
-					? Math.max(start + 0.2, cue.endTime)
-					: start + 2.5;
+			const end = cue.endTime !== null ? Math.max(start + 0.2, cue.endTime) : start + 2.5;
 			lines.push(`${formatVttTimestamp(start)} --> ${formatVttTimestamp(end)}`);
 			lines.push(cleanText);
 			lines.push('');
@@ -179,7 +174,9 @@
 		const prefix = `QTAHP${yy}`;
 		for (const album of allAlbums) {
 			for (const t of album.tracks || []) {
-				const code = String(t.isrc || '').trim().toUpperCase();
+				const code = String(t.isrc || '')
+					.trim()
+					.toUpperCase();
 				if (code.startsWith(prefix) && code.length === 12) {
 					const num = parseInt(code.slice(7), 10);
 					if (Number.isFinite(num) && num > maxSeq) {
@@ -638,10 +635,7 @@
 		a.click();
 		a.remove();
 		URL.revokeObjectURL(url);
-		setStatus(
-			`Downloaded ${activeTrackFile}.vtt with NOTE SYNC_TYPE: HUMAN_VERIFIED.`,
-			'success'
-		);
+		setStatus(`Downloaded ${activeTrackFile}.vtt with NOTE SYNC_TYPE: HUMAN_VERIFIED.`, 'success');
 	}
 
 	/**
@@ -711,12 +705,18 @@
 
 <svelte:head>
 	<title>Engine Room Studio IDE &amp; VTT Lyric Sync | The Listening Room</title>
+	<meta name="robots" content="noindex,follow" />
+	<meta
+		name="description"
+		content="Internal album metadata and timed lyric studio synchronization tool for Engine Room Records."
+	/>
 </svelte:head>
 
 <!-- Hidden dedicated Studio Audio Element -->
 <audio
 	bind:this={audioEl}
 	src={audioSourceUrl}
+	preload="none"
 	onplay={() => (isPlaying = true)}
 	onpause={() => (isPlaying = false)}
 	ontimeupdate={() => {
@@ -760,7 +760,13 @@
 				Album IDE &amp; DistroKid-Style VTT Lyric Synchronizer
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">
-				Hold down <kbd class="rounded border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-200">Spacebar</kbd> while a lyric line is sung and release when the line ends. Saving stamps <code class="text-indigo-300">NOTE SYNC_TYPE: HUMAN_VERIFIED</code> so <code class="text-indigo-300">harper.sh</code> skips AI overwriting.
+				Hold down <kbd
+					class="rounded border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-200"
+					>Spacebar</kbd
+				>
+				while a lyric line is sung and release when the line ends. Saving stamps
+				<code class="text-indigo-300">NOTE SYNC_TYPE: HUMAN_VERIFIED</code>
+				so <code class="text-indigo-300">harper.sh</code> skips AI overwriting.
 			</p>
 		</div>
 
@@ -958,7 +964,9 @@
 
 				<!-- Speed & Save Controls -->
 				<div class="flex flex-wrap items-center gap-2">
-					<div class="flex items-center rounded-lg border border-slate-800 bg-slate-950 p-0.5 text-xs">
+					<div
+						class="flex items-center rounded-lg border border-slate-800 bg-slate-950 p-0.5 text-xs"
+					>
 						{#each [0.75, 0.9, 1.0, 1.25] as rate (rate)}
 							<button
 								type="button"
@@ -1005,10 +1013,10 @@
 		<!-- Two-Column Studio Workspace: Cue Synchronizer List + Live WebVTT Output -->
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
 			<!-- Left 8 Cols: Interactive Lyric Lines -->
-			<div
-				class="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 lg:col-span-8"
-			>
-				<div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+			<div class="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 lg:col-span-8">
+				<div
+					class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3"
+				>
 					<div class="flex items-center gap-2">
 						<h2 class="text-sm font-bold tracking-wider text-slate-300 uppercase">
 							Singable Lyric Cues ({cueDrafts.length} Lines)
@@ -1076,7 +1084,9 @@
 									</button>
 
 									<!-- Start Time Badge & Nudgers -->
-									<div class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs">
+									<div
+										class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs"
+									>
 										<span class="text-[10px] font-bold text-slate-500 uppercase">In</span>
 										<span class="font-mono font-semibold text-emerald-300">
 											{formatShortTime(cue.startTime)}
@@ -1100,7 +1110,9 @@
 									</div>
 
 									<!-- End Time Badge & Nudgers -->
-									<div class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs">
+									<div
+										class="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs"
+									>
 										<span class="text-[10px] font-bold text-slate-500 uppercase">Out</span>
 										<span class="font-mono font-semibold text-cyan-300">
 											{formatShortTime(cue.endTime)}
@@ -1183,7 +1195,9 @@
 				</div>
 
 				<p class="mb-3 text-xs leading-relaxed text-slate-400">
-					Includes <code class="text-emerald-300">NOTE SYNC_TYPE: HUMAN_VERIFIED</code> on line 2 so Harper (<code class="text-slate-300">04-track-processor.sh</code>) preserves your human-verified timing forever.
+					Includes <code class="text-emerald-300">NOTE SYNC_TYPE: HUMAN_VERIFIED</code> on line 2 so
+					Harper (<code class="text-slate-300">04-track-processor.sh</code>) preserves your
+					human-verified timing forever.
 				</p>
 
 				<textarea
@@ -1200,7 +1214,9 @@
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 			<!-- Album Metadata (album.json) -->
 			<div class="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
-				<h2 class="mb-4 border-b border-slate-800 pb-3 text-sm font-bold tracking-wider text-indigo-300 uppercase">
+				<h2
+					class="mb-4 border-b border-slate-800 pb-3 text-sm font-bold tracking-wider text-indigo-300 uppercase"
+				>
 					Album Metadata &amp; Liner Notes (album.json)
 				</h2>
 
@@ -1218,7 +1234,10 @@
 							/>
 						</div>
 						<div>
-							<label for="edit-album-subtitle" class="mb-1 block text-xs font-semibold text-slate-400">
+							<label
+								for="edit-album-subtitle"
+								class="mb-1 block text-xs font-semibold text-slate-400"
+							>
 								Subtitle / Tagline
 							</label>
 							<input
@@ -1305,7 +1324,9 @@
 
 			<!-- Track Metadata, Lore Note & Lyrics (tracks.json + lyrics/*.md) -->
 			<div class="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
-				<h2 class="mb-4 border-b border-slate-800 pb-3 text-sm font-bold tracking-wider text-indigo-300 uppercase">
+				<h2
+					class="mb-4 border-b border-slate-800 pb-3 text-sm font-bold tracking-wider text-indigo-300 uppercase"
+				>
 					Track Lore &amp; Lyrics (tracks.json + lyrics/{selectedTrack?.fileName}.md)
 				</h2>
 

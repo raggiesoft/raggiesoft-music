@@ -26,8 +26,9 @@ export default defineConfig([
 	},
 
 	{
-		// Override or add rule settings here, such as:
-		// 'svelte/button-has-type': 'error'
-		rules: {}
+		// Enforce resolve() on programmatic navigation while allowing external dynamic href={...} links
+		rules: {
+			'svelte/no-navigation-without-resolve': ['error', { ignoreLinks: true }]
+		}
 	}
 ]);

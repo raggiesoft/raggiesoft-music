@@ -99,7 +99,9 @@
 	<div class="grid grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-8">
 		<!-- Left Column: Share Controls & Direct Links (7 cols on lg) -->
 		<div class="space-y-4 lg:col-span-7">
-			<div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
+			<div
+				class="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-blue-400 uppercase"
+			>
 				<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
@@ -116,7 +118,8 @@
 			</h2>
 
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-				{sharePrompt} Every page on Engine Room Records includes a custom OpenGraph social preview card so your link looks great on Facebook, Bluesky, Discord, and iMessage.
+				{sharePrompt} Every page on Engine Room Records includes a custom OpenGraph social preview card
+				so your link looks great on Facebook, Bluesky, Discord, and iMessage.
 			</p>
 
 			<!-- Direct URL Display Box -->
@@ -207,11 +210,16 @@
 
 		<!-- Right Column: Social Preview Card Visual (5 cols on lg) -->
 		<div class="lg:col-span-5">
-			<div class="overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/90 shadow-2xl">
+			<div
+				class="overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/90 shadow-2xl"
+			>
 				<div class="relative aspect-[1200/630] w-full overflow-hidden bg-slate-900">
 					<img
 						src={socialPreview}
 						alt="Social preview card for {title}"
+						width="1200"
+						height="630"
+						decoding="async"
 						class="h-full w-full object-cover"
 						loading="lazy"
 					/>
@@ -238,4 +246,3 @@
 		</div>
 	</div>
 </section>
-

@@ -16,7 +16,13 @@
  * ============================================================================
  */
 import { error } from '@sveltejs/kit';
-import { allAlbums } from '#lib/data/musicData.js';
+import {
+	allAlbums,
+	getAdjacentArtistReleases,
+	getRelatedArtists,
+	getSameNarrativeEraAlbums
+} from '#lib/data/musicData.js';
+import { getConnectedPlaylistsForAlbum } from '#lib/playlists.svelte.js';
 
 export const prerender = true;
 
@@ -32,13 +38,12 @@ export function entries() {
 }
 
 /**
- * Loads specific album metadata and related artist releases for the given artist and album slugs.
+ * Loads specific album metadata, chronological artist neighbors, same-era narrative albums,
+ * connected story playlists, and related Engine Room Records artists.
  * @type {import('./$types').PageLoad}
  */
 export function load({ params }) {
-	const album = allAlbums.find(
-		(a) => a.artistSlug === params.artist && a.slug === params.album
-	);
+	const album = allAlbums.find((a) => a.artistSlug === params.artist && a.slug === params.album);
 
 	if (!album) {
 		throw error(
@@ -51,10 +56,17 @@ export function load({ params }) {
 	const relatedAlbums = allAlbums.filter(
 		(a) => a.artistSlug === album.artistSlug && a.slug !== album.slug
 	);
+	const adjacentReleases = getAdjacentArtistReleases(album);
+	const sameEraAlbums = getSameNarrativeEraAlbums(album, 4);
+	const connectedPlaylists = getConnectedPlaylistsForAlbum(album.artistSlug, album.slug);
+	const relatedArtists = getRelatedArtists(album.artistSlug, 4);
 
 	return {
 		album,
-		relatedAlbums
+		relatedAlbums,
+		adjacentReleases,
+		sameEraAlbums,
+		connectedPlaylists,
+		relatedArtists
 	};
 }
-

@@ -29,6 +29,7 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import { buildArtistJsonLdScript, buildArtistSeoMeta, ensureRealWorldDate } from '#lib/seo.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
@@ -38,9 +39,10 @@
 
 	let artist = $derived(data.artist);
 	let artistAlbums = $derived(data.artistAlbums);
-	let artistHasDspOrStore = $derived(
-		hasAnyDsp(artist) || Boolean(artist.storefrontUrl)
-	);
+	let featuredTracks = $derived(data.featuredTracks || []);
+	let relatedArtists = $derived(data.relatedArtists || []);
+	let artistHasDspOrStore = $derived(hasAnyDsp(artist) || Boolean(artist.storefrontUrl));
+	let seo = $derived(buildArtistSeoMeta(artist));
 
 	// Optional local filter within this artist's catalog (populated via collapsible menu)
 	let searchQuery = $state('');
@@ -95,26 +97,8 @@
 			(activeStatusFilter !== 'all' ? 1 : 0)
 	);
 
-	// Canonical Schema.org MusicGroup JSON-LD
-	let jsonLdScript = $derived(
-		`<script type="application/ld+json">${JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'MusicGroup',
-			name: artist.name,
-			description: artist.description,
-			genre: artist.genres,
-			image: artist.socialPreview || artist.logo,
-			url: `https://music.raggiesoft.com/${artist.slug}`,
-			album: artistAlbums.map((a) => ({
-				'@type': 'MusicAlbum',
-				name: a.title,
-				datePublished: a.datePublished || a.temporalCoverage || a.year,
-				url: `https://music.raggiesoft.com/${a.artistSlug}/${a.slug}`
-			}))
-		})}` +
-			'</' +
-			'script>'
-	);
+	// Canonical Schema.org MusicGroup + BreadcrumbList JSON-LD (@graph)
+	let jsonLdScript = $derived(buildArtistJsonLdScript(artist, artistAlbums));
 
 	/**
 	 * Plays all playable tracks across the artist's entire discography in chronological order.
@@ -179,40 +163,34 @@
 </script>
 
 <svelte:head>
-	<title>{artist.name} | Discography &amp; Lore | The Listening Room (Engine Room Records)</title>
-	<meta
-		name="title"
-		content="{artist.name} | Discography & Lore | The Listening Room (Engine Room Records)"
-	/>
-	<meta name="description" content={artist.description} />
-	<link rel="canonical" href="https://music.raggiesoft.com/{artist.slug}" />
+	<title>{seo.title}</title>
+	<meta name="description" content={seo.description} />
+	<link rel="canonical" href={seo.canonicalUrl} />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="profile" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
-	<meta property="og:url" content="https://music.raggiesoft.com/{artist.slug}" />
-	<meta
-		property="og:title"
-		content="{artist.name} — Official Discography | The Listening Room"
-	/>
-	<meta property="og:description" content={artist.description} />
+	<meta property="og:url" content={seo.canonicalUrl} />
+	<meta property="og:title" content={seo.ogTitle} />
+	<meta property="og:description" content={seo.description} />
 	<meta property="og:image" content={artist.socialPreview} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta
 		property="og:image:alt"
-		content="{artist.name} - The Listening Room by Engine Room Records"
+		content="{artist.name} — Albums, Songs & Lore on The Listening Room"
 	/>
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:url" content="https://music.raggiesoft.com/{artist.slug}" />
-	<meta
-		name="twitter:title"
-		content="{artist.name} — Official Discography | The Listening Room"
-	/>
-	<meta name="twitter:description" content={artist.description} />
+	<meta name="twitter:url" content={seo.canonicalUrl} />
+	<meta name="twitter:title" content={seo.ogTitle} />
+	<meta name="twitter:description" content={seo.description} />
 	<meta name="twitter:image" content={artist.socialPreview} />
+	<meta
+		name="twitter:image:alt"
+		content="{artist.name} — Albums, Songs & Lore on The Listening Room"
+	/>
 
 	<!-- Structured Data (JSON-LD) -->
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -271,7 +249,9 @@
 	<section
 		class="relative rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
 	>
-		<div class="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:gap-10 md:text-left">
+		<div
+			class="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:gap-10 md:text-left"
+		>
 			<!-- Artist Crest / Emblem -->
 			{#if artist.logo}
 				<div
@@ -280,6 +260,10 @@
 					<img
 						src={artist.logo}
 						alt="{artist.name} official band emblem"
+						width="176"
+						height="176"
+						fetchpriority="high"
+						decoding="async"
 						class="h-full w-full rounded-2xl object-contain"
 					/>
 				</div>
@@ -305,7 +289,9 @@
 							Active: {artist.yearsActive}
 						</span>
 						<span class="font-mono text-xs font-semibold text-slate-400">
-							{artist.albumCount} {artist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {artist.trackCount} Songs ({artist.playableTrackCount} Streamable)
+							{artist.albumCount}
+							{artist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {artist.trackCount} Songs ({artist.playableTrackCount}
+							Streamable)
 						</span>
 					</div>
 
@@ -329,14 +315,42 @@
 					<p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
 						{artist.description}
 					</p>
+
+					<!-- Explicit Fictional-Universe & Real-World Provenance Disclosure -->
+					<div
+						class="mt-4 max-w-3xl rounded-2xl border border-slate-800/90 bg-slate-950/70 px-4 py-3 text-left text-xs leading-relaxed text-slate-300"
+					>
+						<strong class="text-white">Creative Provenance:</strong>
+						<strong class="text-blue-300">{artist.name}</strong> is a fictional recording artist in
+						the interconnected RaggieSoft story universe. All real-world compositions, lyrics,
+						arrangements, and sound recordings (℗ 2026 Engine Room Records) are created by
+						<a
+							href="https://michaelpragsdale.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="font-semibold text-white underline decoration-slate-500 underline-offset-2 hover:text-blue-300"
+						>
+							Michael P. Ragsdale
+						</a>
+						and published under the
+						<a
+							href="https://engineroom.raggiesoft.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="font-semibold text-white underline decoration-slate-500 underline-offset-2 hover:text-blue-300"
+						>
+							Engine Room Records
+						</a>
+						imprint.
+					</div>
 				</div>
 
 				<!-- Hero Action Buttons & Support Microcopy -->
 				<div class="mt-6 border-t border-slate-800/80 pt-5">
 					{#if artistHasDspOrStore}
 						<p class="mb-3 text-xs leading-relaxed text-slate-300">
-							<strong class="text-blue-400">Support {artist.name}:</strong> Streaming in Lossless/High-Res
-							on your favorite app or purchasing digital masters directly supports
+							<strong class="text-blue-400">Support {artist.name}:</strong> Streaming in
+							Lossless/High-Res on your favorite app or purchasing digital masters directly supports
 							<strong class="text-white">Michael Ragsdale</strong> &amp;
 							<strong class="text-white">Engine Room Records</strong>.
 						</p>
@@ -397,7 +411,12 @@
 								rel="noopener noreferrer"
 								class="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold text-indigo-200 transition-colors hover:border-indigo-400 hover:bg-indigo-900/60 hover:text-white"
 							>
-								<svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-4 w-4 text-indigo-400"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -406,7 +425,12 @@
 									/>
 								</svg>
 								<span>Official Lore Archive (RaggieSoft.com)</span>
-								<svg class="h-3.5 w-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<svg
+									class="h-3.5 w-3.5 opacity-80"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -429,26 +453,139 @@
 		</div>
 	</section>
 
+	<!-- =================================================================== -->
+	<!-- FEATURED SONGS HUB (Direct Crawlable Track Links for Search & Fans) -->
+	<!-- =================================================================== -->
+	{#if featuredTracks.length > 0 && activeFilterCount === 0}
+		<section class="space-y-4">
+			<div
+				class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between"
+			>
+				<div>
+					<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+						Featured Songs by {artist.name}
+					</h2>
+					<p class="mt-1 text-xs text-slate-400 sm:text-sm">
+						Signature singles, narrative turning points, and fan-favorite recordings — open any song
+						for full lyrics, story notes, and streaming links
+					</p>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				{#each featuredTracks as entry (entry.track.id + '::' + entry.album.slug)}
+					<div
+						class="group flex items-center justify-between gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-3.5 shadow-md transition-all hover:border-blue-500/50 hover:bg-slate-900"
+					>
+						<div class="flex min-w-0 items-center gap-3">
+							{#if entry.track.isPlayable}
+								<button
+									type="button"
+									onclick={() => playTrack(entry.album, entry.track)}
+									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-blue-300 transition-colors hover:bg-blue-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+									aria-label="Play {entry.track.title} by {artist.name}"
+								>
+									<svg
+										class="h-4 w-4 translate-x-0.5 fill-current"
+										viewBox="0 0 24 24"
+										aria-hidden="true"
+									>
+										<path d="M8 5v14l11-7z" />
+									</svg>
+								</button>
+							{:else}
+								<img
+									src={entry.album.artwork}
+									alt="Cover artwork for {entry.album.title}"
+									width="40"
+									height="40"
+									loading="lazy"
+									decoding="async"
+									class="h-10 w-10 shrink-0 rounded-xl border border-slate-700 object-cover"
+								/>
+							{/if}
+
+							<div class="min-w-0">
+								<h3 class="truncate text-sm font-bold text-white">
+									<a
+										href={resolve('/[artist]/[album]/[track]', {
+											artist: entry.album.artistSlug,
+											album: entry.album.slug,
+											track: entry.track.slug
+										})}
+										class="transition-colors hover:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+									>
+										{entry.track.title}
+									</a>
+								</h3>
+								<p class="truncate text-xs text-slate-400">
+									<a
+										href={resolve('/[artist]/[album]', {
+											artist: entry.album.artistSlug,
+											album: entry.album.slug
+										})}
+										class="hover:text-slate-200 hover:underline"
+									>
+										{entry.album.title}
+									</a>
+									<span> &bull; {entry.album.year}</span>
+								</p>
+							</div>
+						</div>
+
+						<a
+							href={resolve('/[artist]/[album]/[track]', {
+								artist: entry.album.artistSlug,
+								album: entry.album.slug,
+								track: entry.track.slug
+							})}
+							class="shrink-0 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1 text-[11px] font-semibold text-slate-200 transition-colors hover:border-blue-500/60 hover:bg-blue-600 hover:text-white"
+							aria-label="Lyrics and lore for {entry.track.title}"
+						>
+							Lyrics &rarr;
+						</a>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	<!-- Active Filter Chips (only shown when user has filtered via Search & Filter Menu) -->
 	{#if activeFilterCount > 0}
-		<div class="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+		<div
+			class="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3"
+		>
 			<span class="text-xs font-bold tracking-wider text-slate-400 uppercase">Active Filters:</span>
 			{#if searchQuery.trim()}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/20 px-2.5 py-1 text-xs font-semibold text-blue-300"
+				>
 					Search: "{searchQuery}"
-					<button type="button" onclick={() => (searchQuery = '')} class="hover:text-white">&times;</button>
+					<button type="button" onclick={() => (searchQuery = '')} class="hover:text-white"
+						>&times;</button
+					>
 				</span>
 			{/if}
 			{#if activeTypeFilter !== 'all'}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 uppercase">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 uppercase"
+				>
 					Format: {activeTypeFilter}
-					<button type="button" onclick={() => (activeTypeFilter = 'all')} class="hover:text-white">&times;</button>
+					<button type="button" onclick={() => (activeTypeFilter = 'all')} class="hover:text-white"
+						>&times;</button
+					>
 				</span>
 			{/if}
 			{#if activeStatusFilter !== 'all'}
-				<span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-2.5 py-1 text-xs font-semibold text-emerald-300 uppercase">
+				<span
+					class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/20 px-2.5 py-1 text-xs font-semibold text-emerald-300 uppercase"
+				>
 					Status: {activeStatusFilter}
-					<button type="button" onclick={() => (activeStatusFilter = 'all')} class="hover:text-white">&times;</button>
+					<button
+						type="button"
+						onclick={() => (activeStatusFilter = 'all')}
+						class="hover:text-white">&times;</button
+					>
 				</span>
 			{/if}
 			<button
@@ -489,15 +626,20 @@
 		<div class="space-y-12">
 			{#each groupedSections as section (section.id)}
 				<section class="space-y-5">
-					<div class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
+					<div
+						class="flex flex-col gap-1 border-b border-slate-800/80 pb-3 sm:flex-row sm:items-end sm:justify-between"
+					>
 						<div>
 							<div class="flex items-center gap-2">
 								<span class="text-xl">{section.icon}</span>
 								<h2 class="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
 									{section.title}
 								</h2>
-								<span class="rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-300">
-									{section.albums.length} {section.albums.length === 1 ? 'Release' : 'Releases'}
+								<span
+									class="rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-300"
+								>
+									{section.albums.length}
+									{section.albums.length === 1 ? 'Release' : 'Releases'}
 								</span>
 							</div>
 							<p class="mt-1 text-xs text-slate-400 sm:text-sm">
@@ -528,6 +670,10 @@
 											<img
 												src={album.artwork}
 												alt="Cover artwork for {album.title}"
+												width="300"
+												height="300"
+												loading="lazy"
+												decoding="async"
 												class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 											/>
 										</a>
@@ -583,11 +729,14 @@
 													</span>
 												{/if}
 												<span class="font-mono text-xs font-semibold text-slate-400">
-													{formatReleaseDate(album.temporalCoverage, album.year)} &bull; {album.genre}
+													Narrative Release: {formatReleaseDate(album.temporalCoverage, album.year)} &bull;
+													Real-World DSP Release: {ensureRealWorldDate(album.datePublished)} &bull; {album.genre}
 												</span>
 											</div>
 
-											<h3 class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl">
+											<h3
+												class="text-xl leading-snug font-bold tracking-tight text-white sm:text-2xl"
+											>
 												<a
 													href={resolve('/[artist]/[album]', {
 														artist: album.artistSlug,
@@ -599,13 +748,17 @@
 												</a>
 											</h3>
 
-											<p class="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-400 sm:text-sm">
+											<p
+												class="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-400 sm:text-sm"
+											>
 												{album.description}
 											</p>
 										</div>
 
 										<!-- Action Buttons (DSP / Fourthwall + 128kbps Preview) -->
-										<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5">
+										<div
+											class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-800/80 pt-3.5"
+										>
 											<StoreButton
 												type="album"
 												size="small"
@@ -653,7 +806,12 @@
 												onclick={() => openAlbumShareModal(album)}
 												class="flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
 											>
-												<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<svg
+													class="h-3.5 w-3.5"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
@@ -711,7 +869,10 @@
 																class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors group-hover:bg-blue-600 group-hover:text-white"
 																aria-label="Preview {track.title}"
 															>
-																<svg class="h-3.5 w-3.5 translate-x-0.5 fill-current" viewBox="0 0 24 24">
+																<svg
+																	class="h-3.5 w-3.5 translate-x-0.5 fill-current"
+																	viewBox="0 0 24 24"
+																>
 																	<path d="M8 5v14l11-7z" />
 																</svg>
 															</button>
@@ -722,11 +883,31 @@
 																{track.track}
 															</span>
 														{/if}
-														<span class="truncate text-sm font-medium">
+														<a
+															href={resolve('/[artist]/[album]/[track]', {
+																artist: album.artistSlug,
+																album: album.slug,
+																track: track.slug
+															})}
+															class="truncate text-sm font-medium transition-colors hover:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+														>
 															{track.track}. {track.title}
-														</span>
+														</a>
 													</div>
-													<span class="ml-4 font-mono text-xs text-slate-500">{track.duration}</span>
+													<div class="ml-4 flex shrink-0 items-center gap-2">
+														<span class="font-mono text-xs text-slate-500">{track.duration}</span>
+														<a
+															href={resolve('/[artist]/[album]/[track]', {
+																artist: album.artistSlug,
+																album: album.slug,
+																track: track.slug
+															})}
+															class="rounded border border-slate-700/80 bg-slate-800/80 px-2 py-0.5 text-[11px] font-semibold text-slate-300 transition-colors hover:border-blue-500/60 hover:bg-blue-600 hover:text-white"
+															aria-label="Open song page for {track.title}"
+														>
+															Song &rarr;
+														</a>
+													</div>
 												</div>
 											{/each}
 										</div>
@@ -738,6 +919,69 @@
 				</section>
 			{/each}
 		</div>
+	{/if}
+
+	<!-- =================================================================== -->
+	<!-- RELATED ENGINE ROOM RECORDS ARTISTS                                 -->
+	<!-- =================================================================== -->
+	{#if relatedArtists.length > 0}
+		<section class="space-y-4 border-t border-slate-800/80 pt-8">
+			<div class="flex items-center justify-between gap-4">
+				<div>
+					<h2 class="text-xl font-bold tracking-tight text-white">
+						Related Engine Room Records Artists
+					</h2>
+					<p class="mt-0.5 text-xs text-slate-400 sm:text-sm">
+						Explore sister bands and fellow touring artists from the RaggieSoft story universe
+					</p>
+				</div>
+				<a
+					href={resolve('/discography')}
+					class="text-xs font-semibold text-blue-400 hover:text-blue-300"
+				>
+					Full Label Roster &rarr;
+				</a>
+			</div>
+
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				{#each relatedArtists as relArtist (relArtist.slug)}
+					<a
+						href={resolve('/[artist]', { artist: relArtist.slug })}
+						class="group flex items-center gap-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 transition-all hover:border-blue-500/60 hover:bg-slate-900 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						{#if relArtist.logo}
+							<img
+								src={relArtist.logo}
+								alt="{relArtist.name} band emblem"
+								width="56"
+								height="56"
+								loading="lazy"
+								decoding="async"
+								class="h-14 w-14 shrink-0 rounded-2xl border border-slate-700/80 bg-slate-950 object-contain p-1"
+							/>
+						{:else}
+							<div
+								class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-700 text-xl font-black text-white"
+							>
+								{relArtist.name.charAt(0)}
+							</div>
+						{/if}
+						<div class="min-w-0">
+							<h3 class="truncate text-sm font-bold text-white group-hover:text-blue-400">
+								{relArtist.name}
+							</h3>
+							<p class="truncate text-xs text-slate-400">
+								{relArtist.albumCount}
+								{relArtist.albumCount === 1 ? 'Release' : 'Releases'} &bull; {relArtist.trackCount} Songs
+							</p>
+							<p class="mt-0.5 truncate text-[11px] text-slate-500">
+								{relArtist.genres.slice(0, 2).join(' / ')}
+							</p>
+						</div>
+					</a>
+				{/each}
+			</div>
+		</section>
 	{/if}
 
 	<!-- =================================================================== -->
@@ -774,4 +1018,3 @@
 	url={shareModalData?.url || ''}
 	socialPreview={shareModalData?.socialPreview || ''}
 />
-

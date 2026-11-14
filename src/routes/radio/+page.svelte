@@ -39,6 +39,7 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
+	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
@@ -144,21 +145,24 @@
 		const mins = Math.max(1, Math.round((secs % 3600) / 60));
 		return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
 	}
+
+	const radioDescription =
+		'Stream The Listening Room Radio on Engine Room Records: a commercial-free broadcast preserving full Rock Operas and story series in chronological order.';
+
+	const radioBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'The Listening Room Radio', url: 'https://music.raggiesoft.com/radio' }
+	]);
 </script>
 
 <svelte:head>
 	<title>The Listening Room Radio | Engine Room Records</title>
-	<meta
-		name="description"
-		content="Tune into The Listening Room Radio on Engine Room Records. An uninterrupted catalog broadcast that preserves full Rock Operas and multi-album Rock Opera Series in exact narrative order."
-	/>
+	<meta name="description" content={radioDescription} />
+	<link rel="canonical" href="https://music.raggiesoft.com/radio" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:title" content="The Listening Room Radio | Engine Room Records" />
-	<meta
-		property="og:description"
-		content="Stream the entire Engine Room Records catalog in one continuous broadcast that respects both standalone Rock Operas and multi-album Rock Opera Series."
-	/>
+	<meta property="og:description" content={radioDescription} />
 	<meta property="og:url" content="https://music.raggiesoft.com/radio" />
 	<meta property="og:image" content="https://music.raggiesoft.com/og-radio.jpg" />
 	<meta property="og:image:width" content="1200" />
@@ -169,11 +173,10 @@
 	/>
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="The Listening Room Radio | Engine Room Records" />
-	<meta
-		name="twitter:description"
-		content="Continuous catalog radio broadcast that keeps Rock Operas and multi-album Rock Opera Series intact in chronological narrative order."
-	/>
+	<meta name="twitter:description" content={radioDescription} />
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-radio.jpg" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html radioBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="mx-auto max-w-7xl space-y-10 px-4 py-8 sm:px-6 lg:px-8">
@@ -196,7 +199,9 @@
 								? 'animate-ping bg-red-400'
 								: 'bg-red-500'}"
 						></span>
-						<span>{isRadioActive && player.isPlaying ? 'On Air • Broadcasting' : 'Station Ready'}</span>
+						<span
+							>{isRadioActive && player.isPlaying ? 'On Air • Broadcasting' : 'Station Ready'}</span
+						>
 					</span>
 
 					<span
@@ -222,9 +227,10 @@
 					</h1>
 					<p class="mt-3 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
 						A continuous, commercial-free 128kbps discovery broadcast spanning the entire
-						<strong class="text-white">Engine Room Records</strong> vault. Standalone studio and live
-						tracks are shuffled freely, while <strong class="text-amber-300">Rock Operas</strong> and
-						multi-album <strong class="text-amber-300">Rock Opera Series</strong> (like
+						<strong class="text-white">Engine Room Records</strong> vault. Standalone studio and
+						live tracks are shuffled freely, while
+						<strong class="text-amber-300">Rock Operas</strong>
+						and multi-album <strong class="text-amber-300">Rock Opera Series</strong> (like
 						<em>Guiding Stars → Static &amp; Silence Book 1 &amp; Book 2</em> and
 						<em>The Eleventh Child Book 1 &amp; Book 2</em>) remain glued together in unbroken
 						narrative sequence.
@@ -262,7 +268,12 @@
 						class="inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/90 px-5 py-3.5 text-sm font-bold text-slate-200 transition-all hover:border-blue-500/60 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
 						title="Generate a new block-level shuffle while keeping Rock Operas and Series intact"
 					>
-						<svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg
+							class="h-4 w-4 text-blue-400"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -341,8 +352,8 @@
 							<span class="italic">{broadcast.stats.realityCheck}</span>
 						</p>
 						<p class="mt-2 text-[11px] text-slate-400">
-							Curated across all studio albums, rock operas, live recordings, and vault
-							compilations so you never hear the same master recording twice in one cycle.
+							Curated across all studio albums, rock operas, live recordings, and vault compilations
+							so you never hear the same master recording twice in one cycle.
 						</p>
 					</div>
 				</div>
@@ -366,6 +377,9 @@
 							<img
 								src={activeCompanionTrack.artwork}
 								alt="Cover art for {activeCompanionTrack.album}"
+								width="112"
+								height="112"
+								decoding="async"
 								class="h-24 w-24 rounded-2xl border border-slate-700 object-cover shadow-lg sm:h-28 sm:w-28"
 							/>
 						{/if}
@@ -404,7 +418,20 @@
 						</div>
 
 						<h2 id="dsp-companion-heading" class="truncate text-xl font-extrabold text-white">
-							{activeCompanionTrack.title}
+							{#if activeCompanionTrack.artistSlug && activeCompanionTrack.albumSlug && activeCompanionTrack.slug}
+								<a
+									href={resolve('/[artist]/[album]/[track]', {
+										artist: activeCompanionTrack.artistSlug,
+										album: activeCompanionTrack.albumSlug,
+										track: activeCompanionTrack.slug
+									})}
+									class="transition-colors hover:text-blue-400 hover:underline"
+								>
+									{activeCompanionTrack.title}
+								</a>
+							{:else}
+								{activeCompanionTrack.title}
+							{/if}
 						</h2>
 
 						<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-300">
@@ -453,10 +480,11 @@
 					</div>
 
 					<p class="mb-4 text-xs leading-relaxed text-slate-300">
-						The Listening Room Radio streams our <strong>128kbps web preview</strong> continuously without
-						interruptions. Love what’s playing right now? Open
-						<strong class="text-white">{activeCompanionTrack.album}</strong> in lossless/high-res on your
-						preferred streaming service or grab the DRM-free digital archive on Fourthwall to support
+						The Listening Room Radio streams our <strong>128kbps web preview</strong> continuously
+						without interruptions. Love what’s playing right now? Open
+						<strong class="text-white">{activeCompanionTrack.album}</strong> in lossless/high-res on
+						your preferred streaming service or grab the DRM-free digital archive on Fourthwall to
+						support
 						<strong class="text-blue-300">Michael Ragsdale</strong>—links open in a new tab so your
 						radio broadcast keeps playing.
 					</p>
@@ -578,9 +606,7 @@
 							<p class="text-xs font-semibold text-blue-400">{block.artist}</p>
 
 							<div class="pt-1">
-								<span
-									class="block text-[10px] font-bold tracking-wider text-slate-500 uppercase"
-								>
+								<span class="block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
 									Unbroken Playback Order:
 								</span>
 								<ol class="mt-1.5 space-y-1 text-xs text-slate-300">
@@ -634,7 +660,7 @@
 					bind:value={searchFilter}
 					placeholder="Filter broadcast queue..."
 					aria-label="Filter broadcast queue by song, artist, album, or ISRC"
-					class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+					class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
 				/>
 			</div>
 		</div>
@@ -671,18 +697,39 @@
 								<img
 									src={track.artwork}
 									alt=""
+									aria-hidden="true"
+									width="40"
+									height="40"
 									loading="lazy"
+									decoding="async"
 									class="h-10 w-10 shrink-0 rounded-lg border border-slate-700/80 object-cover"
 								/>
 							{/if}
 
 							<div class="min-w-0 flex-1">
 								<div class="flex flex-wrap items-center gap-2">
-									<span
-										class="truncate text-sm font-bold {isCurrent ? 'text-blue-300' : 'text-white'}"
-									>
-										{track.title}
-									</span>
+									{#if track.artistSlug && track.albumSlug && track.slug}
+										<a
+											href={resolve('/[artist]/[album]/[track]', {
+												artist: track.artistSlug,
+												album: track.albumSlug,
+												track: track.slug
+											})}
+											class="truncate text-sm font-bold transition-colors hover:text-blue-400 hover:underline {isCurrent
+												? 'text-blue-300'
+												: 'text-white'}"
+										>
+											{track.title}
+										</a>
+									{:else}
+										<span
+											class="truncate text-sm font-bold {isCurrent
+												? 'text-blue-300'
+												: 'text-white'}"
+										>
+											{track.title}
+										</span>
+									{/if}
 
 									{#if track.radioBlockType === 'series'}
 										<span

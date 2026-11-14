@@ -55,9 +55,9 @@ body {
  *    `viewport-fit=cover` and `apple-mobile-web-app-status-bar-style="black-translucent"`.
  */
 @media (display-mode: standalone),
-       (display-mode: window-controls-overlay),
-       (display-mode: minimal-ui),
-       (display-mode: fullscreen) {
+	(display-mode: window-controls-overlay),
+	(display-mode: minimal-ui),
+	(display-mode: fullscreen) {
 	.rs-network-bar,
 	.rs-mobile-network-section {
 		display: none !important;
@@ -475,8 +475,9 @@ html[data-theme='solstice'][data-color-scheme='dark'] {
 
 .er-lore-prose code,
 .er-lyrics-prose code {
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-		'Courier New', monospace;
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+		monospace;
 	font-size: 0.85em;
 	padding: 0.125rem 0.375rem;
 	border-radius: 0.375rem;
@@ -514,4 +515,3 @@ html[data-theme='solstice'][data-color-scheme='dark'] {
 .er-lyrics-prose a:hover {
 	color: var(--color-blue-300);
 }
-

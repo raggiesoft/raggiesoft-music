@@ -16,7 +16,13 @@
  * ============================================================================
  */
 import { error } from '@sveltejs/kit';
-import { allAlbums, allArtists, getArtistBySlug } from '#lib/data/musicData.js';
+import {
+	allAlbums,
+	allArtists,
+	getArtistBySlug,
+	getFeaturedTracksForArtist,
+	getRelatedArtists
+} from '#lib/data/musicData.js';
 
 export const prerender = true;
 
@@ -31,7 +37,7 @@ export function entries() {
 }
 
 /**
- * Loads artist biography, metadata, and complete chronological discography.
+ * Loads artist biography, metadata, featured tracks, related artists, and complete chronological discography.
  * @type {import('./$types').PageLoad}
  */
 export function load({ params }) {
@@ -50,9 +56,13 @@ export function load({ params }) {
 			return da.localeCompare(db);
 		});
 
+	const featuredTracks = getFeaturedTracksForArtist(params.artist, allAlbums, 8);
+	const relatedArtists = getRelatedArtists(params.artist, 4);
+
 	return {
 		artist,
-		artistAlbums
+		artistAlbums,
+		featuredTracks,
+		relatedArtists
 	};
 }
-

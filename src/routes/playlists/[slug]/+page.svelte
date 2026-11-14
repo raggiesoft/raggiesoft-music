@@ -29,6 +29,7 @@
 	import { player } from '#lib/player.svelte.js';
 	import { playlistManager } from '#lib/playlists.svelte.js';
 	import { formatStardustMarkdown } from '#lib/data/musicData.js';
+	import { buildPlaylistJsonLdScript, truncateMeta } from '#lib/seo.js';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 
 	let { data } = $props();
@@ -64,56 +65,38 @@
 		};
 	}
 
-	// Build Schema.org MusicPlaylist JSON-LD
-	let jsonLdString = $derived(
-		JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'MusicPlaylist',
-			name: playlist.title,
-			description: playlist.description,
-			url: `https://music.raggiesoft.com/playlists/${playlist.slug}`,
-			image: playlist.socialPreview || playlist.artwork,
-			numTracks: playlist.tracks.length,
-			author: {
-				'@type': 'MusicGroup',
-				name: playlist.curator
-			},
-			track: playlist.tracks.map((t, i) => ({
-				'@type': 'MusicRecording',
-				position: i + 1,
-				name: t.title,
-				byArtist: t.artist,
-				inAlbum: t.album,
-				duration: t.duration,
-				isrcCode: t.isrc || undefined
-			}))
-		})
-	);
+	// Build Schema.org MusicPlaylist + BreadcrumbList @graph JSON-LD with ISO 8601 durations
+	let playlistJsonLdScript = $derived(buildPlaylistJsonLdScript(playlist));
+	let seoOgTitle = $derived(truncateMeta(playlist.ogTitle || playlist.title, 60));
+	let seoDescription = $derived(truncateMeta(playlist.ogDescription || playlist.description, 155));
 </script>
 
 <svelte:head>
-	<title>{playlist.ogTitle || playlist.title}</title>
-	<meta name="description" content={playlist.ogDescription || playlist.description} />
+	<title>{playlist.ogTitle || `${playlist.title} | The Listening Room`}</title>
+	<meta name="description" content={seoDescription} />
 	<link rel="canonical" href="https://music.raggiesoft.com/playlists/{playlist.slug}" />
 	<meta property="og:type" content="music.playlist" />
 	<meta property="og:site_name" content="The Listening Room by Engine Room Records" />
-	<meta property="og:title" content={playlist.ogTitle || playlist.title} />
-	<meta property="og:description" content={playlist.ogDescription || playlist.description} />
+	<meta property="og:title" content={seoOgTitle} />
+	<meta property="og:description" content={seoDescription} />
 	<meta property="og:url" content="https://music.raggiesoft.com/playlists/{playlist.slug}" />
 	<meta property="og:image" content={playlist.socialPreview || playlist.artwork} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={playlist.ogTitle || playlist.title} />
-	<meta name="twitter:description" content={playlist.ogDescription || playlist.description} />
+	<meta name="twitter:title" content={seoOgTitle} />
+	<meta name="twitter:description" content={seoDescription} />
 	<meta name="twitter:image" content={playlist.socialPreview || playlist.artwork} />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html `<script type="application/ld+json">${jsonLdString}</script>`}
+	{@html playlistJsonLdScript}
 </svelte:head>
 
 <div class="space-y-10">
 	<!-- Breadcrumb Navigation -->
-	<nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-400">
+	<nav
+		aria-label="Breadcrumb"
+		class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-400"
+	>
 		<a href={resolve('/')} class="hover:text-white">Home</a>
 		<span>/</span>
 		<a href={resolve('/playlists')} class="hover:text-white">Playlists</a>
@@ -131,7 +114,11 @@
 		<div class="relative max-h-96 w-full overflow-hidden border-b border-slate-800">
 			<img
 				src={playlist.socialPreview}
-				alt={playlist.title}
+				alt="{playlist.title} banner artwork"
+				width="1200"
+				height="630"
+				fetchpriority="high"
+				decoding="async"
 				class="h-full w-full object-cover"
 			/>
 			<div
@@ -139,7 +126,7 @@
 					absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent
 				"
 			></div>
-			<div class="absolute bottom-4 left-6 right-6 flex flex-wrap items-end justify-between gap-3">
+			<div class="absolute right-6 bottom-4 left-6 flex flex-wrap items-end justify-between gap-3">
 				<span
 					class="rounded-full border border-amber-400/50 bg-slate-950/85 px-3.5 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase backdrop-blur-md"
 				>
@@ -158,7 +145,10 @@
 			<div class="flex flex-col items-center space-y-4 lg:col-span-4">
 				<img
 					src={playlist.artwork}
-					alt={playlist.title}
+					alt="{playlist.title} cover artwork"
+					width="320"
+					height="320"
+					decoding="async"
 					class="aspect-square w-full max-w-xs rounded-2xl border border-slate-700/80 object-cover shadow-2xl"
 				/>
 
@@ -207,10 +197,12 @@
 					</h2>
 					<p class="mt-1 text-xs leading-relaxed text-slate-300">
 						{#if playlist.bookUrl}
-							Read the complete four-chapter narrative of fraternal twins <strong>John and Erin</strong>
+							Read the complete four-chapter narrative of fraternal twins <strong
+								>John and Erin</strong
+							>
 							(portrayed by Ryan and Cassidy O'Connell, both navigating CPI's steep Blacksburg hills in
-							motorized power wheelchairs) in <em>The Ocean View Archives</em>, or explore the liner-note
-							lore page on <em>raggiesoft.com</em>:
+							motorized power wheelchairs) in <em>The Ocean View Archives</em>, or explore the
+							liner-note lore page on <em>raggiesoft.com</em>:
 						{:else}
 							Explore the complete studio engineering and narrative lore behind
 							<strong>{playlist.title}</strong> and Cassidy O'Connell's signature analog space-synth
@@ -247,7 +239,11 @@
 								rel="noopener noreferrer"
 								class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-2.5 text-xs font-bold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
 							>
-								<span>{playlist.bookUrl ? 'Contemporary Library Index (raggiesoft.com)' : 'Ad Astra Lore Archive (raggiesoft.com)'}</span>
+								<span
+									>{playlist.bookUrl
+										? 'Contemporary Library Index (raggiesoft.com)'
+										: 'Ad Astra Lore Archive (raggiesoft.com)'}</span
+								>
 								<span>↗</span>
 							</a>
 						{/if}
@@ -268,7 +264,9 @@
 	<!-- CHAPTER-BY-CHAPTER PLAYABLE TRACK SUITE                               -->
 	<!-- ===================================================================== -->
 	<section class="space-y-4" aria-labelledby="story-tracks-heading">
-		<div class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-3 sm:flex-row sm:items-end">
+		<div
+			class="flex flex-col justify-between gap-2 border-b border-slate-800 pb-3 sm:flex-row sm:items-end"
+		>
 			<div>
 				<span class="text-xs font-bold tracking-widest text-blue-400 uppercase">
 					{playlist.tracks.length}-Song Curated Arc
@@ -284,8 +282,7 @@
 
 		<div class="space-y-4">
 			{#each playlist.tracks as track, idx (track.id + '-' + idx)}
-				{@const isPlayingThis =
-					player.currentTrack.audioUrl === track.audioUrl && player.isPlaying}
+				{@const isPlayingThis = player.currentTrack.audioUrl === track.audioUrl && player.isPlaying}
 				{@const isExpanded = expandedTrackId === track.id}
 				<article
 					class="overflow-hidden rounded-2xl border transition-all {isPlayingThis
@@ -293,7 +290,7 @@
 						: 'border-slate-800 bg-slate-900/85 hover:border-slate-700'}"
 				>
 					<div class="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center">
-						<div class="flex items-start gap-4 min-w-0">
+						<div class="flex min-w-0 items-start gap-4">
 							<button
 								type="button"
 								onclick={() => playPlaylist(idx)}
@@ -326,7 +323,10 @@
 										</span>
 									{/if}
 									<a
-										href={resolve('/[artist]/[album]', { artist: track.artistSlug, album: track.albumSlug })}
+										href={resolve('/[artist]/[album]', {
+											artist: track.artistSlug,
+											album: track.albumSlug
+										})}
 										class="text-xs font-semibold text-slate-400 hover:text-blue-400 hover:underline"
 									>
 										From <em>{track.album}</em> ({track.year})
@@ -334,7 +334,16 @@
 								</div>
 
 								<h3 class="text-lg font-extrabold text-white sm:text-xl">
-									{idx + 1}. {track.title}
+									<a
+										href={resolve('/[artist]/[album]/[track]', {
+											artist: track.artistSlug,
+											album: track.albumSlug,
+											track: track.slug
+										})}
+										class="transition-colors hover:text-blue-400 hover:underline"
+									>
+										{idx + 1}. {track.title}
+									</a>
 									{#if track.chapterTitle}
 										<span class="text-sm font-medium text-amber-300">
 											— "{track.chapterTitle}"
@@ -350,7 +359,17 @@
 							</div>
 						</div>
 
-						<div class="flex flex-wrap items-center gap-2 self-end sm:self-center shrink-0">
+						<div class="flex shrink-0 flex-wrap items-center gap-2 self-end sm:self-center">
+							<a
+								href={resolve('/[artist]/[album]/[track]', {
+									artist: track.artistSlug,
+									album: track.albumSlug,
+									track: track.slug
+								})}
+								class="rounded-xl border border-blue-500/40 bg-blue-950/50 px-3 py-1.5 text-xs font-bold text-blue-300 transition-colors hover:border-blue-400 hover:bg-blue-900/60 hover:text-white"
+							>
+								Song Page &rarr;
+							</a>
 							{#if track.audioUrl}
 								<!-- eslint-disable svelte/no-navigation-without-resolve -->
 								<a

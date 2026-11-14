@@ -107,9 +107,13 @@
 			class="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900 shadow-2xl"
 		>
 			<!-- Modal Header -->
-			<div class="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 px-6 py-4">
+			<div
+				class="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 px-6 py-4"
+			>
 				<div class="flex items-center gap-2.5">
-					<span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400">
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400"
+					>
 						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path
 								stroke-linecap="round"
@@ -130,18 +134,29 @@
 					aria-label="Close Add to Playlist modal"
 				>
 					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
 					</svg>
 				</button>
 			</div>
 
 			<div class="max-h-[80vh] space-y-5 overflow-y-auto p-6">
 				<!-- Selected Track Summary Card -->
-				<div class="flex items-center gap-3.5 rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+				<div
+					class="flex items-center gap-3.5 rounded-xl border border-slate-800 bg-slate-950/70 p-3"
+				>
 					{#if track.artwork}
 						<img
 							src={track.artwork}
-							alt={track.album}
+							alt="{track.album} cover artwork"
+							width="48"
+							height="48"
+							loading="lazy"
+							decoding="async"
 							class="h-12 w-12 shrink-0 rounded-lg object-cover shadow"
 						/>
 					{/if}
@@ -177,7 +192,8 @@
 										<div class="min-w-0 pr-3">
 											<p class="truncate text-sm font-semibold text-white">{pl.name}</p>
 											<p class="text-xs text-slate-400">
-												{pl.trackSpecs.length} {pl.trackSpecs.length === 1 ? 'track' : 'tracks'}
+												{pl.trackSpecs.length}
+												{pl.trackSpecs.length === 1 ? 'track' : 'tracks'}
 											</p>
 										</div>
 										<span
@@ -206,7 +222,7 @@
 								bind:value={newPlaylistName}
 								placeholder="e.g., CPI Late Night Study Mix"
 								required
-								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							/>
 						</div>
 						<div>
@@ -218,7 +234,7 @@
 								type="text"
 								bind:value={newPlaylistDesc}
 								placeholder="Personal notes or story theme..."
-								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+								class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							/>
 						</div>
 						<div class="flex items-center justify-between gap-3 pt-1">
@@ -242,4 +258,3 @@
 		</div>
 	</div>
 {/if}
-

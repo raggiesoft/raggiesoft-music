@@ -45,7 +45,8 @@ export const THEME_PALETTES = [
 	{
 		id: 'industrial',
 		name: 'Engine Room Industrial',
-		description: 'Poured concrete and stamped iron by day; deep vault gunmetal and hazard red by night.',
+		description:
+			'Poured concrete and stamped iron by day; deep vault gunmetal and hazard red by night.',
 		lightPreview: { bg: '#e9ecef', surface: '#f8f9fa', text: '#1a1d20', accent: '#c82333' },
 		darkPreview: { bg: '#090b0e', surface: '#14171c', text: '#f1f3f5', accent: '#ef4444' }
 	},
@@ -59,14 +60,16 @@ export const THEME_PALETTES = [
 	{
 		id: 'stardust',
 		name: 'Stardust Violet',
-		description: 'Inspired by Progress Street and Twin Moons. Soft lavender light and deep nebula violet dark.',
+		description:
+			'Inspired by Progress Street and Twin Moons. Soft lavender light and deep nebula violet dark.',
 		lightPreview: { bg: '#f5f3ff', surface: '#ffffff', text: '#1e1b4b', accent: '#7c3aed' },
 		darkPreview: { bg: '#080514', surface: '#130d26', text: '#f3e8ff', accent: '#8b5cf6' }
 	},
 	{
 		id: 'solstice',
 		name: 'Arctic Aurora',
-		description: 'Inspired by The Arctic Symphony Project. Glacial frost by day and emerald aurora by night.',
+		description:
+			'Inspired by The Arctic Symphony Project. Glacial frost by day and emerald aurora by night.',
 		lightPreview: { bg: '#f0fdf9', surface: '#ffffff', text: '#062c22', accent: '#059669' },
 		darkPreview: { bg: '#03110e', surface: '#09221c', text: '#ecfdf5', accent: '#10b981' }
 	}
@@ -235,4 +238,3 @@ class ThemeManager {
 }
 
 export const themeManager = new ThemeManager();
-

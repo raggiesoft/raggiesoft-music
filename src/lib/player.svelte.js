@@ -34,7 +34,9 @@ export class AudioPlayer {
 
 	// Drawer / Modal overlay state for expanded lyrics & canonical lore view
 	isExpanded = $state(false);
-	drawerTab = $state(/** @type {'lyrics-lore' | 'versions' | 'queue' | 'credits'} */ ('lyrics-lore'));
+	drawerTab = $state(
+		/** @type {'lyrics-lore' | 'versions' | 'queue' | 'credits'} */ ('lyrics-lore')
+	);
 
 	// Playback speed and timer
 	playbackRate = $state(1);
@@ -196,9 +198,7 @@ export class AudioPlayer {
 	seek(time) {
 		const maxDur =
 			this.duration ||
-			(this._audioElement && !isNaN(this._audioElement.duration)
-				? this._audioElement.duration
-				: 0);
+			(this._audioElement && !isNaN(this._audioElement.duration) ? this._audioElement.duration : 0);
 		const targetTime = maxDur > 0 ? Math.max(0, Math.min(maxDur, time)) : Math.max(0, time);
 		this.currentTime = targetTime;
 		if (this._audioElement) {
@@ -286,19 +286,17 @@ export class AudioPlayer {
 		const currentIsrc = (this.currentTrack.isrc || '').trim().toUpperCase();
 		const targetIsrc = (track.isrc || '').trim().toUpperCase();
 		const isSameAudioUrl = Boolean(
-			this.currentTrack.audioUrl &&
-				track.audioUrl &&
-				this.currentTrack.audioUrl === track.audioUrl
+			this.currentTrack.audioUrl && track.audioUrl && this.currentTrack.audioUrl === track.audioUrl
 		);
 
 		// Check if target track has the identical ISRC and an existing audio stream is active/loaded
 		const isSameSongByIsrc = Boolean(
 			!forceRestart &&
-				currentIsrc &&
-				targetIsrc &&
-				currentIsrc === targetIsrc &&
-				(this.currentTrack.audioUrl || this.currentTime > 0) &&
-				!(this._audioElement && this._audioElement.ended)
+			currentIsrc &&
+			targetIsrc &&
+			currentIsrc === targetIsrc &&
+			(this.currentTrack.audioUrl || this.currentTime > 0) &&
+			!(this._audioElement && this._audioElement.ended)
 		);
 
 		if (isSameSongByIsrc) {
@@ -311,8 +309,7 @@ export class AudioPlayer {
 			this.currentTrack.version = track.version ?? this.currentTrack.version ?? '';
 			this.currentTrack.artist = track.artist || this.currentTrack.artist;
 			this.currentTrack.artistSlug = track.artistSlug || this.currentTrack.artistSlug;
-			this.currentTrack.artistLogo =
-				track.artistLogo || this.currentTrack.artistLogo || '';
+			this.currentTrack.artistLogo = track.artistLogo || this.currentTrack.artistLogo || '';
 			this.currentTrack.artistLoreUrl =
 				track.artistLoreUrl ?? this.currentTrack.artistLoreUrl ?? '';
 			this.currentTrack.album = track.album || this.currentTrack.album;
@@ -454,13 +451,13 @@ export class AudioPlayer {
 			!track.dspExempt &&
 			Boolean(
 				(track.spotifyId && track.spotifyId.trim()) ||
-					(track.appleId && track.appleId.trim()) ||
-					(track.amazonId && track.amazonId.trim()) ||
-					(track.youtubeId && track.youtubeId.trim())
+				(track.appleId && track.appleId.trim()) ||
+				(track.amazonId && track.amazonId.trim()) ||
+				(track.youtubeId && track.youtubeId.trim())
 			);
 		const hasStore = Boolean(
 			(track.storeStandardUrl && track.storeStandardUrl.trim()) ||
-				(track.storeAudiophileUrl && track.storeAudiophileUrl.trim())
+			(track.storeAudiophileUrl && track.storeAudiophileUrl.trim())
 		);
 		return hasDsp || hasStore;
 	}

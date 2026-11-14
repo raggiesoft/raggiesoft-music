@@ -34,6 +34,12 @@
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
+	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
+
+	const termsBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'Terms & Licensing', url: 'https://music.raggiesoft.com/terms' }
+	]);
 </script>
 
 <svelte:head>
@@ -60,6 +66,8 @@
 		content="Terms of Service and Licensing for The Listening Room (music.raggiesoft.com), operated by Michael P. Ragsdale. Code: MIT; Music & Lore: CC BY-SA 4.0."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html termsBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="mx-auto max-w-4xl space-y-8">
@@ -78,8 +86,8 @@
 			2026
 		</p>
 		<p class="mt-1 text-xs text-slate-400 sm:text-sm">
-			Governing <strong class="text-slate-200">The Listening Room (music.raggiesoft.com)</strong> and
-			all <strong class="text-slate-200">*.raggiesoft.com</strong> properties &bull; Operated by
+			Governing <strong class="text-slate-200">The Listening Room (music.raggiesoft.com)</strong>
+			and all <strong class="text-slate-200">*.raggiesoft.com</strong> properties &bull; Operated by
 			<strong class="text-slate-200">Michael P. Ragsdale</strong>
 		</p>
 	</section>
@@ -101,7 +109,9 @@
 					class="text-white">Terms</strong
 				>”). If you do not agree to these Terms, please discontinue use of the Services immediately.
 			</p>
-			<div class="rounded-2xl border border-blue-500/40 bg-slate-950/80 p-5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+			<div
+				class="rounded-2xl border border-blue-500/40 bg-slate-950/80 p-5 text-xs leading-relaxed text-slate-300 sm:text-sm"
+			>
 				<h3 class="text-sm font-extrabold text-blue-300 uppercase">
 					Real-World Operator vs. Fictional Worldbuilding Entities
 				</h3>
@@ -119,21 +129,20 @@
 				<p class="mt-2">
 					<strong class="text-white">Important Distinction:</strong> Neither RaggieSoft, RaggieSoft
 					Media, Engine Room Records, nor Ocean View Archives is a state-registered limited
-					liability company or corporation. Any entity name containing <strong class="text-white"
-						>“LLC”</strong
-					>,
+					liability company or corporation. Any entity name containing
+					<strong class="text-white">“LLC”</strong>,
 					<strong class="text-white">“Trust”</strong>,
 					<strong class="text-white">“Holdings”</strong>, or
-					<strong class="text-white">“Corp”</strong> appearing in album liner notes, narrative archives,
-					or corporate lore pages across the Services (including, without limitation,
+					<strong class="text-white">“Corp”</strong> appearing in album liner notes, narrative
+					archives, or corporate lore pages across the Services (including, without limitation,
 					<em>Engine Room Records, LLC</em>, <em>The O’Connell Family, LLC</em>,
 					<em>The O’Connell Family Revocable Trust</em>, <em>Artists First Management, LLC</em>,
 					<em>Stardust Properties, LLC</em>, <em>Stardust Blacksburg, LLC</em>,
 					<em>Stardust Strategic Assets, LLC</em>, <em>Pacific Rim Properties, LLC</em>,
 					<em>Jessica Miller Center, LLC</em>, <em>Aethelgard Holdings, LLC</em>,
 					<em>OmniCorp</em>, and <em>Apex Records</em>) is a
-					<strong class="text-white">100% fictitious, in-universe narrative creation</strong> built
-					for fictional worldbuilding and is not a real-world legal entity.
+					<strong class="text-white">100% fictitious, in-universe narrative creation</strong> built for
+					fictional worldbuilding and is not a real-world legal entity.
 				</p>
 			</div>
 		</section>
@@ -163,9 +172,7 @@
 					</span>
 					<span class="font-mono text-xs text-slate-400">Software &amp; Web Applications</span>
 				</div>
-				<h3 class="mt-2.5 text-base font-extrabold text-white">
-					A. Source Code: MIT License
-				</h3>
+				<h3 class="mt-2.5 text-base font-extrabold text-white">A. Source Code: MIT License</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					All software and web applications powering The Listening Room are released under the
 					<strong class="text-white">MIT License</strong>. You are free to use, copy, modify, merge,
@@ -206,8 +213,8 @@
 								>Michael P. Ragsdale (RaggieSoft / Engine Room Records)</strong
 							>, provide a link to the license, indicate if changes were made, and distribute any
 							derivative works under the same CC BY-SA 4.0 license without adding any technical or
-							legal restrictions (such as DRM or automated fingerprinting claims) that prevent others
-							from exercising the rights granted by the license.
+							legal restrictions (such as DRM or automated fingerprinting claims) that prevent
+							others from exercising the rights granted by the license.
 							<a
 								href="https://creativecommons.org/licenses/by-sa/4.0/"
 								target="_blank"
@@ -230,10 +237,10 @@
 						<span class="mt-0.5 font-bold text-emerald-400">3.</span>
 						<span>
 							<strong class="text-white">Commercial License Cleared by RaggieSoft Media:</strong> If
-							you wish to use Engine Room Records music, lyrics, or narrative IP in a commercial film,
-							television broadcast, video game, advertisement, or monetized product without CC BY-SA
-							4.0 ShareAlike restrictions, you may obtain a direct non-exclusive commercial license
-							in writing from <strong class="text-white">Michael P. Ragsdale</strong>.
+							you wish to use Engine Room Records music, lyrics, or narrative IP in a commercial
+							film, television broadcast, video game, advertisement, or monetized product without CC
+							BY-SA 4.0 ShareAlike restrictions, you may obtain a direct non-exclusive commercial
+							license in writing from <strong class="text-white">Michael P. Ragsdale</strong>.
 						</span>
 					</li>
 				</ul>
@@ -247,7 +254,9 @@
 					>
 						Strict Prohibition &bull; ISRC Prefix QTAHP
 					</span>
-					<span class="font-mono text-xs text-slate-400">Anti-Content-ID &amp; Anti-Fingerprinting</span>
+					<span class="font-mono text-xs text-slate-400"
+						>Anti-Content-ID &amp; Anti-Fingerprinting</span
+					>
 				</div>
 				<h3 class="mt-2.5 text-base font-extrabold text-white">
 					C. Prohibition on Content ID Registration, Audio Fingerprinting &amp; ISRC Hijacking
@@ -256,15 +265,18 @@
 					In accordance with Section 3(a)(4) of the Creative Commons BY-SA 4.0 International Public
 					License (“No downstream restrictions”), you are <strong class="text-white"
 						>strictly prohibited</strong
-					> from using any sound recording, stem, composition, lyric, or literary work from the Services
+					>
+					from using any sound recording, stem, composition, lyric, or literary work from the Services
 					to restrict or interfere with the rights of Michael P. Ragsdale or other licensees. Specifically,
 					you <strong class="text-white">MAY NOT</strong>:
 				</p>
-				<ul class="mt-3 list-inside list-disc space-y-2 text-xs leading-relaxed text-slate-300 sm:text-sm">
+				<ul
+					class="mt-3 list-inside list-disc space-y-2 text-xs leading-relaxed text-slate-300 sm:text-sm"
+				>
 					<li>
 						<strong class="text-white">No Content ID or Automated Rights Fingerprinting:</strong>
-						Submit, upload, or register any original or unmodified sound recording (or any trivial
-						re-encoding, pitch/tempo shift, loop, or compilation thereof) into
+						Submit, upload, or register any original or unmodified sound recording (or any trivial re-encoding,
+						pitch/tempo shift, loop, or compilation thereof) into
 						<strong class="text-white"
 							>YouTube Content ID, Meta Rights Manager, TikTok Commercial Music Library / Audible
 							Magic, SoundCloud Content Protection, DistroKid / TuneCore / CD Baby audio
@@ -273,19 +285,19 @@
 					</li>
 					<li>
 						<strong class="text-white">No Unauthorized DSP Distribution or Impersonation:</strong>
-						Distribute unmodified recordings to commercial Digital Service Providers (Spotify, Apple
-						Music, Amazon Music, Tidal, Deezer, etc.) or claim ownership of any artist profile or
-						band name created by Michael P. Ragsdale (including <em>The Stardust Engine</em>,
+						Distribute unmodified recordings to commercial Digital Service Providers (Spotify, Apple Music,
+						Amazon Music, Tidal, Deezer, etc.) or claim ownership of any artist profile or band name created
+						by Michael P. Ragsdale (including <em>The Stardust Engine</em>,
 						<em>Static &amp; Silence</em>, <em>Fractured Prisms</em>, <em>Sainte-Claire</em>,
 						<em>Ironwood</em>, <em>Apex Ensemble</em>, or <em>Engine Room Records</em>).
-						<strong class="text-white">DistroKid</strong> is the sole authorized commercial DSP
-						distributor for Engine Room Records.
+						<strong class="text-white">DistroKid</strong> is the sole authorized commercial DSP distributor
+						for Engine Room Records.
 					</li>
 					<li>
-						<strong class="text-white">No PRO or Royalty Society Claims:</strong> Register any
-						recording or composition from the Services with any Performing Rights Organization or
-						mechanical/neighboring rights collection society (ASCAP, BMI, SESAC, The MLC,
-						SoundExchange, PRS, SOCAN, etc.) as your own work.
+						<strong class="text-white">No PRO or Royalty Society Claims:</strong> Register any recording
+						or composition from the Services with any Performing Rights Organization or mechanical/neighboring
+						rights collection society (ASCAP, BMI, SESAC, The MLC, SoundExchange, PRS, SOCAN, etc.) as
+						your own work.
 					</li>
 					<li>
 						<strong class="text-white"
@@ -301,10 +313,10 @@
 							class="font-mono text-slate-200">usisrc.org</code
 						>) exclusively to <strong class="text-white">Michael Ragsdale</strong> (Registrant ID:
 						<code class="font-mono text-slate-200">185611</code>). Any unauthorized use, spoofing,
-						prepending of country codes (such as <code class="font-mono text-slate-200">USQTA...</code>),
-						or re-registration of <code class="font-mono text-red-200">QTAHP</code> ISRCs is a material
-						breach of these Terms and will be reported to the US ISRC Agency, IFPI, and applicable DSP
-						fraud departments.
+						prepending of country codes (such as
+						<code class="font-mono text-slate-200">USQTA...</code>), or re-registration of
+						<code class="font-mono text-red-200">QTAHP</code> ISRCs is a material breach of these Terms
+						and will be reported to the US ISRC Agency, IFPI, and applicable DSP fraud departments.
 					</li>
 				</ul>
 			</div>
@@ -329,7 +341,7 @@
 						href="https://corporate.raggiesoft.com/licensing.html"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-amber-500/60 bg-amber-500/20 px-4 py-2.5 text-xs font-extrabold text-amber-200 shadow-md transition-all hover:bg-amber-500/30 hover:text-white"
+						class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-amber-500/60 bg-amber-500/20 px-4 py-2.5 text-xs font-extrabold whitespace-nowrap text-amber-200 shadow-md transition-all hover:bg-amber-500/30 hover:text-white"
 					>
 						<span>Commercial Licensing Portal</span>
 						<span aria-hidden="true">↗</span>
@@ -351,26 +363,26 @@
 						>100% Free Public Web Properties (No Consumer Subscriptions or Direct Billing):</strong
 					>
 					The Listening Room (<code class="font-mono text-slate-200">music.raggiesoft.com</code>)
-					and all <code class="font-mono text-slate-200">*.raggiesoft.com</code> web applications are
-					provided <strong class="text-white">100% free of charge ($0.00)</strong> to the public. We
-					do not offer paid user accounts, recurring subscriptions, token packs, or direct consumer
+					and all <code class="font-mono text-slate-200">*.raggiesoft.com</code> web applications
+					are provided <strong class="text-white">100% free of charge ($0.00)</strong> to the public.
+					We do not offer paid user accounts, recurring subscriptions, token packs, or direct consumer
 					checkout on our servers, and we never collect or store payment card numbers.
 				</li>
 				<li>
-					<strong class="text-white">Merchandise &amp; Digital Storefront (Fourthwall Inc.):</strong>
+					<strong class="text-white">Merchandise &amp; Digital Storefront (Fourthwall Inc.):</strong
+					>
 					All physical merchandise and optional direct digital album downloads purchased through
 					<code class="font-mono text-slate-200">store.raggiesoft.com</code> are sold and fulfilled
 					directly by <strong class="text-white">Fourthwall Inc.</strong>, acting as the independent
 					legal <strong class="text-white">Merchant of Record</strong>. Any purchase on
 					<code class="font-mono text-slate-200">store.raggiesoft.com</code> is a transaction between
-					you and Fourthwall Inc. and is governed by Fourthwall’s Terms of Service, Returns &amp;
-					Refund Policy, and Privacy Policy.
+					you and Fourthwall Inc. and is governed by Fourthwall’s Terms of Service, Returns &amp; Refund
+					Policy, and Privacy Policy.
 				</li>
 				<li>
 					<strong class="text-white">Written Commercial Synchronization Agreements:</strong>
-					Custom B2B commercial synchronization or master-use licenses are negotiated and executed
-					exclusively through individual written license agreements and invoices issued by Michael P.
-					Ragsdale via
+					Custom B2B commercial synchronization or master-use licenses are negotiated and executed exclusively
+					through individual written license agreements and invoices issued by Michael P. Ragsdale via
 					<a
 						href="https://corporate.raggiesoft.com/licensing.html"
 						target="_blank"
@@ -454,10 +466,10 @@
 					class="text-white">Blue Ridge Transit</strong
 				>), in-universe legal filings, trusts, and events presented across the Services are works of
 				creative fiction. Any resemblance to actual persons (living or dead), businesses, academic
-				institutions, or events is purely coincidental. Where historical release dates (e.g., 1986–2023)
-				appear alongside real-world production dates (2026), the historical dates represent the
-				in-universe story timeline, while the real-world production dates represent actual creation
-				and publication by Michael P. Ragsdale.
+				institutions, or events is purely coincidental. Where historical release dates (e.g.,
+				1986–2023) appear alongside real-world production dates (2026), the historical dates
+				represent the in-universe story timeline, while the real-world production dates represent
+				actual creation and publication by Michael P. Ragsdale.
 			</p>
 		</section>
 
@@ -470,12 +482,11 @@
 			</h2>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				<strong class="text-white">A. “AS IS” AND “AS AVAILABLE” DISCLAIMER:</strong> THE SERVICES,
-				SOFTWARE, AUDIO STREAMS, AND ALL CONTENT ARE PROVIDED <strong class="text-white"
-					>“AS IS”</strong
-				>
+				SOFTWARE, AUDIO STREAMS, AND ALL CONTENT ARE PROVIDED
+				<strong class="text-white">“AS IS”</strong>
 				AND <strong class="text-white">“AS AVAILABLE”</strong> WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-				IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-				PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+				IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+				PURPOSE, TITLE, AND NON-INFRINGEMENT.
 			</p>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
 				<strong class="text-white">B. LIMITATION OF PERSONAL LIABILITY ($0.00 CAP):</strong> TO THE
@@ -496,11 +507,11 @@
 				AMOUNTS PAID TO THIRD-PARTY MERCHANTS OF RECORD SUCH AS FOURTHWALL INC. OR EXTERNAL DSPs).
 			</p>
 			<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-				<strong class="text-white">C. USER INDEMNIFICATION:</strong> You agree to defend, indemnify,
-				and hold harmless Michael P. Ragsdale from and against any and all claims, liabilities,
-				damages, losses, and expenses (including reasonable attorneys’ fees) arising out of or connected
-				with your breach of these Terms, your violation of the CC BY-SA 4.0 or MIT licenses, or any unauthorized
-				Content ID, audio fingerprinting, PRO, or ISRC claim submitted by you.
+				<strong class="text-white">C. USER INDEMNIFICATION:</strong> You agree to defend, indemnify, and
+				hold harmless Michael P. Ragsdale from and against any and all claims, liabilities, damages, losses,
+				and expenses (including reasonable attorneys’ fees) arising out of or connected with your breach
+				of these Terms, your violation of the CC BY-SA 4.0 or MIT licenses, or any unauthorized Content
+				ID, audio fingerprinting, PRO, or ISRC claim submitted by you.
 			</p>
 		</section>
 
@@ -524,8 +535,8 @@
 					>United States District Court for the Eastern District of Virginia (Norfolk Division)</strong
 				>, and you irrevocably submit to the personal jurisdiction and venue of such courts. If any
 				provision of these Terms is held invalid or unenforceable, that provision shall be enforced
-				to the maximum extent permissible and the remaining provisions shall remain in full force and
-				effect.
+				to the maximum extent permissible and the remaining provisions shall remain in full force
+				and effect.
 			</p>
 			<div class="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-xs text-slate-400">
 				<h3 class="font-mono font-bold text-slate-200 uppercase">
@@ -536,14 +547,14 @@
 						<strong class="text-slate-200">October 26, 2026:</strong> Added explicit natural-person
 						operator disclosure (Michael P. Ragsdale vs. fictional in-universe LLCs), anti-hijacking
 						prohibitions (Content ID, audio fingerprinting, PRO registration, and US ISRC Agency
-						prefix <code class="font-mono text-slate-200">QTAHP</code> protection), zero consumer
-						billing disclosure, explicit $0.00 personal liability cap, user indemnification, and
-						hardcoded effective/revision dates.
+						prefix <code class="font-mono text-slate-200">QTAHP</code> protection), zero consumer billing
+						disclosure, explicit $0.00 personal liability cap, user indemnification, and hardcoded effective/revision
+						dates.
 					</li>
 					<li>
-						<strong class="text-slate-200">March 29, 2026:</strong> Initial publication of the
-						RaggieSoft &amp; Engine Room Records Hybrid Licensing Framework (MIT Code License + CC
-						BY-SA 4.0 / DSP / Commercial Sync Content License).
+						<strong class="text-slate-200">March 29, 2026:</strong> Initial publication of the RaggieSoft
+						&amp; Engine Room Records Hybrid Licensing Framework (MIT Code License + CC BY-SA 4.0 / DSP
+						/ Commercial Sync Content License).
 					</li>
 				</ul>
 			</div>

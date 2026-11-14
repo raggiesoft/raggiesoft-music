@@ -1,3 +1,15 @@
-# allow crawling everything by default
+# ============================================================================
+# robots.txt — The Listening Room (https://music.raggiesoft.com)
+# ============================================================================
+# Allows full crawling of public HTML catalog routes (Homepage, Discography,
+# Artist Hubs, Album Pages, Canonical Track Pages, Story Playlists, Radio,
+# and Behind the Scenes) while excluding internal utility/studio routes.
+# ============================================================================
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /settings
+Disallow: /studio
+Disallow: /__studio_api/
+Disallow: /404
+
+Sitemap: https://music.raggiesoft.com/sitemap.xml

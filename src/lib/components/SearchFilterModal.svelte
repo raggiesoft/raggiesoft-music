@@ -21,6 +21,7 @@
 	 *    `/discography`.
 	 * ============================================================================
 	 */
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { allAlbums, allArtists, catalogStats, formatReleaseDate } from '#lib/data/musicData.js';
@@ -78,7 +79,7 @@
 	 */
 	function applyAndNavigate() {
 		if (isStandaloneGlobal) {
-			const params = new URLSearchParams();
+			const params = new SvelteURLSearchParams();
 			if (searchQuery.trim()) params.set('q', searchQuery.trim());
 			if (activeTypeFilter !== 'all') params.set('type', activeTypeFilter);
 			if (activeStatusFilter !== 'all') params.set('status', activeStatusFilter);
@@ -187,7 +188,8 @@
 							id="catalog-search-input"
 							type="text"
 							bind:value={searchQuery}
-							onkeydown={(/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && applyAndNavigate()}
+							onkeydown={(/** @type {KeyboardEvent} */ e) =>
+								e.key === 'Enter' && applyAndNavigate()}
 							placeholder="Type an album title, song lyric, character name, or ISRC..."
 							class="w-full rounded-xl border border-slate-700 bg-slate-950 py-3 pr-16 pl-10 text-sm text-white placeholder-slate-400 shadow-inner transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 						/>
@@ -220,13 +222,20 @@
 									>
 										<img
 											src={match.artwork}
-											alt={match.title}
+											alt="{match.title} cover artwork"
+											width="40"
+											height="40"
+											loading="lazy"
+											decoding="async"
 											class="h-10 w-10 shrink-0 rounded-md object-cover"
 										/>
 										<div class="min-w-0 flex-1">
 											<div class="truncate text-xs font-bold text-white">{match.title}</div>
 											<div class="truncate text-[11px] text-slate-400">
-												{match.artist} &bull; {formatReleaseDate(match.temporalCoverage, match.year)}
+												{match.artist} &bull; {formatReleaseDate(
+													match.temporalCoverage,
+													match.year
+												)}
 											</div>
 										</div>
 									</a>
@@ -236,13 +245,13 @@
 					{/if}
 				</div>
 
-				<!-- 2. Direct Artist Pages (SEO URLs) -->
+				<!-- 2. Direct Artist Pages -->
 				<div>
 					<div class="mb-2 flex items-center justify-between">
 						<span class="text-xs font-bold tracking-wider text-slate-300 uppercase">
 							Browse by Artist (Dedicated Pages)
 						</span>
-						<span class="text-[11px] text-slate-400">Changes URL to /$artist-slug</span>
+						<span class="text-[11px] text-slate-400">Opens full artist discography</span>
 					</div>
 					<div class="flex flex-wrap gap-2">
 						{#each allArtists as artist (artist.slug)}
@@ -255,6 +264,11 @@
 									<img
 										src={artist.logo}
 										alt=""
+										aria-hidden="true"
+										width="16"
+										height="16"
+										loading="lazy"
+										decoding="async"
 										class="h-4 w-4 rounded-full object-cover"
 									/>
 								{/if}

@@ -24,29 +24,29 @@
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
+	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
+
+	const btsDescription =
+		'Go behind the scenes of The Listening Room and Engine Room Records to see how Michael P. Ragsdale crafts concept albums, rock operas, lyrics, and lore.';
+
+	const btsBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
+		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
+		{ name: 'Behind the Scenes', url: 'https://music.raggiesoft.com/behind-the-scenes' }
+	]);
 </script>
 
 <svelte:head>
 	<title>Behind the Scenes: AI &amp; The Creative Process | The Listening Room</title>
-	<meta
-		name="description"
-		content="Peek behind the scenes of The Listening Room and Engine Room Records. Discover how Michael Ragsdale collaborates with Google Antigravity and Suno v6 to craft four decades of concept albums, rock operas, and synchronized lore."
-	/>
+	<meta name="description" content={btsDescription} />
 	<link rel="canonical" href="https://music.raggiesoft.com/behind-the-scenes" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/behind-the-scenes" />
-	<meta
-		property="og:title"
-		content="Behind the Scenes: AI & The Creative Process | The Listening Room"
-	/>
-	<meta
-		property="og:description"
-		content="Discover how Michael Ragsdale collaborates with Google Antigravity and Suno v6 to craft four decades of concept albums, rock operas, and synchronized lore."
-	/>
+	<meta property="og:title" content="Behind the Scenes: Creative Process | The Listening Room" />
+	<meta property="og:description" content={btsDescription} />
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
@@ -54,15 +54,12 @@
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:site" content="@RaggieSoft" />
-	<meta
-		name="twitter:title"
-		content="Behind the Scenes: AI & The Creative Process | The Listening Room"
-	/>
-	<meta
-		name="twitter:description"
-		content="Discover how Michael Ragsdale collaborates with Google Antigravity and Suno v6 to craft four decades of concept albums, rock operas, and synchronized lore."
-	/>
+	<meta name="twitter:title" content="Behind the Scenes: Creative Process | The Listening Room" />
+	<meta name="twitter:description" content={btsDescription} />
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
+
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html btsBreadcrumbJsonLd}
 </svelte:head>
 
 <div class="space-y-10">
@@ -123,15 +120,13 @@
 						</div>
 					</div>
 
-					<p
-						class="mt-4 text-xs font-extrabold tracking-wider text-emerald-400 uppercase"
-					>
+					<p class="mt-4 text-xs font-extrabold tracking-wider text-emerald-400 uppercase">
 						Concept, Lore &amp; Executive Direction
 					</p>
 					<p class="mt-2 text-sm leading-relaxed text-slate-300">
 						The architect of the universe. Every RaggieSoft project starts and ends with human
-						intention, emotion, and lived experience—from disability and accessibility representation
-						to the forty-year history of Engine Room Records.
+						intention, emotion, and lived experience—from disability and accessibility
+						representation to the forty-year history of Engine Room Records.
 					</p>
 
 					<ul class="mt-4 space-y-2.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
@@ -242,8 +237,8 @@
 						<li class="flex items-start gap-2">
 							<span class="mt-0.5 font-bold text-amber-400">&#10003;</span>
 							<span
-								>Synthesizes original multi-instrument arrangements, guitar solos, analog synth pads,
-								and vocal harmonies.</span
+								>Synthesizes original multi-instrument arrangements, guitar solos, analog synth
+								pads, and vocal harmonies.</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
@@ -289,8 +284,9 @@
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					We never use real-world artist names, band names, or copyrighted song titles in our style
 					prompts. Every track is built strictly from acoustic, era, tempo, key, and instrumentation
-					descriptors (e.g., <em>1980s AOR, polyphonic analog synth brass, gated-reverb snare, 128 BPM, D Major</em>)
-					to ensure 100% original sonic output.
+					descriptors (e.g., <em
+						>1980s AOR, polyphonic analog synth brass, gated-reverb snare, 128 BPM, D Major</em
+					>) to ensure 100% original sonic output.
 				</p>
 			</div>
 
@@ -299,8 +295,8 @@
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					Neural vocal models often misread acronyms or regional Virginia/Appalachian landmarks. In
 					our studio prompt sheets, we write custom phonetic spellings (such as
-					<code class="font-mono text-slate-200">See-Pea-Eye</code> for Commonwealth Polytechnic
-					Institute) while displaying the canonical prose lyrics in The Listening Room.
+					<em class="font-semibold text-slate-200">“See-Pea-Eye”</em> for Commonwealth Polytechnic Institute)
+					while displaying the canonical prose lyrics in The Listening Room.
 				</p>
 			</div>
 
@@ -311,7 +307,8 @@
 					all lyrics and lore. For example, we require the precise Pitjantjatjara spelling
 					<strong class="text-white">Uluṟu</strong> (strictly rejecting both the colonial name and
 					unaccented spelling), and enforce proper diacritics for locations like
-					<strong class="text-white">Québec</strong> and <strong class="text-white">Montréal</strong>.
+					<strong class="text-white">Québec</strong> and
+					<strong class="text-white">Montréal</strong>.
 				</p>
 			</div>
 
@@ -321,21 +318,24 @@
 				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					Every finished master WAV goes through local loudness normalization and three-tier
-					encoding: <strong class="text-white">128kbps MP3</strong> for free, low-bandwidth discovery
-					streaming right here in The Listening Room; <strong class="text-white">V0 MP3/OGG</strong>
+					encoding: <strong class="text-white">128kbps MP3</strong> for free, low-bandwidth
+					discovery streaming right here in The Listening Room;
+					<strong class="text-white">V0 MP3/OGG</strong>
 					for standard digital downloads; and uncompressed
-					<strong class="text-white">24-bit WAV/FLAC</strong> for audiophile archives on Fourthwall
-					and global DSPs.
+					<strong class="text-white">24-bit WAV/FLAC</strong> for audiophile archives on Fourthwall and
+					global DSPs.
 				</p>
 			</div>
 
 			<div class="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-5">
-				<h3 class="text-sm font-bold text-blue-400">5. Visual Blueprinting &amp; Reference Sheets</h3>
+				<h3 class="text-sm font-bold text-blue-400">
+					5. Visual Blueprinting &amp; Reference Sheets
+				</h3>
 				<p class="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
 					Rather than relying on single-shot text prompts for album covers, we maintain canonical
 					character and vehicle reference sheets—ensuring that Ryan’s manual wheelchair, the band’s
-					custom 2004 Prairie Coachworks RLFD30 low-floor bus, and each band’s visual identity remain
-					consistent from album to album.
+					custom 2004 Prairie Coachworks RLFD30 low-floor bus, and each band’s visual identity
+					remain consistent from album to album.
 				</p>
 			</div>
 
@@ -371,9 +371,9 @@
 				<strong>Prairie Coachworks</strong>, and <strong>Sainte-Claire</strong>), transit agencies (<strong
 					>Blue Ridge Transit</strong
 				>), legal contracts, trusts, and historical events depicted across Engine Room Records, The
-				Listening Room, and the RaggieSoft universe are entirely works of fiction. Any resemblance to
-				actual persons (living or dead), real-world businesses, academic institutions, or events is
-				purely coincidental.
+				Listening Room, and the RaggieSoft universe are entirely works of fiction. Any resemblance
+				to actual persons (living or dead), real-world businesses, academic institutions, or events
+				is purely coincidental.
 			</p>
 		</div>
 	</section>
@@ -396,15 +396,16 @@
 					Licensing &amp; Commercial Use
 				</h2>
 				<p class="text-xs leading-relaxed text-slate-300 sm:text-sm">
-					Our platform source code is released under the <strong class="text-white">MIT License</strong>,
-					and our creative lore, lyrics, and 128kbps web streams are shared under
-					<strong class="text-white">CC BY-SA 4.0</strong> (or your applicable streaming service’s DSP
-					license). Need a commercial synchronization license or ShareAlike waiver for a film, game,
-					or monetized project from <strong class="text-white">Michael Ragsdale</strong>?
+					Our platform source code is released under the <strong class="text-white"
+						>MIT License</strong
+					>, and our creative lore, lyrics, and 128kbps web streams are shared under
+					<strong class="text-white">CC BY-SA 4.0</strong> (or your applicable streaming service’s
+					DSP license). Need a commercial synchronization license or ShareAlike waiver for a film,
+					game, or monetized project from <strong class="text-white">Michael Ragsdale</strong>?
 				</p>
 			</div>
 
-			<div class="flex flex-wrap items-center gap-3 shrink-0">
+			<div class="flex shrink-0 flex-wrap items-center gap-3">
 				<a
 					href="https://raggiesoft.com/raggiesoft-media/licensing/commercial"
 					target="_blank"
