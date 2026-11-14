@@ -1190,6 +1190,62 @@ function buildCatalog() {
 		return a.title.localeCompare(b.title);
 	});
 
+	// =========================================================================
+	// Canonicalize Cross-Site RaggieSoft URLs across all string fields
+	// (`loreUrl`, `artistLoreUrl`, `loreLinks`, `loreNoteHtml`, `description`, etc.)
+	// so `books.raggiesoft.com/books/<slug>` -> `books.raggiesoft.com/<slug>` and
+	// `music.raggiesoft.com/...?track=...` -> `music.raggiesoft.com/[artist]/[album]/[track]`.
+	// =========================================================================
+	const canonicalTrackLookup = new Map();
+	for (const album of catalog) {
+		for (const tr of album.tracks || []) {
+			const canonicalUrl = `${SITE_ORIGIN}/${album.artistSlug}/${album.slug}/${tr.slug}`;
+			if (tr.fileName)
+				canonicalTrackLookup.set(`${album.artistSlug}/${album.slug}?${tr.fileName}`, canonicalUrl);
+			if (tr.id)
+				canonicalTrackLookup.set(`${album.artistSlug}/${album.slug}?${tr.id}`, canonicalUrl);
+			if (tr.slug)
+				canonicalTrackLookup.set(`${album.artistSlug}/${album.slug}?${tr.slug}`, canonicalUrl);
+		}
+	}
+
+	const normalizeRaggieSoftUrls = (val) => {
+		if (typeof val === 'string') {
+			return val
+				.replace(
+					/https:\/\/books\.raggiesoft\.com\/books\/([a-z0-9/-]+)/gi,
+					'https://books.raggiesoft.com/$1'
+				)
+				.replace(
+					/https:\/\/music\.raggiesoft\.com\/(?:artists\/)?([a-z0-9-]+)\/([a-z0-9-]+)\?track=([a-z0-9-]+)/gi,
+					(full, art, alb, trk) => {
+						const mapped = canonicalTrackLookup.get(
+							`${art.toLowerCase()}/${alb.toLowerCase()}?${trk.toLowerCase()}`
+						);
+						if (mapped) return mapped;
+						const fallbackSlug = trk
+							.toLowerCase()
+							.replace(/^\d+-\d+-/, '')
+							.replace(/^\d+-/, '');
+						return `${SITE_ORIGIN}/${art.toLowerCase()}/${alb.toLowerCase()}/${fallbackSlug}`;
+					}
+				);
+		}
+		if (Array.isArray(val)) {
+			return val.map(normalizeRaggieSoftUrls);
+		}
+		if (val && typeof val === 'object') {
+			for (const k of Object.keys(val)) {
+				// Preserve raw `loreNote` / `lyrics` markdown strings for /studio editing while normalizing all URL/HTML fields
+				if (k === 'lyrics') continue;
+				val[k] = normalizeRaggieSoftUrls(val[k]);
+			}
+			return val;
+		}
+		return val;
+	};
+	normalizeRaggieSoftUrls(catalog);
+
 	// Write output file in raggiesoft-music
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 	fs.writeFileSync(outputPath, JSON.stringify(catalog, null, 2), 'utf-8');
