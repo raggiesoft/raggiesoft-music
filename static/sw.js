@@ -57,8 +57,14 @@ self.addEventListener('fetch', (event) => {
 	const request = event.request;
 	const url = new URL(request.url);
 
-	// Bypass non-GET requests
-	if (request.method !== 'GET') {
+	// Bypass non-GET requests and crawler/indexing verification endpoints
+	if (
+		request.method !== 'GET' ||
+		url.pathname === '/robots.txt' ||
+		url.pathname === '/sitemap.xml' ||
+		url.pathname.startsWith('/sitemaps/') ||
+		url.pathname.endsWith('.txt')
+	) {
 		return;
 	}
 

@@ -94,23 +94,23 @@ export const curatedPlaylists = [
 			"The five-song arc traces how a simple accident—a student organizer fat-fingering the skip button at a campus speed-dating mixer in Kincaid Hall, bypassing the gentle three-minute ballad 'Seconds Into Forever' and blasting the 150-BPM warning anthem 'Thunder in the Rain'—leads quiet, analytical John into the orbit of a manipulative abuser named Valerie.",
 			"When Erin meets a hollowed-out John in the freezing November 2004 rain along Commonwealth Mall beneath The Keystone Bridge—back before the CPI Transit Center was built, when every Blue Ridge Transit bus lined up bumper-to-bumper along the curb in a chaotic, diesel-choked gauntlet ('Before the Distance')—she refuses to let the steel bus doors close between them, reversing her power wheelchair straight down the wet aluminum front-door ramp to pull her brother aboard. After healing inside the locked perimeter of Erin's Progress Street apartment ('Sanctuary in the Storm'), John completes the circle the following spring ('Not Her'), recognizing a slick predator boxing Erin's wheelchair into a Kincaid Hall alcove and wedging his own chair between them."
 		],
-		loreUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/john-and-erin',
+		loreUrl: 'https://stardust.raggiesoft.com/story/john-and-erin',
 		bookUrl: 'https://books.raggiesoft.com/erin',
-		hubBookUrl: 'https://raggiesoft.com/raggiesoft-books/books',
+		hubBookUrl: 'https://books.raggiesoft.com/library',
 		crossUniverseLinks: [
 			{
 				label: 'The Rachel Narrative • Nov 2006',
 				title: "Jessica's Train Ride (Kent Station vs. Commonwealth Mall)",
 				description:
 					"When Jessica leaves her brother Michael on the platform at Kent Station and hears 'Before the Distance' on shuffle, she remembers reading The Stardust Engine's story of John and Erin—realizing in horror that unlike Erin along Commonwealth Mall, she let the steel doors close without pulling her brother aboard.",
-				url: 'https://books.raggiesoft.com/rachel/book-17-a-few-small-repairs/chapter-5-the-weekend-shift/scene-6-the-pantry-algorithm'
+				url: 'https://books.raggiesoft.com/rachel/a-few-small-repairs/the-weekend-shift/part-3-the-pantry-algorithm'
 			},
 			{
 				label: 'CPI Campus Lore • Freddie & Paige',
 				title: 'Why Freddie & Paige Recognize "Thunder in the Rain"',
 				description:
 					"Having read the Progress Street liner notes as CPI freshmen after seeing The Stardust Engine at Kincaid Hall, Freddie and Paige wonder why they've heard 'Thunder in the Rain' before—until they connect the 150-BPM stadium anthem to John's speed-dating ambush.",
-				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/crucible'
+				url: 'https://stardust.raggiesoft.com/story/crucible'
 			}
 		],
 		trackSpecs: [
@@ -121,7 +121,7 @@ export const curatedPlaylists = [
 				actLabel: 'Act I • Chapter 1, Scene 1',
 				chapterTitle: 'The Three-Minute Bell',
 				chapterUrl:
-					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-1-the-three-minute-bell',
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/part-1-the-three-minute-bell',
 				pov: "John (Ryan O'Connell)",
 				storySummary:
 					'At the Kincaid Hall speed-dating mixer on CPI\'s hilly campus, Erin convinces her twin brother John to take a chance. The organizer cues up this 85-BPM romantic ballad ("It only takes three minutes to believe") to time the rotations—before a clumsy finger changes everything.'
@@ -133,7 +133,7 @@ export const curatedPlaylists = [
 				actLabel: 'Act II • Chapter 1, Scene 2',
 				chapterTitle: 'Table Four',
 				chapterUrl:
-					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/scene-2-table-four',
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/seconds-into-thunder/part-2-table-four',
 				pov: "John (Ryan O'Connell)",
 				storySummary:
 					'Just as Valerie sits down at Table 4 across from John\'s power wheelchair in Kincaid Hall, the DJ accidentally skips Track 3 and blasts "Thunder in the Rain" at 150 BPM. Blinded by the adrenaline and Valerie\'s intense love-bombing, John doesn\'t realize he has just met his abuser—even as the chorus literally flashes "Danger" in red.'
@@ -145,7 +145,7 @@ export const curatedPlaylists = [
 				actLabel: 'Act III • Chapter 2, Scenes 1–2',
 				chapterTitle: 'The Frayed Mask / When the Steel Doors Close',
 				chapterUrl:
-					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/before-the-distance/scene-1-the-frayed-mask',
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/before-the-distance/part-1-the-frayed-mask',
 				pov: "Erin (Cassidy O'Connell)",
 				storySummary:
 					"Two months later in the chaotic pre-Transit-Center curbside bus lineup along Commonwealth Mall beneath The Keystone Bridge, Erin sees the frayed mask on John's face while Valerie grips his sleeve. Refusing to let the steel doors close between them, Erin reverses her power wheelchair down the front boarding ramp of the Blue Ridge Transit bus, takes John's hand, and pulls him aboard with her."
@@ -157,7 +157,7 @@ export const curatedPlaylists = [
 				actLabel: 'Act IV • Chapter 3, Scene 1',
 				chapterTitle: 'The Locked Perimeter',
 				chapterUrl:
-					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/sanctuary-in-the-storm/scene-1-the-locked-perimeter',
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/sanctuary-in-the-storm/the-locked-perimeter',
 				pov: 'John & Erin Duet',
 				storySummary:
 					"Twenty-four hours after their escape on the Blue Ridge Transit bus from Commonwealth Mall, with their two power wheelchairs charging side by side and the deadbolt locked against the November storm, John finds his safe harbor in his twin sister Erin's ground-floor apartment on Progress Street."
@@ -169,7 +169,7 @@ export const curatedPlaylists = [
 				actLabel: 'Act V • Chapter 4, Scene 1',
 				chapterTitle: 'The Practiced Smile',
 				chapterUrl:
-					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/not-her/scene-1-the-practiced-smile',
+					'https://books.raggiesoft.com/erin/before-the-distance-the-story-of-john-erin/not-her/the-practiced-smile',
 				pov: 'John & Erin Duet',
 				storySummary:
 					"The following spring, John spots a slick predator boxing Erin's power wheelchair into a recessed Ironstone alcove outside Kincaid Hall Auditorium. Recognizing the isolating script immediately, John shifts his chair into high gear, wedges his steel frame between them, and rescues his sister just as she rescued him."
@@ -200,23 +200,23 @@ export const curatedPlaylists = [
 			"At the heart of this playlist sits the three-song 'Apoapsis Suite' ('Apoapsis', 'Second Apoapsis', and 'The Spectrum (True Color)') followed by the 15-minute-and-33-second magnum opus 'Escape Velocity (Ad Astra)'—Cassidy's most important piece of work and the #1 achievement she would list on her resume. It is her musical autobiography: she wrote the lyrics, she wrote the notes, and she directed the band (her family). The playlist concludes with all 14 tracks of 2011's Starfield Calibration, a silver-anniversary celebration of The Cosmic Tidal Lock Sound™ where Cassidy and Ryan intentionally tweaked the lyrics of their early songs for two reasons: first, to celebrate being free from Apex Records (rewriting lines born in 1980s corporate captivity from the perspective of open-orbit freedom), and second, for acoustic and phonetic vowel extension—replacing clipped, percussive rock consonants with open, sustained vowels and liquid consonants ('gliding,' 'velvet,' 'alignment,' 'starlight,' 'zero-G,' 'tidal lock,' 'sanctuary') designed to bloom and hang weightlessly inside the wide planetarium reverb tail."
 		],
 		loreUrl:
-			'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+			'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 		bookUrl: '',
-		hubBookUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra',
+		hubBookUrl: 'https://stardust.raggiesoft.com/story/ad-astra',
 		crossUniverseLinks: [
 			{
 				label: 'The 1992 Emancipation • Friction Catastrophe',
 				title: 'How the 1992 Warehouse Incident Ended Apex Records’ Control',
 				description:
 					"Read the archival dossier on the September 1992 'Shot 12' confrontation that ended the band's contract with Apex Records and led Holly O'Connell to found Engine Room Records.",
-				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/friction'
+				url: 'https://stardust.raggiesoft.com/story/friction'
 			},
 			{
 				label: 'Audio Engineering Dossier • 1997–2011',
 				title: 'What Is "The Cosmic Tidal Lock Sound™"?',
 				description:
 					"Explore how Cassidy O'Connell engineered her zero-gravity synthesizer sanctuary with her brother and safe person Ryan O'Connell.",
-				url: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound'
+				url: 'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound'
 			}
 		],
 		trackSpecs: [
@@ -227,7 +227,7 @@ export const curatedPlaylists = [
 				actLabel: 'I. The Catalyst Track • Hard Reset (Disc 2, 1997)',
 				chapterTitle: 'The First Song Created After Naming "The Cosmic Tidal Lock Sound™"',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell (Chief Audio Architect)",
 				storySummary:
 					"Five years after the 1992 Friction catastrophe freed the family from Apex Records, Cassidy created 'Moon 1 (Tidal Lock)' for Disc 2 of 1997's Hard Reset—the very first song she created after officially deciding that this zero-gravity style of music is called 'The Cosmic Tidal Lock Sound™.'"
@@ -239,7 +239,7 @@ export const curatedPlaylists = [
 				actLabel: 'II. The 2001 Retro-Engineered "1986" Paradox • Midnight Drivers (2001)',
 				chapterTitle: 'Created in 2001 to Represent a 1986 Song Apex Would Have Cut',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Because only the title track of Midnight Drivers was actually recorded in 1987, Cassidy wrote and recorded 'Terminal Velvet' from scratch in 2001 (four years after 1997's Hard Reset) to build out the 'lost' album. Thematically, it was crafted to represent a 1986 song that Apex Records would have left on the cutting-room floor—meaning that within the story's thematic timeline, it represents the first song with this sound, before Cassidy had ever called it 'The Cosmic Tidal Lock Sound™.'"
@@ -250,7 +250,7 @@ export const curatedPlaylists = [
 				trackId: '2-01',
 				actLabel: 'III. The Apoapsis Suite (Part 1 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement I: The Farthest Point of the Orbit',
-				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://stardust.raggiesoft.com/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Opening The Apoapsis Suite—the three-song suite that launches Disc 2 of Hard Reset ('The Engine Room')—'Apoapsis' captures the exact orbital moment where a spacecraft reaches its farthest distance from gravity's pull and hangs in silent, weightless equilibrium."
@@ -261,7 +261,7 @@ export const curatedPlaylists = [
 				trackId: '2-02',
 				actLabel: 'III. The Apoapsis Suite (Part 2 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement II: Stabilizing the Deep-Space Trajectory',
-				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://stardust.raggiesoft.com/story/hard-reset',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"The second movement of The Apoapsis Suite deepens the harmonic lock. Instead of falling back toward the planet below, Cassidy's layered modular sequencers fire a secondary stabilization burn, locking the band into a permanent high-altitude orbit."
@@ -272,7 +272,7 @@ export const curatedPlaylists = [
 				trackId: '2-03',
 				actLabel: 'III. The Apoapsis Suite (Part 3 of 3) • Hard Reset (1997)',
 				chapterTitle: 'Movement III: Reclaiming 1987’s "Electric Color" in Unfiltered Light',
-				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/hard-reset',
+				chapterUrl: 'https://stardust.raggiesoft.com/story/hard-reset',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Concluding The Apoapsis Suite, 'The Spectrum (True Color)' directly answers the band's 1987 Apex Records album Electric Color. Free from corporate neon and studio tampering, Cassidy refracts the full analog frequency spectrum across the void."
@@ -283,7 +283,7 @@ export const curatedPlaylists = [
 				trackId: '2-06',
 				actLabel: 'IV. The Resume Masterpiece (15:33) • Hard Reset (1997)',
 				chapterTitle: 'Cassidy’s Musical Autobiography: Writer, Composer & Band Director',
-				chapterUrl: 'https://raggiesoft.com/engine-room/artists/stardust-engine/story/ad-astra',
+				chapterUrl: 'https://stardust.raggiesoft.com/story/ad-astra',
 				pov: "Cassidy O'Connell (Lyrics, Composition & Direction)",
 				storySummary:
 					"The 15-minute-and-33-second crown jewel of Cassidy O'Connell's career—her most important piece of work and the #1 composition she would list on her resume. 'Escape Velocity (Ad Astra)' is Cassidy's autobiography: she wrote the lyrics, she wrote every note of the score, and she directed the band (her family: brother Ryan and twin cousins Evan and Tyler) through its four sweeping movements."
@@ -296,7 +296,7 @@ export const curatedPlaylists = [
 				chapterTitle:
 					'Written in 1986 When Evan & Tyler Joined • Released on 1987’s Electric Color',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Like the rest of Electric Color, 'The Stardust Engine' was officially released in 1987 (buried by Apex Records at the end of the album as Track 13). However, it was the very first song Cassidy and Ryan O'Connell came up with in 1986 when their twin cousins Evan and Tyler Wright joined them at CPI. Too scared at the time to shop the song around, the four of them kept it to themselves and decided to use that first song to name their band. Launching 2011's Starfield Calibration, Cassidy re-engineers their 1986 origin anthem in The Cosmic Tidal Lock Sound™."
@@ -308,7 +308,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 2)',
 				chapterTitle: '1987’s Title Track Refracted Through The Engine Room',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Once symbol of Apex Records' 1987 commercial sheen, 'Electric Color' is reclaimed in a lush Cosmic Tidal Lock Mix where Cassidy's analog pads and Ryan's soaring guitar lines shimmer in synchronous orbit."
@@ -320,7 +320,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 3)',
 				chapterTitle: 'Shattering the Artificial Dome',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Originally an indictment of corporate artifice, 'Plastic Sky' expands into a widescreen space-synth meditation as the artificial ceiling gives way to real starlight."
@@ -332,7 +332,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 4)',
 				chapterTitle: 'Bridging the Orbital Distance',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"In this Cosmic Tidal Lock Mix, the emotional distance of 'Worlds Apart' becomes literal astrophysics—two bodies separated by vacuum yet bound together by unbreakable gravitational resonance."
@@ -344,7 +344,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 5)',
 				chapterTitle: 'The Tether That Never Snaps',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"Re-envisioned with deep sub-octave analog bass pedals and crystalline bell arpeggios, 'My Anchor Holds' celebrates the family bond that kept Ryan and Cassidy grounded through every storm."
@@ -356,7 +356,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 6)',
 				chapterTitle: 'Warm Vacuum Tubes in the Cold Void',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"Cassidy strips away the 1980s gated snare and replaces it with a hypnotic, pulse-locked analog heartbeat, turning 'Neon Hearts' into an intimate nocturnal transmission."
@@ -368,7 +368,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 7)',
 				chapterTitle: 'Looking Back at Earth from High Orbit',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"Stretching past five and a half minutes, 'Rearview Mirror (Cosmic Tidal Lock Mix)' transforms a highway reflection into an orbital look back at the decades the family traveled together."
@@ -380,7 +380,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 8)',
 				chapterTitle: 'Breathing Inside the Pressurized Sanctuary',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell",
 				storySummary:
 					"A showcase for Cassidy's custom filter-bank modulation, 'Atmosphere (Cosmic Tidal Lock Mix)' surrounds the listener in shimmering, headphone-calibrated harmonic air."
@@ -392,7 +392,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 9)',
 				chapterTitle: 'Zero Corporate Strings Attached',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"Originally a defiant statement of independence on 1997's Hard Reset, 'No Hidden Gravity' returns in a celebratory Cosmic Tidal Lock Mix where every frequency moves in transparent, uncoerced freedom."
@@ -404,7 +404,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 10)',
 				chapterTitle: 'Newton’s First Law in Pure Analog Motion',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Evan & Tyler Wright with Cassidy O'Connell",
 				storySummary:
 					"Twin cousins Evan and Tyler Wright lock their bass and drum pocket directly to Cassidy's master clock, proving that an object in motion stays in motion when no corporate friction slows it down."
@@ -416,7 +416,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 11)',
 				chapterTitle: 'Replacing "If You Walked Away" • Safe in Ryan’s Tight Embrace',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy O'Connell (Grounded by Her Safe Person, Ryan)",
 				storySummary:
 					"Originally written for 1997's Hard Reset to permanently replace 1989's 'If You Walked Away'—the forced Apex Records abandonment ballad that left Cassidy in tears backstage after every show—'Echoes in the Wire' is the story of Cassidy finding comfort, quiet, and safety when her brother and safe person Ryan is hugging her tightly. In this Cosmic Tidal Lock Mix, Cassidy wraps that deep-pressure grounding embrace in warm, zero-gravity analog pads."
@@ -428,7 +428,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 12)',
 				chapterTitle: 'The 1986–2001 Nocturnal Highway Meets Deep Space',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Ryan & Cassidy O'Connell",
 				storySummary:
 					"The title track of 2001's Midnight Drivers receives the full Cosmic Tidal Lock treatment—uniting the 1986 rejected-floor nocturnal synthwave aesthetic with the expansive starfield dome of 2011."
@@ -440,7 +440,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 13)',
 				chapterTitle: 'Where the Blue Ridge Meets the Exosphere',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: "Cassidy & Ryan O'Connell",
 				storySummary:
 					"As the calibration sequence approaches daybreak, 'The Horizon Line (Cosmic Tidal Lock Mix)' blends warm acoustic guitar textures with sweeping golden-amber synthesizer horizons."
@@ -452,7 +452,7 @@ export const curatedPlaylists = [
 				actLabel: 'V. The 2011 Celebration • Starfield Calibration (Track 14 • Finale)',
 				chapterTitle: 'Sunrise Over the Orbital Observatory',
 				chapterUrl:
-					'https://raggiesoft.com/engine-room/artists/stardust-engine/story/cosmic-tidal-lock-sound',
+					'https://stardust.raggiesoft.com/story/cosmic-tidal-lock-sound',
 				pov: 'The Stardust Engine',
 				storySummary:
 					"Closing both Starfield Calibration and this 20-track journey through The Cosmic Tidal Lock Sound™, 'Fade to Dawn (Cosmic Tidal Lock Mix)' brings the orbital observatory gently into the light of a new morning."
