@@ -93,6 +93,139 @@
 	const MEMORIAM_EXPIRES_MS = Date.parse('2026-11-28T23:59:59-05:00');
 	let isMemoriamShowcaseActive = $state(Date.now() <= MEMORIAM_EXPIRES_MS);
 
+	/**
+	 * ============================================================================
+	 * YEARLY AUTOMATIC WINTER & HOLIDAY SYMPHONIC SHOWCASE (`America/New_York`)
+	 * ============================================================================
+	 * - Standard Go-Live: Black Friday (`00:00:00 America/New_York`)
+	 * - 2026 Respectful Exception: Goes live `2026-11-29T00:00:00-05:00` after the
+	 *   Sir Patrick Stewart 30-day In Memoriam tribute sunsets
+	 * - Pack-Away: January 2 (`00:00:00 America/New_York`)
+	 * - Preview: Supports `?holiday=preview` (`1`/`on`, reset with `0`/`off`)
+	 * - Auto-Discovery: Features The Arctic Symphony Project (`A Symphony of Snow`
+	 *   & `Tales from the Solstice`) plus any new winter/holiday albums added to
+	 *   `catalog.json`.
+	 */
+	function computeEasternHolidayActive() {
+		const now = new Date();
+		if (typeof window !== 'undefined') {
+			try {
+				const params = new URLSearchParams(window.location.search || '');
+				const raw = (params.get('holiday') || params.get('rs_holiday') || '').toLowerCase();
+				if (raw === '1' || raw === 'true' || raw === 'on' || raw === 'preview') return true;
+				if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'normal') return false;
+				if (sessionStorage.getItem('rs_holiday_preview_mode') === 'on') return true;
+			} catch {
+				// Ignore storage access errors
+			}
+		}
+
+		if (now.getTime() <= MEMORIAM_EXPIRES_MS) {
+			return false;
+		}
+
+		let year = now.getFullYear();
+		let month = now.getMonth() + 1;
+		let day = now.getDate();
+		try {
+			const parts = new Intl.DateTimeFormat('en-US', {
+				timeZone: 'America/New_York',
+				year: 'numeric',
+				month: 'numeric',
+				day: 'numeric'
+			}).formatToParts(now);
+			for (const p of parts) {
+				if (p.type === 'year') year = parseInt(p.value, 10);
+				else if (p.type === 'month') month = parseInt(p.value, 10);
+				else if (p.type === 'day') day = parseInt(p.value, 10);
+			}
+		} catch {
+			// Fallback to local calendar
+		}
+
+		if (month === 12) return true;
+		if (month === 1) return day === 1;
+		if (month === 11) {
+			const nov1Dow = new Date(Date.UTC(year, 10, 1)).getUTCDay();
+			const firstThursday = 1 + ((4 - nov1Dow + 7) % 7);
+			const blackFridayDay = firstThursday + 22;
+			return day >= blackFridayDay;
+		}
+		return false;
+	}
+
+	let isHolidayShowcaseActive = $state(computeEasternHolidayActive());
+
+	let holidaySpotlightAlbums = $derived.by(() => {
+		/** @type {Record<string, { displayTitle?: string; holidayRole: string; holidaySubtitle: string; holidayNote: string }>} */
+		const curatedSpecs = {
+			'1996-a-symphony-of-snow': {
+				displayTitle: 'A Symphony of Snow',
+				holidayRole: '1996 Symphonic Debut • Winter Overture',
+				holidaySubtitle: 'The Arctic Symphony Project • Progressive Holiday Rock Orchestra (1996)',
+				holidayNote:
+					'The sweeping 1996 symphonic-rock winter debut from The Arctic Symphony Project—fusing electric guitars, orchestral strings, chimes, and sleigh bells into a soaring holiday overture.'
+			},
+			'2007-tales-from-the-solstice': {
+				displayTitle: 'Tales from the Solstice',
+				holidayRole: '2007 Holiday Opus • 31-Song Double Suite',
+				holidaySubtitle: 'The Arctic Symphony Project • Full Winter Concert Anthology (2007)',
+				holidayNote:
+					'Thirty-one cinematic winter movements and roaring holiday rock-orchestra arrangements celebrating hearthlight, snowfall, and New Year’s Eve across the RaggieSoft universe.'
+			}
+		};
+
+		const matched = [];
+		const seenSlugs = new Set();
+
+		for (const slug of ['1996-a-symphony-of-snow', '2007-tales-from-the-solstice']) {
+			const found = currentCatalog.find((a) => a.slug === slug);
+			if (found) {
+				seenSlugs.add(found.slug);
+				matched.push({
+					...found,
+					displayTitle: curatedSpecs[slug].displayTitle || found.title,
+					holidayRole: curatedSpecs[slug].holidayRole,
+					holidaySubtitle: curatedSpecs[slug].holidaySubtitle,
+					holidayNote: curatedSpecs[slug].holidayNote
+				});
+			}
+		}
+
+		for (const album of currentCatalog) {
+			if (seenSlugs.has(album.slug)) continue;
+			const haystack = `${album.artistSlug} ${album.slug} ${album.title} ${album.genre || ''}`;
+			if (
+				album.artistSlug === 'the-arctic-symphony-project' ||
+				/\b(holiday|christmas|solstice|winter-symphony|yule|carol)\b/i.test(haystack)
+			) {
+				seenSlugs.add(album.slug);
+				matched.push({
+					...album,
+					displayTitle: album.title,
+					holidayRole: `${album.year} Seasonal Release`,
+					holidaySubtitle: `${album.artist} • ${album.genre || 'Holiday & Winter Music'} (${album.year})`,
+					holidayNote:
+						album.description ||
+						`Featured seasonal holiday release by ${album.artist} from Engine Room Records.`
+				});
+			}
+		}
+
+		return matched;
+	});
+
+	let holidayTrackTotal = $derived(
+		holidaySpotlightAlbums.reduce((sum, a) => sum + (a.tracks?.length || 0), 0)
+	);
+
+	function playHolidayShowcaseQueue() {
+		const combinedQueue = holidaySpotlightAlbums.flatMap((album) => formatAlbumQueue(album));
+		if (combinedQueue.length > 0) {
+			player.loadQueue(combinedQueue, 0, true);
+		}
+	}
+
 	let memoriamCosmicAlbums = $derived.by(() => {
 		const targetSpecs = [
 			{
@@ -160,8 +293,17 @@
 	});
 
 	onMount(() => {
-		isMemoriamShowcaseActive = Date.now() <= MEMORIAM_EXPIRES_MS;
+		const previewHoliday = computeEasternHolidayActive();
+		isHolidayShowcaseActive = previewHoliday;
+		isMemoriamShowcaseActive = Date.now() <= MEMORIAM_EXPIRES_MS && !previewHoliday;
 		savedSession = player.checkSavedSession();
+
+		const handleHolidayChange = () => {
+			const nextHoliday = computeEasternHolidayActive();
+			isHolidayShowcaseActive = nextHoliday;
+			isMemoriamShowcaseActive = Date.now() <= MEMORIAM_EXPIRES_MS && !nextHoliday;
+		};
+		window.addEventListener('raggiesoft:holidaychange', handleHolidayChange);
 
 		try {
 			if (localStorage.getItem('raggiesoft_music_transparency_dismissed') !== 'true') {
@@ -181,6 +323,10 @@
 			.catch(() => {
 				// Retain bundled catalog if offline
 			});
+
+		return () => {
+			window.removeEventListener('raggiesoft:holidaychange', handleHolidayChange);
+		};
 	});
 
 	/**
@@ -454,6 +600,35 @@
 					class="font-bold text-blue-300 underline decoration-blue-400/60 underline-offset-2 hover:text-white"
 				>
 					Read Full Tribute &nearr;
+				</a>
+			</div>
+		</div>
+	{:else if isHolidayShowcaseActive && holidaySpotlightAlbums.length > 0}
+		<!-- 0B. SEASONAL WINTER & HOLIDAY SYMPHONIC STRIP (AUTO-ACTIVE THROUGH JAN 1 EST) -->
+		<div
+			class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/45 bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-rose-950/55 px-4 py-3 text-xs text-emerald-50 sm:text-sm"
+		>
+			<div class="flex flex-wrap items-center gap-2">
+				<span aria-hidden="true">🎄</span>
+				<span>
+					<strong class="text-amber-300">Winter &amp; Holiday Soundtrack</strong> — Stream
+					{holidayTrackTotal} festive rock-orchestra &amp; solstice movements from
+					<strong class="text-white">The Arctic Symphony Project</strong>.
+				</span>
+			</div>
+			<div class="flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					onclick={playHolidayShowcaseQueue}
+					class="rounded-lg bg-amber-400 px-3 py-1 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-300"
+				>
+					&#9654; Play Holiday Queue ({holidayTrackTotal})
+				</button>
+				<a
+					href="#holiday-music-showcase-heading"
+					class="font-bold text-amber-300 underline decoration-amber-400/60 underline-offset-2 hover:text-white"
+				>
+					Explore Holiday Releases &darr;
 				</a>
 			</div>
 		</div>
@@ -1228,6 +1403,194 @@
 									onclick={() => openShareModal(cosmicAlbum)}
 									class="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
 									aria-label="Share {cosmicAlbum.displayTitle}"
+								>
+									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+										/>
+									</svg>
+									<span>Share</span>
+								</button>
+							</div>
+						</div>
+					</article>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- 4C. YEARLY WINTER & HOLIDAY SYMPHONIC SHOWCASE (AUTO-ACTIVE BLACK FRIDAY/NOV 29 THROUGH JAN 1 EST) -->
+	{#if isHolidayShowcaseActive && holidaySpotlightAlbums.length > 0}
+		<section
+			class="relative overflow-hidden rounded-3xl border border-emerald-500/45 bg-gradient-to-br from-emerald-950/80 via-slate-900 to-rose-950/60 p-6 shadow-2xl sm:p-8"
+			aria-labelledby="holiday-music-showcase-heading"
+		>
+			<div class="space-y-4 border-b border-emerald-500/30 pb-6">
+				<div class="flex flex-wrap items-center gap-2">
+					<span
+						class="inline-flex items-center gap-1.5 rounded-full border border-amber-400/60 bg-amber-950/80 px-3.5 py-1 text-xs font-extrabold tracking-wider text-amber-300 uppercase"
+					>
+						<span aria-hidden="true">🎄</span>
+						<span>Seasonal Spotlight • Engine Room Records Holiday Tradition</span>
+					</span>
+					<span
+						class="rounded-full border border-emerald-400/45 bg-emerald-950/80 px-3 py-1 font-mono text-[11px] font-bold text-emerald-200"
+					>
+						Featured Through New Year’s Day
+					</span>
+				</div>
+
+				<h2
+					id="holiday-music-showcase-heading"
+					class="text-2xl font-black tracking-tight text-white sm:text-3xl"
+				>
+					Winter &amp; Holiday Symphonies:
+					<span class="text-amber-300">The Arctic Symphony Project</span> &amp; Seasonal Favorites
+				</h2>
+
+				<p class="max-w-4xl text-sm leading-relaxed text-slate-200 sm:text-base">
+					Turn up the sleigh bells, cathedral chimes, orchestral strings, and roaring electric
+					guitars. Queue all <strong class="text-white">{holidayTrackTotal} winter tracks</strong>
+					from <strong class="text-white">The Arctic Symphony Project</strong>—spanning the 1996
+					debut <em class="text-amber-200">A Symphony of Snow</em> and the 31-movement holiday
+					concert anthology <em class="text-amber-200">Tales from the Solstice</em>—back-to-back in
+					The Listening Room.
+				</p>
+
+				<div class="flex flex-wrap items-center gap-2.5 pt-1">
+					<button
+						type="button"
+						onclick={playHolidayShowcaseQueue}
+						class="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 sm:text-sm"
+					>
+						<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+							<path d="M8 5v14l11-7z" />
+						</svg>
+						<span>Play Full Holiday Queue ({holidayTrackTotal} Songs)</span>
+					</button>
+
+					<a
+						href={resolve('/[artist]', { artist: 'the-arctic-symphony-project' })}
+						class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/50 bg-emerald-950/70 px-3.5 py-2.5 text-xs font-bold text-emerald-100 transition-colors hover:bg-emerald-900/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:text-sm"
+					>
+						<span>❄️ View The Arctic Symphony Project</span>
+						<span aria-hidden="true">&rarr;</span>
+					</a>
+				</div>
+			</div>
+
+			<div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+				{#each holidaySpotlightAlbums as holidayAlbum (holidayAlbum.slug)}
+					<article
+						class="flex flex-col justify-between rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-xl transition-all hover:border-amber-400/60"
+					>
+						<div>
+							<div class="flex items-start gap-4">
+								<a
+									href={resolve('/[artist]/[album]', {
+										artist: holidayAlbum.artistSlug,
+										album: holidayAlbum.slug
+									})}
+									class="group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-emerald-400/45 shadow-lg sm:h-28 sm:w-28"
+								>
+									<img
+										src={holidayAlbum.artwork}
+										alt="Cover artwork for {holidayAlbum.displayTitle}"
+										width="224"
+										height="224"
+										loading="lazy"
+										decoding="async"
+										class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									<span
+										class="absolute bottom-1.5 left-1.5 rounded bg-black/85 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300 backdrop-blur-sm"
+									>
+										{holidayAlbum.year}
+									</span>
+								</a>
+
+								<div class="min-w-0 flex-1">
+									<span
+										class="inline-block rounded border border-emerald-400/45 bg-emerald-950/80 px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-emerald-200 uppercase"
+									>
+										{holidayAlbum.holidayRole}
+									</span>
+									<h3 class="mt-1.5 text-lg leading-snug font-extrabold text-white">
+										<a
+											href={resolve('/[artist]/[album]', {
+												artist: holidayAlbum.artistSlug,
+												album: holidayAlbum.slug
+											})}
+											class="transition-colors hover:text-amber-300"
+										>
+											{holidayAlbum.displayTitle}
+										</a>
+									</h3>
+									<p class="mt-0.5 text-xs font-semibold text-amber-300">
+										{holidayAlbum.holidaySubtitle}
+									</p>
+									<p class="mt-1 font-mono text-[11px] text-slate-300">
+										{holidayAlbum.tracks.length} {holidayAlbum.tracks.length === 1
+											? 'Track'
+											: 'Tracks'} &bull; Narrative Release: {formatReleaseDate(
+											holidayAlbum.temporalCoverage,
+											holidayAlbum.year
+										)}
+									</p>
+								</div>
+							</div>
+
+							<p class="mt-3.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+								{holidayAlbum.holidayNote}
+							</p>
+						</div>
+
+						<div class="mt-4 space-y-2.5 border-t border-slate-800 pt-3.5">
+							<div class="flex flex-wrap items-center gap-2">
+								<button
+									type="button"
+									onclick={() => playAlbum(holidayAlbum)}
+									class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-extrabold text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+								>
+									<svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+										<path d="M8 5v14l11-7z" />
+									</svg>
+									<span>Preview Album (128k)</span>
+								</button>
+
+								<a
+									href={resolve('/[artist]/[album]', {
+										artist: holidayAlbum.artistSlug,
+										album: holidayAlbum.slug
+									})}
+									class="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-amber-400/50 hover:bg-slate-700 hover:text-white"
+								>
+									<span>Tracklist &amp; Lore</span>
+									<span aria-hidden="true">&rarr;</span>
+								</a>
+							</div>
+
+							<div class="flex flex-wrap items-center justify-between gap-2">
+								<StoreButton
+									type="album"
+									size="small"
+									spotifyId={holidayAlbum.spotifyId}
+									appleId={holidayAlbum.appleId}
+									amazonId={holidayAlbum.amazonId}
+									youtubeId={holidayAlbum.youtubeId}
+									dspExempt={holidayAlbum.dspExempt}
+									storeStandardUrl={holidayAlbum.storeStandardUrl}
+									storeAudiophileUrl={holidayAlbum.storeAudiophileUrl}
+								/>
+
+								<button
+									type="button"
+									onclick={() => openShareModal(holidayAlbum)}
+									class="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+									aria-label="Share {holidayAlbum.displayTitle}"
 								>
 									<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path
