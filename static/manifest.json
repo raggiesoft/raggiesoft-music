@@ -1,10 +1,15 @@
 {
+  "id": "/",
   "name": "The Listening Room — Engine Room Records",
   "short_name": "Listening Room",
   "description": "Official Music Discovery, Lyrics & Lore Hub by Engine Room Records.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "navigate-existing", "auto"]
+  },
   "orientation": "any",
   "background_color": "#020617",
   "theme_color": "#020617",

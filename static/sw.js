@@ -18,12 +18,13 @@
  * ============================================================================
  */
 
-const CACHE_NAME = 'err-pwa-v5';
-const STATIC_CACHE = 'err-static-v5';
+const CACHE_NAME = 'err-pwa-v6';
+const STATIC_CACHE = 'err-static-v6';
 
+// Exclude /manifest.json from precache and bypass in fetch so ManifestUpdateManager
+// always reads live `launch_handler` and `handle_links` updates directly.
 const PRECACHE_ASSETS = [
 	'/',
-	'/manifest.json',
 	'/favicon.ico?v=3',
 	'/favicon.svg?v=3',
 	'/icons/icon-192.png?v=3',
@@ -57,9 +58,10 @@ self.addEventListener('fetch', (event) => {
 	const request = event.request;
 	const url = new URL(request.url);
 
-	// Bypass non-GET requests and crawler/indexing verification endpoints
+	// Bypass non-GET requests, manifest updates, and crawler/indexing verification endpoints
 	if (
 		request.method !== 'GET' ||
+		url.pathname === '/manifest.json' ||
 		url.pathname === '/robots.txt' ||
 		url.pathname === '/sitemap.xml' ||
 		url.pathname.startsWith('/sitemaps/') ||

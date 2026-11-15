@@ -120,6 +120,75 @@
 			});
 		}
 
+		// Cross-PWA Incoming Link Consumer (Launch Handler API: window.launchQueue):
+		// Focuses an already-open Listening Room PWA window and routes client-side via
+		// SvelteKit's delegated anchor router without interrupting active audio playback.
+		const winAny = /** @type {any} */ (window);
+		if (
+			typeof window !== 'undefined' &&
+			'launchQueue' in winAny &&
+			winAny.launchQueue &&
+			typeof winAny.launchQueue.setConsumer === 'function'
+		) {
+			winAny.launchQueue.setConsumer((/** @type {any} */ launchParams) => {
+				if (!launchParams || !launchParams.targetURL) return;
+				try {
+					const incoming = new URL(launchParams.targetURL, window.location.origin);
+					if (incoming.origin !== window.location.origin) return;
+					const dest = incoming.pathname + incoming.search + incoming.hash;
+					const here = window.location.pathname + window.location.search + window.location.hash;
+					if (dest === here) return;
+
+					const spaLink = document.createElement('a');
+					spaLink.href = dest;
+					spaLink.style.display = 'none';
+					document.body.appendChild(spaLink);
+					spaLink.click();
+					spaLink.remove();
+				} catch (err) {
+					console.warn('LaunchQueue navigation ignored:', err);
+				}
+			});
+		}
+
+		// Sibling RaggieSoft PWA Outbound Handoff Enhancer:
+		// When running as an installed standalone PWA, ensure clicks to Book Reader or
+		// Backstage use `target="_blank" rel="noopener"` so Chromium/Android PWA Link
+		// Capturing hands them directly to the sibling PWA window while audio keeps playing.
+		const isStandalonePwa =
+			(window.matchMedia &&
+				window.matchMedia(
+					'(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)'
+				).matches) ||
+			/** @type {any} */ (window.navigator).standalone === true;
+
+		const siblingPwaHosts = ['books.raggiesoft.com', 'backstage.raggiesoft.com'];
+		const handleSiblingPwaClick = (/** @type {MouseEvent} */ event) => {
+			if (!isStandalonePwa || event.defaultPrevented) return;
+			const targetEl = event.target instanceof Element ? event.target : null;
+			const anchor = /** @type {HTMLAnchorElement | null} */ (
+				targetEl ? targetEl.closest('a[href]') : null
+			);
+			if (!anchor) return;
+			try {
+				const destUrl = new URL(anchor.href, window.location.href);
+				if (
+					destUrl.hostname !== window.location.hostname &&
+					siblingPwaHosts.includes(destUrl.hostname)
+				) {
+					anchor.target = '_blank';
+					const relParts = (anchor.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
+					if (!relParts.includes('noopener')) {
+						relParts.push('noopener');
+					}
+					anchor.setAttribute('rel', relParts.join(' '));
+				}
+			} catch {
+				// Ignore malformed hrefs
+			}
+		};
+		document.addEventListener('click', handleSiblingPwaClick, true);
+
 		// Intercept browser install prompt to offer an in-app button
 		const handleBeforeInstall = (/** @type {Event} */ e) => {
 			e.preventDefault();
@@ -135,6 +204,7 @@
 		});
 
 		return () => {
+			document.removeEventListener('click', handleSiblingPwaClick, true);
 			window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
 		};
 	});
