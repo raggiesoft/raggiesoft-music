@@ -458,17 +458,40 @@ function main() {
 		}
 	}
 
-	// 4. XML Sitemap index & child sitemaps parity check
+	// 4. Unified XML Sitemap (`build/sitemap.xml`) & category sitemaps parity check
 	const sitemapIndexPath = path.join(BUILD_DIR, 'sitemap.xml');
 	if (fs.existsSync(sitemapIndexPath)) {
-		const indexXml = fs.readFileSync(sitemapIndexPath, 'utf-8');
-		if (!indexXml.includes('<sitemapindex')) {
-			errors.push('build/sitemap.xml is not a valid <sitemapindex> document');
-		}
-		for (const childName of EXPECTED_CHILD_SITEMAPS) {
-			const expectedLoc = `${SITE_ORIGIN}/sitemaps/${childName}`;
-			if (!indexXml.includes(`<loc>${expectedLoc}</loc>`)) {
-				errors.push(`build/sitemap.xml missing child sitemap <loc>${expectedLoc}</loc>`);
+		const rootXml = fs.readFileSync(sitemapIndexPath, 'utf-8');
+		if (!rootXml.includes('<urlset')) {
+			errors.push('build/sitemap.xml is not a valid unified <urlset> document');
+		} else {
+			const rootLocs = [...rootXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+			const rootLastmods = [...rootXml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((m) =>
+				m[1].trim()
+			);
+			if (rootLastmods.length !== rootLocs.length) {
+				errors.push(
+					`build/sitemap.xml has ${rootLocs.length} <loc> tags but ${rootLastmods.length} <lastmod> tags`
+				);
+			}
+			const rootUrlSet = new Set();
+			for (const loc of rootLocs) {
+				if (rootUrlSet.has(loc)) {
+					errors.push(`Duplicate URL inside unified build/sitemap.xml: ${loc}`);
+				}
+				rootUrlSet.add(loc);
+			}
+			for (const builtUrl of indexableCanonicalUrls) {
+				if (!rootUrlSet.has(builtUrl)) {
+					errors.push(`Indexable built page missing from unified build/sitemap.xml: ${builtUrl}`);
+				}
+			}
+			for (const smUrl of rootUrlSet) {
+				if (!indexableCanonicalUrls.has(smUrl)) {
+					errors.push(
+						`Unified build/sitemap.xml contains URL that is not an indexable built page: ${smUrl}`
+					);
+				}
 			}
 		}
 	}

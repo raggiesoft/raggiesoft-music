@@ -202,9 +202,12 @@ function renderUrlSetXml(entries) {
 }
 
 /**
- * Generates `/static/sitemap.xml` (sitemap index) and separate category sitemaps
- * inside `/static/sitemaps/{editorial,artists,albums,tracks,playlists}.xml` with
- * truthful `<lastmod>` dates derived from underlying catalog & route files.
+ * Generates `/static/sitemap.xml` as a single, self-contained `<urlset>` containing
+ * all ~552 canonical URLs (`editorial` + `artists` + `albums` + `tracks` + `playlists`)
+ * so Google Search Console discovers 100% of pages in a single atomic fetch without
+ * `<sitemapindex>` child-fetch queue failures ("Couldn't fetch"), while ALSO keeping
+ * `/static/sitemaps/{editorial,artists,albums,tracks,playlists}.xml` generated for
+ * category diagnostics and `sarah-deploy.sh` IndexNow pings.
  *
  * Excludes non-indexable utility routes (`/settings`, `/studio`, `/404`),
  * query-string search URLs, API endpoints, and raw audio files.
@@ -353,22 +356,22 @@ function writeXmlSitemaps(catalog) {
 		fs.writeFileSync(path.join(sitemapsDir, sm.name), renderUrlSetXml(sm.entries), 'utf-8');
 	}
 
-	const indexBody = sitemapFiles
-		.map((sm) => {
-			const maxMod = sm.entries.reduce(
-				(acc, e) => (e.lastmod > acc ? e.lastmod : acc),
-				'2026-04-01'
-			);
-			return `  <sitemap>\n    <loc>${SITE_ORIGIN}/sitemaps/${sm.name}</loc>\n    <lastmod>${maxMod}</lastmod>\n  </sitemap>`;
-		})
-		.join('\n');
+	// Emit a unified, flat `<urlset>` directly at `/static/sitemap.xml` (well under the
+	// 50,000-URL / 50MB Sitemaps protocol ceiling) so Google Search Console discovers all
+	// canonical URLs immediately upon reading `/sitemap.xml` without deferred child-sitemap
+	// "Couldn't fetch" errors.
+	const unifiedEntries = [
+		...editorialEntries,
+		...artistEntries,
+		...albumEntries,
+		...trackEntries,
+		...playlistEntries
+	];
+	fs.writeFileSync(path.join(staticDir, 'sitemap.xml'), renderUrlSetXml(unifiedEntries), 'utf-8');
 
-	const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexBody}\n</sitemapindex>\n`;
-	fs.writeFileSync(path.join(staticDir, 'sitemap.xml'), sitemapIndexXml, 'utf-8');
-
-	const totalUrls = sitemapFiles.reduce((acc, s) => acc + s.entries.length, 0);
+	const totalUrls = unifiedEntries.length;
 	console.log(
-		`🗺️  Generated /sitemap.xml index + 5 category sitemaps (${totalUrls} canonical URLs: ${editorialEntries.length} editorial, ${artistEntries.length} artists, ${albumEntries.length} albums, ${trackEntries.length} tracks, ${playlistEntries.length} playlists).`
+		`🗺️  Generated unified /sitemap.xml (<urlset>) + 5 category sitemaps (${totalUrls} canonical URLs: ${editorialEntries.length} editorial, ${artistEntries.length} artists, ${albumEntries.length} albums, ${trackEntries.length} tracks, ${playlistEntries.length} playlists).`
 	);
 }
 
