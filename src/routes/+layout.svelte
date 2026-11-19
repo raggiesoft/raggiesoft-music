@@ -236,82 +236,79 @@
 						type="button"
 						class="rs-network-dropdown-toggle is-active"
 						aria-expanded="false"
-						aria-haspopup="true"
+						aria-controls="rs-static-err-menu"
 					>
 						<span aria-hidden="true">⚙️</span>
 						<span>Engine Room</span>
 						<span class="rs-network-caret" aria-hidden="true">▾</span>
 					</button>
 					<ul
+						id="rs-static-err-menu"
 						class="rs-network-dropdown-menu"
-						role="menu"
 						aria-label="Engine Room Records & Band Roster"
 					>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com"
+						<li>
+							<a href="https://engineroom.raggiesoft.com"
 								><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a
 							>
 						</li>
-						<li role="none">
+						<li>
 							<a
-								role="menuitem"
 								href="https://music.raggiesoft.com"
 								aria-current="page"
 								class="is-active"
 								><span aria-hidden="true">🎧</span><span>The Listening Room</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists"
 								><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/isrc"
 								><span aria-hidden="true">🏷️</span><span>Official Music Catalog Registry</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/dsp-verification"
 								><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a
 							>
 						</li>
-						<li class="rs-network-dropdown-divider" role="separator"></li>
-						<li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"
+						<li class="rs-network-dropdown-divider" aria-hidden="true"></li>
+						<li class="rs-network-dropdown-header" aria-hidden="true">✦ Band Roster (A–Z)</li>
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/crimson-node"
 								><span aria-hidden="true">🔴</span><span>Crimson Node</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/firelight"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/firelight"
 								><span aria-hidden="true">🔥</span><span>Firelight</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/fractured-prisms"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/fractured-prisms"
 								><span aria-hidden="true">💎</span><span>Fractured Prisms</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/mana-canvas"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/mana-canvas"
 								><span aria-hidden="true">🎨</span><span>Mana Canvas</span></a
 							>
 						</li>
-						<li role="none">
-							<a
-								role="menuitem"
-								href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"
 								><span aria-hidden="true">❄️</span><span>The Arctic Symphony Project</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-paper-wall"
+						<li>
+							<a href="https://engineroom.raggiesoft.com/artists/the-paper-wall"
 								><span aria-hidden="true">🧱</span><span>The Paper Wall</span></a
 							>
 						</li>
-						<li role="none">
-							<a role="menuitem" href="https://stardust.raggiesoft.com"
+						<li>
+							<a href="https://stardust.raggiesoft.com"
 								><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a
 							>
 						</li>
@@ -319,7 +316,7 @@
 				</li>
 				<li><a href="https://corporate.raggiesoft.com">🏢 Corporate</a></li>
 				<li><a href="https://storetrainer.raggiesoft.com">💾 StoreTrainer</a></li>
-				<li><a href="https://michaelpragsdale.com">👔 Michael P. Ragsdale</a></li>
+				<li><a href="https://michaelpragsdale.com">👔 Portfolio &amp; Resume</a></li>
 			</ul>
 		</div>
 	</nav>
