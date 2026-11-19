@@ -374,10 +374,10 @@
 </script>
 
 <svelte:head>
-	<title>The Listening Room | Music Discovery, Lyrics &amp; Lore by Engine Room Records</title>
+	<title>The Listening Room | Free Song Samples, Lyrics &amp; Lossless Streaming</title>
 	<meta
 		name="description"
-		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
+		content="Discover {catalogStats.albumCount} Engine Room Records albums: play free song samples, read synced lyrics &amp; story lore, then stream lossless audio on Spotify, Apple &amp; Amazon."
 	/>
 	<link rel="canonical" href="https://music.raggiesoft.com/" />
 
@@ -385,10 +385,10 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content="https://music.raggiesoft.com/" />
-	<meta property="og:title" content="The Listening Room — Engine Room Records" />
+	<meta property="og:title" content="The Listening Room — Free Song Samples &amp; Streaming" />
 	<meta
 		property="og:description"
-		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
+		content="Discover {catalogStats.albumCount} Engine Room Records albums: play free song samples, read synced lyrics &amp; story lore, then stream lossless audio on Spotify, Apple &amp; Amazon."
 	/>
 	<meta property="og:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta property="og:image:width" content="1200" />
@@ -401,11 +401,10 @@
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:site" content="@RaggieSoft" />
-	<meta name="twitter:url" content="https://music.raggiesoft.com/" />
-	<meta name="twitter:title" content="The Listening Room — Engine Room Records" />
+	<meta name="twitter:title" content="The Listening Room — Free Song Samples &amp; Streaming" />
 	<meta
 		name="twitter:description"
-		content="Explore {catalogStats.trackCount} songs, {catalogStats.albumCount} albums, synced lyrics, and story lore across {catalogStats.artistCount} Engine Room Records bands. Stream free 128kbps previews or lossless HD."
+		content="Discover {catalogStats.albumCount} Engine Room Records albums: play free song samples, read synced lyrics &amp; story lore, then stream lossless audio on Spotify, Apple &amp; Amazon."
 	/>
 	<meta name="twitter:image" content="https://music.raggiesoft.com/og-image.jpg" />
 	<meta

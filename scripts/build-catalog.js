@@ -261,6 +261,9 @@ function writeXmlSitemaps(catalog) {
 	for (const album of catalog) {
 		for (const track of album.tracks || []) {
 			if (!track.slug) continue;
+			// Only include recorded or ISRC-registered songs in tracks.xml & sitemap.xml
+			// (unrecorded lore-only concert setlist stubs are marked noindex,follow).
+			if (!track.isPlayable && !track.isrc) continue;
 			const baseMod = track.lastmod || album.lastmod || album.datePublished || '2026-04-01';
 			trackEntries.push({
 				loc: `${SITE_ORIGIN}/${album.artistSlug}/${album.slug}/${track.slug}`,
@@ -944,7 +947,11 @@ function buildCatalog() {
 					}
 				}
 
-				if (!loreNote || !lyrics) {
+				const mp3Path = fileName ? path.join(webMp3Dir, `${fileName}.mp3`) : null;
+				const hasPhysicalMp3 = Boolean(mp3Path && fs.existsSync(mp3Path));
+				const hasRecordingOrIsrc = Boolean(hasPhysicalMp3 || isrc);
+
+				if (!loreNote || (!lyrics && hasRecordingOrIsrc)) {
 					const lookupKey = `${artistName.toLowerCase()}:::${trackTitle.toLowerCase()}`;
 					const narrative = metadataMap.get(lookupKey) || '';
 					if (narrative.includes('**LORE NOTE:**')) {
@@ -953,10 +960,10 @@ function buildCatalog() {
 						if (!loreNote) {
 							loreNote = loreSection.replace(/\r\n/g, '\n');
 						}
-						if (parts[1].includes('**LYRICS:**') && !lyrics) {
+						if (parts[1].includes('**LYRICS:**') && !lyrics && hasRecordingOrIsrc) {
 							lyrics = parts[1].split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
 						}
-					} else if (narrative.includes('**LYRICS:**') && !lyrics) {
+					} else if (narrative.includes('**LYRICS:**') && !lyrics && hasRecordingOrIsrc) {
 						lyrics = narrative.split('**LYRICS:**')[1].trim().replace(/\r\n/g, '\n');
 					}
 				}
@@ -968,9 +975,6 @@ function buildCatalog() {
 						.replace(/^NOTE\s+SYNC_TYPE:.*$/gim, '')
 						.trim();
 				}
-
-				const mp3Path = fileName ? path.join(webMp3Dir, `${fileName}.mp3`) : null;
-				const hasPhysicalMp3 = Boolean(mp3Path && fs.existsSync(mp3Path));
 
 				const audioUrl = hasPhysicalMp3
 					? `${CDN_BASE}/${artistSlug}/${albumSlug}/web-mp3/${fileName}.mp3`
@@ -1022,6 +1026,10 @@ function buildCatalog() {
 					version: trackVersion,
 					duration,
 					isrc,
+					...(t.spotifyTrackId ? { spotifyTrackId: String(t.spotifyTrackId).trim() } : {}),
+					...(t.appleTrackId ? { appleTrackId: String(t.appleTrackId).trim() } : {}),
+					...(t.amazonTrackId ? { amazonTrackId: String(t.amazonTrackId).trim() } : {}),
+					...(t.youtubeVideoId ? { youtubeVideoId: String(t.youtubeVideoId).trim() } : {}),
 					legacyTier,
 					stylePrompt: t.stylePrompt || '',
 					loreNote,

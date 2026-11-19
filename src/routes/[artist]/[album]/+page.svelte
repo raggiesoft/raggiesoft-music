@@ -396,7 +396,6 @@
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:url" content={seo.canonicalUrl} />
 	<meta name="twitter:title" content={seo.ogTitle} />
 	<meta name="twitter:description" content={seo.description} />
 	<meta name="twitter:image" content={album.socialPreview} />

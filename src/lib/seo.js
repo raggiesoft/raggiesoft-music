@@ -7,41 +7,58 @@
  * Entity Graph Engine for The Listening Room (`https://music.raggiesoft.com`).
  *
  * Architectural Guarantees:
- * 1. Stable Cross-Site Entity `@id`s:
+ * 1. Unified Cross-Network Entity `@id`s:
  *    - WebSite:      `https://music.raggiesoft.com/#website`
- *    - Organization: `https://engineroom-records.com/#organization`
+ *    - Organization: `https://engineroom.raggiesoft.com/#organization`
  *    - Parent Org:   `https://raggiesoft.com/#organization`
- *    - Person:       `https://michaelpragsdale.com/#person`
+ *    - Person:       `https://michaelpragsdale.com/#michael-ragsdale`
  *    - WebApp:       `https://music.raggiesoft.com/#webapp`
  *    - Artist:       `https://music.raggiesoft.com/[artist]#artist`
  *    - Album:        `https://music.raggiesoft.com/[artist]/[album]#album`
- *    - Track:        `https://music.raggiesoft.com/[artist]/[album]/[track]#recording`
- * 2. Strict Dual-Chronology Separation:
- *    - `datePublished` (and OpenGraph `music:release_date`) is ALWAYS the
- *      real-world publication date (`>= 2026`), NEVER an in-universe year.
- *    - `temporalCoverage` holds the fictional/in-universe narrative date.
- * 3. Guaranteed Unique `<title>` & `<meta name="description">` Across All Pages:
- *    - Automatically disambiguates tracks whose song titles appear on multiple
- *      albums (e.g., studio originals vs. live albums, compilations, and
- *      alternate language/version recordings) while keeping OpenGraph/Twitter
- *      titles concise (`<= 60` chars) and meta descriptions `<= 155` chars.
- * 4. Valid ISO 8601 Durations (`PT5M8S`) & Crawlable `BreadcrumbList` Schemas:
- *    - Converts `"mm:ss"` / `"hh:mm:ss"` track durations into Schema.org
- *      ISO 8601 `Duration` strings and omits unrendered `"In Studio"` values.
+ *    - Composition:  `https://music.raggiesoft.com/[artist]/[studio-album]/[track]#composition`
+ *    - Recording:    `https://music.raggiesoft.com/[artist]/[primary-album]/[track]#recording`
+ * 2. Discovery Platform Positioning (Free 128 kbps Sample -> Lossless DSP Handoff):
+ *    - Explicitly describes The Listening Room as a free reference-sample discovery
+ *      platform (`AudioObject` with `bitrate: "128kbps"`, `isAccessibleForFree: true`)
+ *      paired with Schema.org `ListenAction` (`potentialAction`) pointing to Spotify,
+ *      Apple Music, Amazon Music, and YouTube Music for full high-resolution streaming.
+ * 3. Strict `sameAs` Entity Equivalence Hygiene:
+ *    - Never mixes album DSP URLs or Fourthwall shopping-cart product URLs into
+ *      `MusicRecording.sameAs`, and never mixes fallback album URLs into `MusicGroup.sameAs`.
+ * 4. Song Composition Grouping & Shared-ISRC Deduplication:
+ *    - Links studio, live, remix, and anthology recordings of the same song to one
+ *      canonical `MusicComposition` (`recordingOf`).
+ *    - Reuses the primary studio `MusicRecording` `@id` when a compilation album
+ *      includes the exact same ISRC master, and omits `MusicRecording` entirely on
+ *      unrecorded setlist stub pages (`!track.isPlayable && !track.isrc`).
  * ============================================================================
  */
 
-import { allAlbums, rockOperaSeriesTitles } from '#lib/data/musicData.js';
+import {
+	allAlbums,
+	getSongFamilyKey,
+	parseDurationToSeconds,
+	rockOperaSeriesTitles
+} from '#lib/data/musicData.js';
 
 export const SITE_ORIGIN = 'https://music.raggiesoft.com';
 export const WEBSITE_ID = 'https://music.raggiesoft.com/#website';
-export const ORG_ID = 'https://engineroom-records.com/#organization';
+export const ORG_ID = 'https://engineroom.raggiesoft.com/#organization';
 export const RAGGIESOFT_ORG_ID = 'https://raggiesoft.com/#organization';
-export const PERSON_ID = 'https://michaelpragsdale.com/#person';
+export const PERSON_ID = 'https://michaelpragsdale.com/#michael-ragsdale';
 export const WEBAPP_ID = 'https://music.raggiesoft.com/#webapp';
+
+const ACTION_PLATFORMS = [
+	'http://schema.org/DesktopWebPlatform',
+	'http://schema.org/MobileWebPlatform',
+	'http://schema.org/IOSPlatform',
+	'http://schema.org/AndroidPlatform'
+];
 
 /**
  * Truncates text cleanly on a word boundary to stay within `maxLen` characters.
+ * Used strictly for HTML `<meta name="description">` and `og:title` constraints,
+ * NEVER for Schema.org JSON-LD `description` fields.
  *
  * @param {string} text
  * @param {number} maxLen
@@ -61,7 +78,7 @@ export function truncateMeta(text, maxLen) {
 }
 
 /**
- * Strips HTML tags and normalizes whitespace from compiled prose snippets.
+ * Strips HTML tags and Markdown formatting from compiled prose snippets.
  *
  * @param {string | undefined | null} raw
  * @returns {string}
@@ -134,73 +151,155 @@ export function formatIsoDuration(durationStr) {
 }
 
 /**
- * Collects all public external DSP, Fourthwall storefront, ISRC registry, and
- * canonical lore URLs for a given Artist, Album, or Track entity for `sameAs`.
+ * Collects strict entity-equivalent `sameAs` URLs for an Artist (`MusicGroup`),
+ * Album (`MusicAlbum`), or Track (`MusicRecording`).
+ *
+ * CRITICAL ENTITY GRAPH RULES:
+ * - Never emits Fourthwall shopping-cart product URLs (`store.raggiesoft.com/products/...`)
+ *   inside `sameAs` (commercial store pages are not `owl:sameAs` for creative entities).
+ * - Never emits album-level DSP URLs inside `MusicRecording.sameAs` or `MusicGroup.sameAs`.
  *
  * @param {Record<string, any>} item
  * @param {'artist' | 'album' | 'track'} [entityType='album']
+ * @param {Record<string, any>} [parentAlbum]
  * @returns {string[]}
  */
-export function buildDspSameAs(item, entityType = 'album') {
+export function buildDspSameAs(item, entityType = 'album', parentAlbum = undefined) {
 	if (!item) return [];
 	/** @type {Set<string>} */
 	const urls = new Set();
 
-	const isExempt = Boolean(item.dspExempt);
-	const targetKind = entityType === 'artist' ? item.dspTargetType || 'artist' : 'album';
+	if (entityType === 'artist') {
+		if (!item.dspExempt && item.dspTargetType === 'artist') {
+			const spotifyId = String(item.spotifyId || '').trim();
+			const appleId = String(item.appleId || '').trim();
+			const amazonId = String(item.amazonId || '').trim();
+			const youtubeId = String(item.youtubeId || '').trim();
 
-	if (!isExempt) {
-		const spotifyId = String(item.spotifyId || '').trim();
-		const appleId = String(item.appleId || '').trim();
-		const amazonId = String(item.amazonId || '').trim();
-		const youtubeId = String(item.youtubeId || '').trim();
-
-		if (spotifyId) {
-			urls.add(
-				targetKind === 'artist'
-					? `https://open.spotify.com/artist/${spotifyId}`
-					: `https://open.spotify.com/album/${spotifyId}`
-			);
-		}
-		if (appleId) {
-			urls.add(
-				targetKind === 'artist'
-					? `https://music.apple.com/us/artist/${appleId}`
-					: `https://music.apple.com/us/album/${appleId}`
-			);
-		}
-		if (amazonId) {
-			urls.add(
-				targetKind === 'artist'
-					? `https://music.amazon.com/artists/${amazonId}`
-					: `https://music.amazon.com/albums/${amazonId}`
-			);
-		}
-		if (youtubeId) {
-			if (youtubeId.startsWith('UC')) {
+			if (spotifyId) urls.add(`https://open.spotify.com/artist/${spotifyId}`);
+			if (appleId) urls.add(`https://music.apple.com/us/artist/${appleId}`);
+			if (amazonId) urls.add(`https://music.amazon.com/artists/${amazonId}`);
+			if (youtubeId && youtubeId.startsWith('UC')) {
 				urls.add(`https://music.youtube.com/channel/${youtubeId}`);
-			} else if (youtubeId.startsWith('OLAK') || youtubeId.startsWith('PL')) {
-				urls.add(`https://music.youtube.com/playlist?list=${youtubeId}`);
-			} else if (youtubeId.startsWith('MPRE')) {
-				urls.add(`https://music.youtube.com/browse/${youtubeId}`);
-			} else {
-				urls.add(`https://music.youtube.com/watch?v=${youtubeId}`);
 			}
+		}
+		if (item.loreUrl) {
+			urls.add(String(item.loreUrl).trim());
+		}
+		return Array.from(urls).filter(Boolean);
+	}
+
+	if (entityType === 'album') {
+		if (!item.dspExempt) {
+			const spotifyId = String(item.spotifyId || '').trim();
+			const appleId = String(item.appleId || '').trim();
+			const amazonId = String(item.amazonId || '').trim();
+			const youtubeId = String(item.youtubeId || '').trim();
+
+			if (spotifyId) urls.add(`https://open.spotify.com/album/${spotifyId}`);
+			if (appleId) urls.add(`https://music.apple.com/us/album/${appleId}`);
+			if (amazonId) urls.add(`https://music.amazon.com/albums/${amazonId}`);
+			if (youtubeId) {
+				if (youtubeId.startsWith('OLAK') || youtubeId.startsWith('PL')) {
+					urls.add(`https://music.youtube.com/playlist?list=${youtubeId}`);
+				} else if (youtubeId.startsWith('MPRE')) {
+					urls.add(`https://music.youtube.com/browse/${youtubeId}`);
+				} else if (!youtubeId.startsWith('UC')) {
+					urls.add(`https://music.youtube.com/watch?v=${youtubeId}`);
+				}
+			}
+		}
+		if (item.loreUrl) {
+			urls.add(String(item.loreUrl).trim());
+		}
+		return Array.from(urls).filter(Boolean);
+	}
+
+	// `entityType === 'track'`: strictly track-specific identity URLs + official ISRC registry
+	if (!parentAlbum?.dspExempt && !item.dspExempt) {
+		const spotifyTrackId = String(item.spotifyTrackId || '').trim();
+		const appleTrackId = String(item.appleTrackId || '').trim();
+		const amazonTrackId = String(item.amazonTrackId || '').trim();
+		const youtubeVideoId = String(item.youtubeVideoId || '').trim();
+		const parentAppleAlbumId = String(parentAlbum?.appleId || '').trim();
+
+		if (spotifyTrackId) {
+			urls.add(`https://open.spotify.com/track/${spotifyTrackId}`);
+		}
+		if (appleTrackId) {
+			urls.add(
+				parentAppleAlbumId
+					? `https://music.apple.com/us/album/${parentAppleAlbumId}?i=${appleTrackId}`
+					: `https://music.apple.com/us/song/${appleTrackId}`
+			);
+		}
+		if (amazonTrackId) {
+			urls.add(`https://music.amazon.com/tracks/${amazonTrackId}`);
+		}
+		if (youtubeVideoId) {
+			urls.add(`https://music.youtube.com/watch?v=${youtubeVideoId}`);
 		}
 	}
 
-	if (item.storefrontUrl) urls.add(String(item.storefrontUrl).trim());
-	if (item.storeStandardUrl) urls.add(String(item.storeStandardUrl).trim());
-	if (item.storeAudiophileUrl) urls.add(String(item.storeAudiophileUrl).trim());
-	if (entityType === 'artist' && item.loreUrl) urls.add(String(item.loreUrl).trim());
-	if (entityType === 'album' && item.loreUrl) urls.add(String(item.loreUrl).trim());
-	if (entityType === 'track' && item.isrc) {
+	if (item.isrc) {
 		urls.add(
 			`https://engineroom.raggiesoft.com/isrc?code=${encodeURIComponent(String(item.isrc).trim())}`
 		);
 	}
 
 	return Array.from(urls).filter(Boolean);
+}
+
+/**
+ * Builds a Schema.org `ListenAction` (`potentialAction`) pointing search engines
+ * from The Listening Room's free 128 kbps discovery previews directly to full
+ * high-resolution / lossless streaming on Spotify, Apple Music, Amazon Music,
+ * and YouTube Music.
+ *
+ * @param {Record<string, any>} album
+ * @returns {Record<string, any> | undefined}
+ */
+export function buildDspListenAction(album) {
+	if (!album || album.dspExempt) return undefined;
+
+	/** @type {Array<{ name: string, url: string }>} */
+	const targets = [];
+	const spotifyId = String(album.spotifyId || '').trim();
+	const appleId = String(album.appleId || '').trim();
+	const amazonId = String(album.amazonId || '').trim();
+	const youtubeId = String(album.youtubeId || '').trim();
+
+	if (spotifyId) {
+		targets.push({ name: 'Spotify', url: `https://open.spotify.com/album/${spotifyId}` });
+	}
+	if (appleId) {
+		targets.push({ name: 'Apple Music', url: `https://music.apple.com/us/album/${appleId}` });
+	}
+	if (amazonId) {
+		targets.push({ name: 'Amazon Music', url: `https://music.amazon.com/albums/${amazonId}` });
+	}
+	if (youtubeId) {
+		const ytUrl =
+			youtubeId.startsWith('OLAK') || youtubeId.startsWith('PL')
+				? `https://music.youtube.com/playlist?list=${youtubeId}`
+				: youtubeId.startsWith('MPRE')
+					? `https://music.youtube.com/browse/${youtubeId}`
+					: `https://music.youtube.com/watch?v=${youtubeId}`;
+		targets.push({ name: 'YouTube Music', url: ytUrl });
+	}
+
+	if (targets.length === 0) return undefined;
+
+	return {
+		'@type': 'ListenAction',
+		name: 'Stream Full High-Resolution Audio on Official Music Platforms',
+		target: targets.map((t) => ({
+			'@type': 'EntryPoint',
+			name: t.name,
+			urlTemplate: t.url,
+			actionPlatform: ACTION_PLATFORMS
+		}))
+	};
 }
 
 /**
@@ -219,13 +318,30 @@ export function getTrackDisplayTitle(track) {
 }
 
 /**
+ * Normalizes lyrics text into a compact alphanumeric fingerprint so unrecorded
+ * setlist pages can detect when their lyrics are an exact duplicate of the
+ * canonical studio recording.
+ *
+ * @param {string | undefined | null} rawLyrics
+ * @returns {string}
+ */
+function buildLyricsFingerprint(rawLyrics) {
+	if (!rawLyrics) return '';
+	return String(rawLyrics)
+		.toLowerCase()
+		.replace(/\[[^\]]*\]|\([^)]*\)/g, ' ')
+		.replace(/[^a-z0-9]+/g, ' ')
+		.trim();
+}
+
+/**
  * Precomputed lookup map identifying the primary (earliest non-compilation)
  * album for every `(artistSlug, displayTitle)` pair so multi-album songs
  * receive disambiguated `<title>` tags on live/compilation/remix appearances.
  * @type {Map<string, { count: number, primaryAlbumSlug: string }>}
  */
 const trackTitleCollisionMap = (() => {
-	/** @type {Map<string, Array<{ albumSlug: string, isComp: number, sortDate: string }>>} */
+	/** @type {Map<string, Array<{ albumSlug: string, isComp: number, hasAudio: number, sortDate: string }>>} */
 	const buckets = new Map();
 	for (const album of allAlbums) {
 		for (const track of album.tracks || []) {
@@ -235,6 +351,7 @@ const trackTitleCollisionMap = (() => {
 			buckets.get(key)?.push({
 				albumSlug: album.slug,
 				isComp: album.albumType === 'compilation' ? 1 : 0,
+				hasAudio: track.isPlayable || track.isrc ? 0 : 1,
 				sortDate: album.temporalCoverage || album.year || '9999'
 			});
 		}
@@ -244,6 +361,7 @@ const trackTitleCollisionMap = (() => {
 	const out = new Map();
 	for (const [key, list] of buckets.entries()) {
 		list.sort((a, b) => {
+			if (a.hasAudio !== b.hasAudio) return a.hasAudio - b.hasAudio;
 			if (a.isComp !== b.isComp) return a.isComp - b.isComp;
 			if (a.sortDate !== b.sortDate) return a.sortDate.localeCompare(b.sortDate);
 			return a.albumSlug.localeCompare(b.albumSlug);
@@ -257,6 +375,185 @@ const trackTitleCollisionMap = (() => {
 })();
 
 /**
+ * Precomputed canonical `MusicComposition` lookup keyed by `getSongFamilyKey(title, artistSlug)`.
+ * Ensures all studio, live, remix, demo, and anthology appearances of a song point their
+ * `recordingOf` property to one canonical `#composition` URI (the earliest studio recording).
+ *
+ * @type {Map<string, {
+ *   compositionId: string,
+ *   compositionUrl: string,
+ *   name: string,
+ *   artistSlug: string,
+ *   artistName: string,
+ *   albumSlug: string,
+ *   albumTitle: string,
+ *   albumYear: string,
+ *   trackSlug: string,
+ *   isPlayable: boolean,
+ *   lyricsFingerprint: string
+ * }>}
+ */
+const canonicalCompositionMap = (() => {
+	/** @type {Map<string, Array<{ album: any, track: any, typeRank: number, recordedRank: number, sortDate: string }>>} */
+	const familyBuckets = new Map();
+
+	for (const album of allAlbums) {
+		const typeRank =
+			album.albumType === 'studio' || album.albumType === 'soundtrack'
+				? 0
+				: album.albumType === 'live'
+					? 1
+					: 2;
+		for (const track of album.tracks || []) {
+			if (!track.slug) continue;
+			const familyKey = getSongFamilyKey(track.title, album.artistSlug);
+			if (!familyKey) continue;
+			if (!familyBuckets.has(familyKey)) familyBuckets.set(familyKey, []);
+			familyBuckets.get(familyKey)?.push({
+				album,
+				track,
+				typeRank,
+				recordedRank: track.isPlayable ? 0 : track.isrc ? 1 : 2,
+				sortDate: album.temporalCoverage || album.year || '9999'
+			});
+		}
+	}
+
+	const map = new Map();
+	for (const [familyKey, entries] of familyBuckets.entries()) {
+		entries.sort((a, b) => {
+			if (a.recordedRank !== b.recordedRank) return a.recordedRank - b.recordedRank;
+			if (a.typeRank !== b.typeRank) return a.typeRank - b.typeRank;
+			if (a.sortDate !== b.sortDate) return a.sortDate.localeCompare(b.sortDate);
+			return a.album.slug.localeCompare(b.album.slug);
+		});
+		const primary = entries[0];
+		const trackSlug = primary.track.slug || primary.track.fileName || primary.track.id;
+		const compositionUrl = `${SITE_ORIGIN}/${primary.album.artistSlug}/${primary.album.slug}/${trackSlug}`;
+		// Strip live/demo suffixes for the underlying composition title when possible
+		const cleanCompName =
+			String(primary.track.title || '')
+				.replace(/\s*\[(?:full suite|radio edit)\]\s*/gi, '')
+				.trim() || primary.track.title;
+
+		map.set(familyKey, {
+			compositionId: `${compositionUrl}#composition`,
+			compositionUrl,
+			name: cleanCompName,
+			artistSlug: primary.album.artistSlug,
+			artistName: primary.album.artist,
+			albumSlug: primary.album.slug,
+			albumTitle: primary.album.title,
+			albumYear: primary.album.year || '',
+			trackSlug,
+			isPlayable: Boolean(primary.track.isPlayable),
+			lyricsFingerprint: buildLyricsFingerprint(primary.track.lyrics)
+		});
+	}
+	return map;
+})();
+
+/**
+ * Precomputed lookup mapping every commercial ISRC (`QZTB52600719`, `QTAHP...`, etc.)
+ * to its primary non-compilation release so anthology albums that reuse the exact
+ * same master audio reference the single canonical `#recording` `@id`.
+ *
+ * @type {Map<string, {
+ *   recordingId: string,
+ *   pageUrl: string,
+ *   albumId: string,
+ *   albumUrl: string,
+ *   albumTitle: string,
+ *   albumSlug: string,
+ *   numTracks: number
+ * }>}
+ */
+const primaryRecordingByIsrcMap = (() => {
+	/** @type {Map<string, Array<{ album: any, track: any, isComp: number, sortDate: string }>>} */
+	const buckets = new Map();
+
+	for (const album of allAlbums) {
+		for (const track of album.tracks || []) {
+			const cleanIsrc = String(track.isrc || '')
+				.trim()
+				.toUpperCase();
+			if (!cleanIsrc || !track.slug) continue;
+			if (!buckets.has(cleanIsrc)) buckets.set(cleanIsrc, []);
+			buckets.get(cleanIsrc)?.push({
+				album,
+				track,
+				isComp: album.albumType === 'compilation' ? 1 : 0,
+				sortDate: album.temporalCoverage || album.year || '9999'
+			});
+		}
+	}
+
+	const out = new Map();
+	for (const [isrc, list] of buckets.entries()) {
+		list.sort((a, b) => {
+			if (a.isComp !== b.isComp) return a.isComp - b.isComp;
+			if (a.sortDate !== b.sortDate) return a.sortDate.localeCompare(b.sortDate);
+			return a.album.slug.localeCompare(b.album.slug);
+		});
+		const primary = list[0];
+		const albumUrl = `${SITE_ORIGIN}/${primary.album.artistSlug}/${primary.album.slug}`;
+		const tSlug = primary.track.slug || primary.track.fileName || primary.track.id;
+		const pageUrl = `${albumUrl}/${tSlug}`;
+		out.set(isrc, {
+			recordingId: `${pageUrl}#recording`,
+			pageUrl,
+			albumId: `${albumUrl}#album`,
+			albumUrl,
+			albumTitle: primary.album.title,
+			albumSlug: primary.album.slug,
+			numTracks: primary.album.totalTracksCount
+		});
+	}
+	return out;
+})();
+
+/**
+ * Resolves the canonical studio composition metadata for a track, including whether
+ * an unrecorded setlist track's lyrics merely duplicate the primary studio version.
+ *
+ * @param {import('#lib/data/musicData.js').Track} track
+ * @param {import('#lib/data/musicData.js').Album} album
+ */
+export function resolveCanonicalComposition(track, album) {
+	const familyKey = getSongFamilyKey(track?.title, album?.artistSlug);
+	const comp = familyKey ? canonicalCompositionMap.get(familyKey) || null : null;
+	if (!comp) {
+		return {
+			composition: null,
+			isPrimaryCompositionPage: true,
+			suppressDuplicateStubLyrics: false
+		};
+	}
+
+	const isPrimaryCompositionPage =
+		comp.artistSlug === album.artistSlug &&
+		comp.albumSlug === album.slug &&
+		comp.trackSlug === (track.slug || track.fileName || track.id);
+
+	const isUnrecordedStub = !track.isPlayable && !track.isrc;
+	const trackFp = buildLyricsFingerprint(track.lyrics);
+	const suppressDuplicateStubLyrics = Boolean(
+		isUnrecordedStub &&
+			!isPrimaryCompositionPage &&
+			comp.isPlayable &&
+			trackFp &&
+			comp.lyricsFingerprint &&
+			trackFp === comp.lyricsFingerprint
+	);
+
+	return {
+		composition: comp,
+		isPrimaryCompositionPage,
+		suppressDuplicateStubLyrics
+	};
+}
+
+/**
  * Builds canonical SEO metadata (`title`, `ogTitle`, `description`, `canonicalUrl`)
  * for an Artist Hub route (`/[artist]`).
  *
@@ -264,10 +561,10 @@ const trackTitleCollisionMap = (() => {
  */
 export function buildArtistSeoMeta(artist) {
 	const canonicalUrl = `${SITE_ORIGIN}/${artist.slug}`;
-	const title = `${artist.name}: Albums, Songs & Lore | The Listening Room`;
-	const ogTitle = truncateMeta(`${artist.name} — Albums, Songs & Lore`, 60);
+	const title = `${artist.name}: Free Song Samples, Albums & Lore | The Listening Room`;
+	const ogTitle = truncateMeta(`${artist.name} — Free Samples, Albums & Lore`, 60);
 	const description = truncateMeta(
-		`Explore ${artist.name}: ${artist.albumCount} ${artist.albumCount === 1 ? 'release' : 'releases'}, ${artist.trackCount} songs, lyrics, lore, free 128 kbps previews & official Engine Room Records streams.`,
+		`Discover ${artist.name}: play free song samples across ${artist.albumCount} ${artist.albumCount === 1 ? 'release' : 'releases'}, read lyrics & lore, and stream high-res audio on your favorite app.`,
 		155
 	);
 	return { canonicalUrl, title, ogTitle, description };
@@ -281,7 +578,7 @@ export function buildArtistSeoMeta(artist) {
  */
 export function buildAlbumSeoMeta(album) {
 	const canonicalUrl = `${SITE_ORIGIN}/${album.artistSlug}/${album.slug}`;
-	const title = `${album.title} by ${album.artist}: Lyrics, Lore & Preview`;
+	const title = `${album.title} by ${album.artist}: Free Samples, Lyrics & Stream`;
 	const ogTitle = truncateMeta(`${album.title} — ${album.artist}`, 60);
 	const typeWord =
 		album.albumType === 'live'
@@ -293,7 +590,7 @@ export function buildAlbumSeoMeta(album) {
 					: 'album';
 	const realYear = ensureRealWorldDate(album.datePublished).slice(0, 4);
 	const description = truncateMeta(
-		`Explore ${album.title}, the fictional ${album.year} ${typeWord} by ${album.artist} (${realYear} DSP release). Preview ${album.totalTracksCount} songs, lyrics & lore.`,
+		`Play free song samples from ${album.title}, the ${album.year} story ${typeWord} by ${album.artist} (${realYear} release), read lyrics & lore, and stream lossless HD.`,
 		155
 	);
 	const releaseDate = ensureRealWorldDate(album.datePublished);
@@ -302,7 +599,8 @@ export function buildAlbumSeoMeta(album) {
 
 /**
  * Builds canonical SEO metadata (`title`, `ogTitle`, `description`, `canonicalUrl`,
- * `releaseDate`) for a Canonical Track route (`/[artist]/[album]/[track]`).
+ * `releaseDate`, `durationSeconds`, `isIndexableRecording`) for a Canonical Track
+ * route (`/[artist]/[album]/[track]`).
  *
  * @param {import('#lib/data/musicData.js').Track} track
  * @param {import('#lib/data/musicData.js').Album} album
@@ -318,17 +616,25 @@ export function buildTrackSeoMeta(track, album) {
 		collision && collision.count > 1 && collision.primaryAlbumSlug !== album.slug;
 
 	const qualifiedTitle = needsAlbumQualifier ? `${displayTitle} (${album.title})` : displayTitle;
+	const isIndexableRecording = Boolean(track.isPlayable || track.isrc);
+	const durationSeconds = parseDurationToSeconds(track.duration);
 
-	const title = `${qualifiedTitle} by ${album.artist}: Lyrics, Lore & Stream`;
+	const title = isIndexableRecording
+		? `${qualifiedTitle} by ${album.artist}: Free Sample, Lyrics & Stream`
+		: `${qualifiedTitle} by ${album.artist}: Story Setlist & Lore`;
 	const ogTitle = truncateMeta(`${qualifiedTitle} — ${album.artist}`, 60);
 
 	const posLabel =
 		(track.disc || 1) > 1 ? `Disc ${track.disc}, Track ${track.track}` : `Track ${track.track}`;
-	const actionVerb = track.isPlayable ? 'Preview' : 'Explore';
-	const description = truncateMeta(
-		`${actionVerb} ${displayTitle} (${posLabel} on ${album.title}) by ${album.artist}: lyrics, ${album.year} story lore & 2026 official streams.`,
-		155
-	);
+	const description = isIndexableRecording
+		? truncateMeta(
+				`Play a free sample of ${displayTitle} (${posLabel} on ${album.title}) by ${album.artist}, read lyrics & ${album.year} lore, and stream in lossless HD.`,
+				155
+			)
+		: truncateMeta(
+				`Explore ${displayTitle} (${posLabel} on ${album.title}) by ${album.artist}: ${album.year} story setlist notes and official Engine Room Records links.`,
+				155
+			);
 	const releaseDate = ensureRealWorldDate(album.datePublished);
 
 	return {
@@ -337,7 +643,9 @@ export function buildTrackSeoMeta(track, album) {
 		title,
 		ogTitle,
 		description,
-		releaseDate
+		releaseDate,
+		durationSeconds,
+		isIndexableRecording
 	};
 }
 
@@ -394,9 +702,6 @@ export function buildBreadcrumbJsonLdScript(pageUrlOrCrumbs, maybeCrumbs) {
 
 /**
  * Builds the complete `@graph` JSON-LD script for an Artist Hub (`/[artist]`).
- * Models the fictional band as a `MusicGroup` with explicit fictional-universe
- * provenance (`disambiguatingDescription`), real creator (`Michael P. Ragsdale`),
- * real label (`Engine Room Records`), real `datePublished`, and `BreadcrumbList`.
  *
  * @param {import('#lib/data/musicData.js').ArtistSummary} artist
  * @param {import('#lib/data/musicData.js').Album[]} artistAlbums
@@ -413,7 +718,7 @@ export function buildArtistJsonLdScript(artist, artistAlbums) {
 		url: pageUrl,
 		image: artist.socialPreview || artist.logo || `${SITE_ORIGIN}/og-image.jpg`,
 		...(artist.logo ? { logo: artist.logo } : {}),
-		description: artist.description,
+		description: `Original music catalog by Michael P. Ragsdale (Engine Room Records) performed in-universe by the fictional band ${artist.name}. ${artist.description}`,
 		disambiguatingDescription: `${artist.name} is a fictional band in the RaggieSoft narrative universe. All real-world compositions, sound recordings, and lyrics are created by Michael P. Ragsdale and published under Engine Room Records.`,
 		genre: artist.genres,
 		creator: { '@id': PERSON_ID },
@@ -433,7 +738,7 @@ export function buildArtistJsonLdScript(artist, artistAlbums) {
 	};
 
 	const breadcrumb = createBreadcrumbNode(pageUrl, [
-		{ name: 'The Listening Room', url: `${SITE_ORIGIN}/` },
+		{ name: 'Home', url: `${SITE_ORIGIN}/` },
 		{ name: 'Discography', url: `${SITE_ORIGIN}/discography` },
 		{ name: artist.name, url: pageUrl }
 	]);
@@ -456,7 +761,11 @@ export function buildAlbumJsonLdScript(album) {
 	const realReleaseDate = ensureRealWorldDate(album.datePublished);
 	const realYear = parseInt(realReleaseDate.slice(0, 4), 10) || 2026;
 	const sameAs = buildDspSameAs(album, 'album');
+	const listenAction = buildDspListenAction(album);
 	const seriesTitle = album.rockOperaSetId ? rockOperaSeriesTitles[album.rockOperaSetId] || '' : '';
+	const cleanAlbumDesc = stripPlainText(album.description);
+
+	const recordedTracks = (album.tracks || []).filter((t) => t.isPlayable || Boolean(t.isrc));
 
 	const musicAlbum = {
 		'@type': 'MusicAlbum',
@@ -464,8 +773,19 @@ export function buildAlbumJsonLdScript(album) {
 		name: album.title,
 		url: pageUrl,
 		image: album.artwork,
-		description: album.description,
+		description: `Original ${realYear} ${album.genre} release written and produced by Michael P. Ragsdale under Engine Room Records (${album.year} story setting for ${album.artist}). Free 128 kbps song samples available on The Listening Room with full high-resolution streaming on official music platforms. ${cleanAlbumDesc}`.trim(),
+		disambiguatingDescription: `Original ${realYear} Engine Room Records release by Michael P. Ragsdale; the ${album.year} narrative date, ${album.artist} band lore, and any in-universe record label references (such as Apex Records or OmniCorp) belong to the fictional RaggieSoft story universe.`,
 		genre: album.genre,
+		inLanguage: 'en-US',
+		...(album.upc
+			? {
+					identifier: {
+						'@type': 'PropertyValue',
+						propertyID: 'UPC',
+						value: String(album.upc).trim()
+					}
+				}
+			: {}),
 		albumProductionType:
 			album.albumType === 'live'
 				? 'https://schema.org/LiveAlbum'
@@ -501,25 +821,38 @@ export function buildAlbumJsonLdScript(album) {
 				]
 			: { '@id': WEBSITE_ID },
 		...(sameAs.length > 0 ? { sameAs } : {}),
-		track: album.tracks.map((t, idx) => {
-			const isoDur = formatIsoDuration(t.duration);
-			const tSlug = t.slug || t.fileName || t.id;
-			const tUrl = `${pageUrl}/${tSlug}`;
-			return {
-				'@type': 'MusicRecording',
-				'@id': `${tUrl}#recording`,
-				name: getTrackDisplayTitle(t),
-				url: tUrl,
-				position: album.tracks.some((x) => (x.disc || 1) > 1) ? idx + 1 : t.track,
-				...(isoDur ? { duration: isoDur } : {}),
-				...(t.isrc ? { isrcCode: t.isrc } : {}),
-				datePublished: realReleaseDate
-			};
-		})
+		...(listenAction ? { potentialAction: listenAction } : {}),
+		...(recordedTracks.length > 0
+			? {
+					track: recordedTracks.map((t, idx) => {
+						const isoDur = formatIsoDuration(t.duration);
+						const tSlug = t.slug || t.fileName || t.id;
+						const tUrl = `${pageUrl}/${tSlug}`;
+						const cleanIsrc = String(t.isrc || '')
+							.trim()
+							.toUpperCase();
+						const primaryMaster = cleanIsrc ? primaryRecordingByIsrcMap.get(cleanIsrc) : null;
+						const recordingId = primaryMaster ? primaryMaster.recordingId : `${tUrl}#recording`;
+
+						return {
+							'@type': 'MusicRecording',
+							'@id': recordingId,
+							name: getTrackDisplayTitle(t),
+							url: primaryMaster ? primaryMaster.pageUrl : tUrl,
+							position: album.tracks.some((x) => (x.disc || 1) > 1) ? idx + 1 : t.track,
+							...(isoDur ? { duration: isoDur } : {}),
+							...(t.isrc ? { isrcCode: t.isrc } : {}),
+							publisher: { '@id': ORG_ID },
+							datePublished: realReleaseDate
+						};
+					})
+				}
+			: {})
 	};
 
 	const breadcrumb = createBreadcrumbNode(pageUrl, [
-		{ name: 'The Listening Room', url: `${SITE_ORIGIN}/` },
+		{ name: 'Home', url: `${SITE_ORIGIN}/` },
+		{ name: 'Discography', url: `${SITE_ORIGIN}/discography` },
 		{ name: album.artist, url: artistUrl },
 		{ name: album.title, url: pageUrl }
 	]);
@@ -533,6 +866,16 @@ export function buildAlbumJsonLdScript(album) {
 /**
  * Builds the complete `@graph` JSON-LD script for a Canonical Track page
  * (`/[artist]/[album]/[track]`).
+ *
+ * - For recorded or ISRC-assigned tracks: emits a complete, validator-clean
+ *   `MusicRecording` linked via `recordingOf` to its canonical `MusicComposition`,
+ *   with album-only `inAlbum.sameAs`, track-only `MusicRecording.sameAs`,
+ *   `publisher` (never `recordLabel` on `MusicRecording`), safe UPC `PropertyValue`,
+ *   non-truncated dual-timeline `description` + `disambiguatingDescription`,
+ *   `AudioObject` sample metadata, `ListenAction` DSP handoff, and 5-step `BreadcrumbList`.
+ * - For unrecorded setlist stub pages (`!track.isPlayable && !track.isrc`):
+ *   omits `MusicRecording` completely so search engines are never told a sound
+ *   recording exists when none has been released yet.
  *
  * @param {import('#lib/data/musicData.js').Track} track
  * @param {import('#lib/data/musicData.js').Album} album
@@ -548,66 +891,174 @@ export function buildTrackJsonLdScript(track, album) {
 	const realYear = parseInt(realReleaseDate.slice(0, 4), 10) || 2026;
 	const isoDuration = formatIsoDuration(track.duration);
 
-	const sameAs = Array.from(
-		new Set([...buildDspSameAs(album, 'album'), ...buildDspSameAs(track, 'track')])
+	const breadcrumb = createBreadcrumbNode(pageUrl, [
+		{ name: 'Home', url: `${SITE_ORIGIN}/` },
+		{ name: 'Discography', url: `${SITE_ORIGIN}/discography` },
+		{ name: album.artist, url: artistUrl },
+		{ name: album.title, url: albumUrl },
+		{ name: displayTitle, url: pageUrl }
+	]);
+
+	const { composition, isPrimaryCompositionPage } = resolveCanonicalComposition(track, album);
+	const compositionId = composition ? composition.compositionId : `${pageUrl}#composition`;
+	const compositionUrl = composition ? composition.compositionUrl : pageUrl;
+	const compositionName = composition ? composition.name : displayTitle;
+
+	const cleanLyricsText = stripPlainText(track.lyrics);
+	const recordingOfNode = {
+		'@type': 'MusicComposition',
+		'@id': compositionId,
+		name: compositionName,
+		url: compositionUrl,
+		composer: { '@id': PERSON_ID },
+		lyricist: { '@id': PERSON_ID },
+		inLanguage: 'en-US',
+		...(isPrimaryCompositionPage && cleanLyricsText
+			? {
+					lyrics: {
+						'@type': 'CreativeWork',
+						'@id': `${compositionUrl}#lyrics`,
+						text: String(track.lyrics || '').trim(),
+						inLanguage: 'en-US',
+						author: { '@id': PERSON_ID },
+						license: 'https://creativecommons.org/licenses/by-sa/4.0/'
+					}
+				}
+			: {})
+	};
+
+	// Guard unrecorded lore-only concert/stub pages: NEVER emit a MusicRecording entity
+	// when no audio master and no commercial ISRC exist.
+	if (!track.isPlayable && !track.isrc) {
+		const stubWebPage = {
+			'@type': 'WebPage',
+			'@id': `${pageUrl}#webpage`,
+			url: pageUrl,
+			name: `${displayTitle} (${album.title} — ${album.artist})`,
+			description: `In-universe story setlist note for "${displayTitle}" on ${album.artist}'s ${album.year} release "${album.title}" in the fictional RaggieSoft literary universe.`,
+			inLanguage: 'en-US',
+			isPartOf: { '@id': WEBSITE_ID },
+			about: recordingOfNode
+		};
+
+		return serializeJsonLd({
+			'@context': 'https://schema.org',
+			'@graph': [stubWebPage, breadcrumb]
+		});
+	}
+
+	const albumSameAs = buildDspSameAs(album, 'album');
+	const trackSameAs = buildDspSameAs(track, 'track', album);
+	const listenAction = buildDspListenAction(album);
+
+	const cleanIsrc = String(track.isrc || '')
+		.trim()
+		.toUpperCase();
+	const primaryMaster = cleanIsrc ? primaryRecordingByIsrcMap.get(cleanIsrc) : null;
+	const isSharedAnthologyMaster = Boolean(
+		primaryMaster && primaryMaster.albumSlug !== album.slug
 	);
 
+	const currentInAlbum = {
+		'@type': 'MusicAlbum',
+		'@id': `${albumUrl}#album`,
+		name: album.title,
+		url: albumUrl,
+		numTracks: album.totalTracksCount,
+		recordLabel: { '@id': ORG_ID },
+		...(album.upc
+			? {
+					identifier: {
+						'@type': 'PropertyValue',
+						propertyID: 'UPC',
+						value: String(album.upc).trim()
+					}
+				}
+			: {}),
+		...(albumSameAs.length > 0 ? { sameAs: albumSameAs } : {})
+	};
+
+	const inAlbumValue =
+		isSharedAnthologyMaster && primaryMaster
+			? [
+					currentInAlbum,
+					{
+						'@type': 'MusicAlbum',
+						'@id': primaryMaster.albumId,
+						name: primaryMaster.albumTitle,
+						url: primaryMaster.albumUrl,
+						numTracks: primaryMaster.numTracks,
+						recordLabel: { '@id': ORG_ID }
+					}
+				]
+			: currentInAlbum;
+
 	const positionValue = (track.disc || 1) > 1 ? `${track.disc}.${track.track}` : track.track;
+	const albumTypeWord =
+		album.albumType === 'live'
+			? 'live album'
+			: album.albumType === 'compilation'
+				? 'anthology'
+				: album.albumType === 'soundtrack'
+					? 'soundtrack'
+					: 'album';
+	const fullLoreSummary = stripPlainText(track.loreNote);
+	const groundedLead = `Original ${realYear} ${album.genre} sound recording written and produced by Michael P. Ragsdale (Engine Room Records), set in-universe on ${album.artist}'s ${album.year} ${albumTypeWord} "${album.title}". Free 128 kbps reference preview available on The Listening Room with full high-resolution streaming on official music platforms.`;
+	const fullDescription = fullLoreSummary
+		? `${groundedLead} Story context: ${fullLoreSummary}`
+		: groundedLead;
 
 	const musicRecording = {
 		'@type': 'MusicRecording',
-		'@id': `${pageUrl}#recording`,
+		'@id':
+			isSharedAnthologyMaster && primaryMaster ? primaryMaster.recordingId : `${pageUrl}#recording`,
 		name: displayTitle,
-		url: pageUrl,
+		url: isSharedAnthologyMaster && primaryMaster ? primaryMaster.pageUrl : pageUrl,
+		...(isSharedAnthologyMaster ? { mainEntityOfPage: pageUrl } : {}),
 		image: album.artwork,
 		...(isoDuration ? { duration: isoDuration } : {}),
 		position: positionValue,
-		inAlbum: {
-			'@type': 'MusicAlbum',
-			'@id': `${albumUrl}#album`,
-			name: album.title,
-			url: albumUrl,
-			numTracks: album.totalTracksCount
-		},
+		...(track.isrc ? { isrcCode: track.isrc } : {}),
+		datePublished: realReleaseDate,
+		...(album.temporalCoverage || album.year
+			? { temporalCoverage: album.temporalCoverage || album.year }
+			: {}),
+		genre: album.genre,
+		inLanguage: 'en-US',
+		publisher: { '@id': ORG_ID },
+		creator: { '@id': PERSON_ID },
+		copyrightHolder: { '@id': PERSON_ID },
+		copyrightYear: realYear,
+		license: 'https://creativecommons.org/licenses/by-sa/4.0/',
+		disambiguatingDescription: `Original ${realYear} sound recording produced and owned by Michael P. Ragsdale under Engine Room Records; the ${album.year} release date, ${album.artist} band lore, and any in-universe label references (such as Apex Records or OmniCorp) belong to the fictional RaggieSoft story universe.`,
+		description: fullDescription,
 		byArtist: {
 			'@type': 'MusicGroup',
 			'@id': `${artistUrl}#artist`,
 			name: album.artist,
 			url: artistUrl
 		},
-		datePublished: realReleaseDate,
-		...(album.temporalCoverage || album.year
-			? { temporalCoverage: album.temporalCoverage || album.year }
-			: {}),
-		...(track.isrc ? { isrcCode: track.isrc } : {}),
-		genre: album.genre,
-		recordLabel: { '@id': ORG_ID },
-		creator: { '@id': PERSON_ID },
-		copyrightHolder: { '@id': PERSON_ID },
-		copyrightYear: realYear,
-		license: 'https://creativecommons.org/licenses/by-sa/4.0/',
-		...(track.loreNote ? { description: truncateMeta(stripPlainText(track.loreNote), 260) } : {}),
+		inAlbum: inAlbumValue,
+		recordingOf: recordingOfNode,
 		...(track.isPlayable && track.audioUrl
 			? {
 					audio: {
 						'@type': 'AudioObject',
+						name: `${displayTitle} (Free 128 kbps Discovery Sample)`,
 						contentUrl: track.audioUrl,
 						encodingFormat: 'audio/mpeg',
 						bitrate: '128kbps',
-						description: `Free 128 kbps reference preview stream of ${displayTitle} by ${album.artist}`
+						...(isoDuration ? { duration: isoDuration } : {}),
+						uploadDate: realReleaseDate,
+						isAccessibleForFree: true,
+						description: `Free 128 kbps reference preview sample of ${displayTitle} by ${album.artist} on The Listening Room`
 					}
 				}
 			: {}),
-		...(sameAs.length > 0 ? { sameAs } : {}),
+		...(listenAction ? { potentialAction: listenAction } : {}),
+		...(trackSameAs.length > 0 ? { sameAs: trackSameAs } : {}),
 		isPartOf: { '@id': WEBSITE_ID }
 	};
-
-	const breadcrumb = createBreadcrumbNode(pageUrl, [
-		{ name: 'The Listening Room', url: `${SITE_ORIGIN}/` },
-		{ name: album.artist, url: artistUrl },
-		{ name: album.title, url: albumUrl },
-		{ name: displayTitle, url: pageUrl }
-	]);
 
 	return serializeJsonLd({
 		'@context': 'https://schema.org',
@@ -633,19 +1084,28 @@ export function buildPlaylistJsonLdScript(playlist, resolvedTracks = playlist?.t
 		description: playlist.description,
 		numTracks: resolvedTracks.length,
 		datePublished: '2026-04-01',
+		inLanguage: 'en-US',
 		creator: { '@id': PERSON_ID },
 		publisher: { '@id': ORG_ID },
 		isPartOf: { '@id': WEBSITE_ID },
 		track: resolvedTracks.map((t, idx) => {
 			const isoDur = formatIsoDuration(t.duration);
 			const tSlug = t.slug || t.fileName || t.id;
+			const cleanIsrc = String(t.isrc || '')
+				.trim()
+				.toUpperCase();
+			const primaryMaster = cleanIsrc ? primaryRecordingByIsrcMap.get(cleanIsrc) : null;
 			const trackUrl =
-				t.artistSlug && t.albumSlug && tSlug
+				primaryMaster?.pageUrl ||
+				(t.artistSlug && t.albumSlug && tSlug
 					? `${SITE_ORIGIN}/${t.artistSlug}/${t.albumSlug}/${tSlug}`
-					: undefined;
+					: undefined);
+			const recordingId =
+				primaryMaster?.recordingId || (trackUrl ? `${trackUrl}#recording` : undefined);
 			return {
 				'@type': 'MusicRecording',
-				...(trackUrl ? { '@id': `${trackUrl}#recording`, url: trackUrl } : {}),
+				...(recordingId ? { '@id': recordingId } : {}),
+				...(trackUrl ? { url: trackUrl } : {}),
 				position: idx + 1,
 				name: t.title,
 				byArtist: {
@@ -675,7 +1135,7 @@ export function buildPlaylistJsonLdScript(playlist, resolvedTracks = playlist?.t
 	};
 
 	const breadcrumb = createBreadcrumbNode(pageUrl, [
-		{ name: 'The Listening Room', url: `${SITE_ORIGIN}/` },
+		{ name: 'Home', url: `${SITE_ORIGIN}/` },
 		{ name: 'Playlists', url: `${SITE_ORIGIN}/playlists` },
 		{ name: playlist.title, url: pageUrl }
 	]);

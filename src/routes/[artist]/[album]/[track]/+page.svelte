@@ -41,7 +41,11 @@
 		hasAnyDsp,
 		hasFourthwallStore
 	} from '#lib/data/musicData.js';
-	import { buildTrackJsonLdScript, buildTrackSeoMeta } from '#lib/seo.js';
+	import {
+		buildTrackJsonLdScript,
+		buildTrackSeoMeta,
+		resolveCanonicalComposition
+	} from '#lib/seo.js';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
@@ -56,6 +60,7 @@
 	let sameEraAlbums = $derived(data.sameEraAlbums || []);
 
 	let seo = $derived(buildTrackSeoMeta(track, album));
+	let compositionMeta = $derived(resolveCanonicalComposition(track, album));
 	let jsonLdScript = $derived(buildTrackJsonLdScript(track, album));
 
 	let isMultiDisc = $derived(album.tracks.some((t) => (t.disc || 1) > 1));
@@ -130,10 +135,13 @@
 <svelte:head>
 	<title>{seo.title}</title>
 	<meta name="description" content={seo.description} />
+	{#if !seo.isIndexableRecording}
+		<meta name="robots" content="noindex,follow" />
+	{/if}
 	<link rel="canonical" href={seo.canonicalUrl} />
 
 	<!-- Open Graph -->
-	<meta property="og:type" content="music.song" />
+	<meta property="og:type" content={seo.isIndexableRecording ? 'music.song' : 'website'} />
 	<meta property="og:site_name" content="The Listening Room — Engine Room Records" />
 	<meta property="og:url" content={seo.canonicalUrl} />
 	<meta property="og:title" content={seo.ogTitle} />
@@ -142,18 +150,26 @@
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta property="og:image:alt" content="{seo.displayTitle} from {album.title} by {album.artist}" />
-	<meta property="music:musician" content="https://music.raggiesoft.com/{album.artistSlug}" />
-	<meta
-		property="music:album"
-		content="https://music.raggiesoft.com/{album.artistSlug}/{album.slug}"
-	/>
-	<meta property="music:album:disc" content={String(track.disc || 1)} />
-	<meta property="music:album:track" content={String(track.track)} />
-	<meta property="music:release_date" content={seo.releaseDate} />
+	{#if seo.isIndexableRecording}
+		<meta property="music:musician" content="https://music.raggiesoft.com/{album.artistSlug}" />
+		<meta
+			property="music:album"
+			content="https://music.raggiesoft.com/{album.artistSlug}/{album.slug}"
+		/>
+		<meta property="music:album:disc" content={String(track.disc || 1)} />
+		<meta property="music:album:track" content={String(track.track)} />
+		<meta property="music:release_date" content={seo.releaseDate} />
+		{#if seo.durationSeconds > 0}
+			<meta property="music:duration" content={String(seo.durationSeconds)} />
+		{/if}
+	{/if}
+	{#if track.isPlayable && track.audioUrl}
+		<meta property="og:audio" content={track.audioUrl} />
+		<meta property="og:audio:type" content="audio/mpeg" />
+	{/if}
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:url" content={seo.canonicalUrl} />
 	<meta name="twitter:title" content={seo.ogTitle} />
 	<meta name="twitter:description" content={seo.description} />
 	<meta name="twitter:image" content={album.socialPreview} />
@@ -344,14 +360,23 @@
 						</div>
 						<div>
 							<dt class="font-bold tracking-wider text-emerald-300 uppercase">
-								Real-World DSP Release
+								{seo.isIndexableRecording ? 'Real-World DSP Release' : 'Recording Status'}
 							</dt>
-							<dd class="mt-0.5 font-mono text-sm font-semibold text-white">
-								{formatReleaseDate(seo.releaseDate)}
-							</dd>
-							<dd class="text-[11px] text-slate-400">
-								Sound recording: &#8471; 2026 Engine Room Records
-							</dd>
+							{#if seo.isIndexableRecording}
+								<dd class="mt-0.5 font-mono text-sm font-semibold text-white">
+									{formatReleaseDate(seo.releaseDate)}
+								</dd>
+								<dd class="text-[11px] text-slate-400">
+									Sound recording: &#8471; 2026 Engine Room Records
+								</dd>
+							{:else}
+								<dd class="mt-0.5 font-mono text-sm font-semibold text-amber-200">
+									In Studio Production
+								</dd>
+								<dd class="text-[11px] text-slate-400">
+									Story setlist entry &bull; Audio master pending
+								</dd>
+							{/if}
 						</div>
 						<div>
 							<dt class="font-bold tracking-wider text-blue-300 uppercase">
@@ -391,6 +416,12 @@
 
 				<!-- User-Initiated Preview + Official DSP & Fourthwall Actions -->
 				<div class="mt-6 space-y-3 border-t border-slate-800/80 pt-5">
+					{#if track.isPlayable && hasAnyDsp(album)}
+						<p class="text-xs font-medium text-blue-200/90">
+							Listen to a free sample right here in The Listening Room, then open your favorite
+							music app to stream the full high-resolution mix.
+						</p>
+					{/if}
 					<div class="flex flex-wrap items-center gap-3">
 						<StoreButton
 							type="album"
@@ -665,7 +696,31 @@
 					{/if}
 				</div>
 
-				{#if track.lyrics}
+				{#if compositionMeta.suppressDuplicateStubLyrics && compositionMeta.composition}
+					<div
+						class="mt-5 space-y-3 rounded-xl border border-blue-500/30 bg-blue-950/25 p-5 text-sm leading-relaxed text-slate-200"
+					>
+						<p>
+							This live concert setlist entry performs the lyrics from the primary studio release of
+							<strong>{compositionMeta.composition.name}</strong> on
+							<em>{compositionMeta.composition.albumTitle}</em>
+							({compositionMeta.composition.albumYear}).
+						</p>
+						<div>
+							<a
+								href={resolve('/[artist]/[album]/[track]', {
+									artist: compositionMeta.composition.artistSlug,
+									album: compositionMeta.composition.albumSlug,
+									track: compositionMeta.composition.trackSlug
+								})}
+								class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-blue-500 sm:text-sm"
+							>
+								<span>▶ Play Free Sample &amp; Read Official Studio Lyrics</span>
+								<span aria-hidden="true">&rarr;</span>
+							</a>
+						</div>
+					</div>
+				{:else if track.lyrics}
 					<!-- eslint-disable svelte/no-at-html-tags -->
 					<div
 						class="er-lyrics-prose mt-5 font-sans text-sm leading-relaxed text-slate-200 sm:text-base"
@@ -675,9 +730,23 @@
 					<!-- eslint-enable svelte/no-at-html-tags -->
 				{:else}
 					<p class="mt-5 text-sm leading-relaxed text-slate-400">
-						{#if track.duration === 'In Studio'}
-							Lyrics and studio master recording for <strong>{seo.displayTitle}</strong> are currently
-							in production at Engine Room Records.
+						{#if track.duration === 'In Studio' || (!track.isPlayable && !track.isrc)}
+							Studio recording for <strong>{seo.displayTitle}</strong> is currently in production at Engine
+							Room Records.
+							{#if compositionMeta.composition && !compositionMeta.isPrimaryCompositionPage && compositionMeta.composition.isPlayable}
+								Listen to the free sample and read the official lyrics on the
+								<a
+									href={resolve('/[artist]/[album]/[track]', {
+										artist: compositionMeta.composition.artistSlug,
+										album: compositionMeta.composition.albumSlug,
+										track: compositionMeta.composition.trackSlug
+									})}
+									class="font-semibold text-blue-300 underline hover:text-white"
+								>
+									{compositionMeta.composition.albumTitle} ({compositionMeta.composition.albumYear})
+									studio release &rarr;
+								</a>
+							{/if}
 						{:else}
 							Instrumental recording or lyrics transcript pending publication for
 							<strong>{seo.displayTitle}</strong>.

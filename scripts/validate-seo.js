@@ -30,7 +30,26 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 const SITE_ORIGIN = 'https://music.raggiesoft.com';
 
-const EXPECTED_NOINDEX_ROUTES = new Set(['/settings', '/studio', '/404']);
+const CATALOG_JSON_PATH = path.join(PROJECT_ROOT, 'src/lib/data/musicCatalog.json');
+const EXPECTED_NOINDEX_ROUTES = (() => {
+	const set = new Set(['/settings', '/studio', '/404']);
+	if (fs.existsSync(CATALOG_JSON_PATH)) {
+		try {
+			const catalog = JSON.parse(fs.readFileSync(CATALOG_JSON_PATH, 'utf-8'));
+			for (const album of catalog) {
+				for (const track of album.tracks || []) {
+					if (!track.slug) continue;
+					if (!track.isPlayable && !track.isrc) {
+						set.add(`/${album.artistSlug}/${album.slug}/${track.slug}`);
+					}
+				}
+			}
+		} catch {
+			// Ignore parse issues here; caught downstream if catalog is invalid
+		}
+	}
+	return set;
+})();
 const EXPECTED_CHILD_SITEMAPS = [
 	'editorial.xml',
 	'artists.xml',
@@ -116,16 +135,73 @@ function getAttr(tagHtml, attrName) {
  * @param {string} routePath
  * @param {string[]} errors
  */
-function validateJsonLdNode(node, routePath, errors) {
+function validateJsonLdNode(node, routePath, errors, isNoindexRoute = false) {
 	if (!node || typeof node !== 'object') return;
 	if (Array.isArray(node)) {
 		for (const item of node) {
-			validateJsonLdNode(item, routePath, errors);
+			validateJsonLdNode(item, routePath, errors, isNoindexRoute);
 		}
 		return;
 	}
 
 	const record = /** @type {Record<string, unknown>} */ (node);
+	const nodeType = record['@type'];
+
+	// 1. Organization guard: never claim Organization owl:sameAs the WebApplication domain
+	if (nodeType === 'Organization' && Array.isArray(record.sameAs)) {
+		for (const rawSameAs of record.sameAs) {
+			const s = String(rawSameAs || '').replace(/\/+$/, '');
+			if (s === SITE_ORIGIN) {
+				errors.push(
+					`[${routePath}] Organization.sameAs must not contain WebSite/WebApp URL "${rawSameAs}"`
+				);
+			}
+		}
+	}
+
+	// 2. MusicRecording schema domain, sameAs contamination, and unrecorded-stub guards
+	if (nodeType === 'MusicRecording') {
+		if (isNoindexRoute) {
+			errors.push(
+				`[${routePath}] Unrecorded/noindex page must not emit a Schema.org MusicRecording node`
+			);
+		}
+		if ('recordLabel' in record) {
+			errors.push(
+				`[${routePath}] Invalid Schema.org property "recordLabel" on MusicRecording (use "publisher" on MusicRecording and "recordLabel" on inAlbum)`
+			);
+		}
+		if (Array.isArray(record.sameAs)) {
+			for (const rawSameAs of record.sameAs) {
+				const u = String(rawSameAs || '');
+				if (
+					/open\.spotify\.com\/album\//i.test(u) ||
+					(/music\.apple\.com\/[^?]*\/album\//i.test(u) && !/[?&]i=/.test(u)) ||
+					/music\.amazon\.com\/albums\//i.test(u) ||
+					/music\.youtube\.com\/playlist\?list=/i.test(u) ||
+					/store\.raggiesoft\.com\/products\//i.test(u)
+				) {
+					errors.push(
+						`[${routePath}] MusicRecording.sameAs contaminated with album or store URL: "${u}"`
+					);
+				}
+			}
+		}
+	}
+
+	// 3. MusicAlbum & MusicGroup sameAs store-product guard
+	if ((nodeType === 'MusicAlbum' || nodeType === 'MusicGroup') && Array.isArray(record.sameAs)) {
+		for (const rawSameAs of record.sameAs) {
+			const u = String(rawSameAs || '');
+			if (/store\.raggiesoft\.com\/products\//i.test(u)) {
+				errors.push(`[${routePath}] ${nodeType}.sameAs must not include store product URL: "${u}"`);
+			}
+			if (nodeType === 'MusicGroup' && /\/album(s)?\//i.test(u)) {
+				errors.push(`[${routePath}] MusicGroup.sameAs must not include album URL: "${u}"`);
+			}
+		}
+	}
+
 	if ('duration' in record && record.duration !== undefined && record.duration !== null) {
 		const dur = String(record.duration);
 		if (!/^PT(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?S)?$/.test(dur)) {
@@ -147,7 +223,7 @@ function validateJsonLdNode(node, routePath, errors) {
 	}
 
 	for (const val of Object.values(record)) {
-		validateJsonLdNode(val, routePath, errors);
+		validateJsonLdNode(val, routePath, errors, isNoindexRoute);
 	}
 }
 
@@ -208,8 +284,9 @@ function main() {
 			continue;
 		}
 
-		const headHtml = headMatch[1];
+		const headHtml = headMatch[1].replace(/<!--[\s\S]*?-->/g, '');
 		const bodyWithoutScripts = bodyMatch[1]
+			.replace(/<!--[\s\S]*?-->/g, '')
 			.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
 			.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 
@@ -222,6 +299,7 @@ function main() {
 		let ogUrl = '';
 		let ogImage = '';
 		let twitterCard = '';
+		let hasMobileWebAppCapable = false;
 
 		for (const tag of metaTags) {
 			const name = (getAttr(tag, 'name') || '').toLowerCase();
@@ -230,6 +308,12 @@ function main() {
 
 			if (name === 'robots') robotsContent = content.toLowerCase();
 			if (name === 'description') descriptionContent = content;
+			if (name === 'mobile-web-app-capable' && content.toLowerCase() === 'yes') {
+				hasMobileWebAppCapable = true;
+			}
+			if (name === 'twitter:url') {
+				errors.push(`[${routePath}] Non-standard <meta name="twitter:url"> tag should be omitted`);
+			}
 			if (prop === 'og:title') ogTitle = content;
 			if (prop === 'og:description') ogDescription = content;
 			if (prop === 'og:url') ogUrl = content;
@@ -245,6 +329,21 @@ function main() {
 					);
 				}
 			}
+		}
+
+		if (!hasMobileWebAppCapable) {
+			errors.push(`[${routePath}] Missing <meta name="mobile-web-app-capable" content="yes">`);
+		}
+
+		// Verify `<title>` and `<link rel="canonical">` appear ABOVE iOS splash screens and modulepreloads
+		const titlePos = headHtml.search(/<title\b/i);
+		const splashPos = headHtml.search(/<link\b[^>]*rel=["']apple-touch-startup-image["']/i);
+		const preloadPos = headHtml.search(/<link\b[^>]*rel=["']modulepreload["']/i);
+		if (titlePos !== -1 && splashPos !== -1 && titlePos > splashPos) {
+			errors.push(`[${routePath}] <title> is buried below apple-touch-startup-image links`);
+		}
+		if (titlePos !== -1 && preloadPos !== -1 && titlePos > preloadPos) {
+			errors.push(`[${routePath}] <title> is buried below modulepreload links`);
 		}
 
 		const isNoindex = robotsContent.includes('noindex');
@@ -309,14 +408,54 @@ function main() {
 			/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
 		let ldMatch;
 		let ldCount = 0;
+		let hasTopTrackRecordingOf = false;
+		let breadcrumbItemCount = 0;
 		while ((ldMatch = ldJsonRegex.exec(html)) !== null) {
 			ldCount += 1;
 			try {
 				const parsed = JSON.parse(ldMatch[1]);
-				validateJsonLdNode(parsed, routePath, errors);
+				validateJsonLdNode(parsed, routePath, errors, shouldBeNoindex);
+				const graphNodes = Array.isArray(parsed?.['@graph']) ? parsed['@graph'] : [parsed];
+				for (const gNode of graphNodes) {
+					if (gNode && gNode['@type'] === 'MusicRecording' && gNode.recordingOf) {
+						hasTopTrackRecordingOf = true;
+					}
+					if (gNode && gNode['@type'] === 'BreadcrumbList' && Array.isArray(gNode.itemListElement)) {
+						breadcrumbItemCount = gNode.itemListElement.length;
+					}
+				}
 			} catch (err) {
 				errors.push(
 					`[${routePath}] Malformed JSON-LD script block: ${err instanceof Error ? err.message : String(err)}`
+				);
+			}
+		}
+
+		// Verify catalog hierarchy pages have matching BreadcrumbList depth and MusicComposition links
+		const pathSegments = routePath.split('/').filter(Boolean);
+		const isCatalogRoute =
+			pathSegments.length >= 1 &&
+			![
+				'discography',
+				'playlists',
+				'radio',
+				'behind-the-scenes',
+				'privacy',
+				'terms',
+				'settings',
+				'studio',
+				'404'
+			].includes(pathSegments[0]);
+		if (isCatalogRoute) {
+			const expectedCrumbs = pathSegments.length + 2; // Home + Discography + [artist, album?, track?]
+			if (breadcrumbItemCount !== expectedCrumbs) {
+				errors.push(
+					`[${routePath}] Expected ${expectedCrumbs} BreadcrumbList items to match visible breadcrumb DOM, found ${breadcrumbItemCount}`
+				);
+			}
+			if (pathSegments.length === 3 && !shouldBeNoindex && !hasTopTrackRecordingOf) {
+				errors.push(
+					`[${routePath}] Indexable track MusicRecording missing recordingOf (MusicComposition)`
 				);
 			}
 		}

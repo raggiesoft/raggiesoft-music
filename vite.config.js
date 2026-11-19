@@ -42,8 +42,46 @@ function staticPwaAdapter(options = {}) {
 			}
 
 			// Normalize relative `./_app/` and `../_app/` asset references in generated HTML
-			// to root-relative `/_app/` so Nginx SPA fallback serving `/index.html` at deep
-			// URLs never misresolves CSS/JS bundles in PWA standalone or browser mode.
+			// to root-relative `/_app/` AND hoist `<title>`, `<link rel="canonical">`, and
+			// SEO / OpenGraph / Twitter `<meta>` tags above SvelteKit's `modulepreload` block
+			// so social unfurlers and crawlers parse all primary metadata within the first ~2 KB.
+			/** @param {string} rawHtml */
+			function hoistSeoHeadTagsAbovePreloads(rawHtml) {
+				const preloadStart = rawHtml.indexOf('<link href="/_app/immutable/');
+				const headEnd = rawHtml.indexOf('</head>');
+				if (preloadStart === -1 || headEnd === -1 || preloadStart > headEnd) {
+					return rawHtml;
+				}
+				const headSlice = rawHtml.slice(preloadStart, headEnd);
+				/** @type {string[]} */
+				const hoisted = [];
+				const titleRegex = /<title\b[^>]*>[\s\S]*?<\/title>/gi;
+				const canonicalRegex = /<link\b[^>]*rel=["']canonical["'][^>]*>/gi;
+				const seoMetaRegex =
+					/<meta\b[^>]*(?:name=["'](?:description|robots|twitter:[^"']+)["']|property=["'](?:og:[^"']+|music:[^"']+)["'])[^>]*>/gi;
+
+				let strippedSlice = headSlice
+					.replace(titleRegex, (m) => {
+						hoisted.push(m);
+						return '';
+					})
+					.replace(canonicalRegex, (m) => {
+						hoisted.push(m);
+						return '';
+					})
+					.replace(seoMetaRegex, (m) => {
+						hoisted.push(m);
+						return '';
+					});
+
+				if (hoisted.length === 0) {
+					return rawHtml;
+				}
+
+				const formattedHoisted = hoisted.join('\n\t\t') + '\n\t\t';
+				return rawHtml.slice(0, preloadStart) + formattedHoisted + strippedSlice + rawHtml.slice(headEnd);
+			}
+
 			/** @param {string} dir */
 			function normalizeHtmlAssetPaths(dir) {
 				for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -52,9 +90,10 @@ function staticPwaAdapter(options = {}) {
 						normalizeHtmlAssetPaths(fullPath);
 					} else if (entry.isFile() && entry.name.endsWith('.html')) {
 						const html = fs.readFileSync(fullPath, 'utf-8');
-						const normalized = html
+						const assetFixed = html
 							.replace(/(href|src)="(\.\.?\/)+_app\//g, '$1="/_app/')
 							.replace(/import\("(\.\.?\/)+_app\//g, 'import("/_app/');
+						const normalized = hoistSeoHeadTagsAbovePreloads(assetFixed);
 						if (normalized !== html) {
 							fs.writeFileSync(fullPath, normalized, 'utf-8');
 						}

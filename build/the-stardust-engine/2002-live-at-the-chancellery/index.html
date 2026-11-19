@@ -7,18 +7,21 @@
 
 		<!--
 			========================================================================
-			SYNCHRONOUS THEME & PREFERS-COLOR-SCHEME INITIALIZER (ZERO-FOUC)
+			SYNCHRONOUS THEME, STANDALONE PWA & LEGACY PATH INITIALIZER (ZERO-FOUC)
 			========================================================================
 			Executes prior to first paint to read saved theme preferences from
-			localStorage (`engine_room_settings`) and resolve the active color scheme
-			against `window.matchMedia('(prefers-color-scheme: dark)')`.
+			localStorage (`engine_room_settings`), resolve `prefers-color-scheme`,
+			and tag standalone PWA display mode. Server-side 301 redirects for
+			`/artists/*` are enforced by Nginx and `src/hooks.server.js`; the
+			client check remains solely as an offline Service Worker fallback.
 			========================================================================
 		-->
 		<script>
 			(function () {
 				try {
-					if (window.location && /^\/artists\//i.test(window.location.pathname)) {
-						var cleanPath = window.location.pathname.replace(/^\/artists\//i, '/');
+					if (window.location && /^\/artists(\/|$)/i.test(window.location.pathname)) {
+						var stripped = window.location.pathname.replace(/^\/artists\/?/i, '/');
+						var cleanPath = stripped === '/' ? '/discography' : stripped;
 						window.location.replace(
 							cleanPath + (window.location.search || '') + (window.location.hash || '')
 						);
@@ -43,19 +46,89 @@
 					root.setAttribute('data-color-scheme', scheme);
 					root.setAttribute('data-color-mode', colorMode);
 					root.style.colorScheme = scheme;
+
+					var isPwa =
+						(window.navigator && window.navigator.standalone === true) ||
+						(document.referrer && document.referrer.indexOf('android-app://') === 0) ||
+						(window.matchMedia &&
+							window.matchMedia(
+								'(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)'
+							).matches);
+					if (isPwa) {
+						root.classList.add('is-pwa-standalone');
+					}
 				} catch (e) {}
 			})();
 		</script>
 
-		<!-- PWA Manifest & Dynamic OS Theme Colors -->
+		<!--
+			========================================================================
+			ROUTE-SPECIFIC SEO, CANONICAL, OPENGRAPH & STRUCTURED DATA PRIORITY SLOT
+			========================================================================
+			Placed near the very top of head (and post-build hoisted above
+			modulepreload links by staticPwaAdapter in vite.config.js) so search
+			crawlers and social unfurlers parse page titles, canonical URLs, og:*,
+			and music:* tags within the first ~2 KB—well ahead of the 68 iOS PWA
+			startup splash screen links below.
+			========================================================================
+		-->
+		<title>Live at the Chancellery by The Stardust Engine: Free Samples, Lyrics &amp; Stream</title>
+		<link rel="canonical" href="https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"/>
+		<meta name="description" content="Play free song samples from Live at the Chancellery, the 2002 story live album by The Stardust Engine (2026 release), read lyrics &amp; lore, and stream…"/>
+		<meta property="og:type" content="music.album"/>
+		<meta property="og:site_name" content="The Listening Room — Engine Room Records"/>
+		<meta property="og:url" content="https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"/>
+		<meta property="og:title" content="Live at the Chancellery — The Stardust Engine"/>
+		<meta property="og:description" content="Play free song samples from Live at the Chancellery, the 2002 story live album by The Stardust Engine (2026 release), read lyrics &amp; lore, and stream…"/>
+		<meta property="og:image" content="https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/social-preview.jpg"/>
+		<meta property="og:image:width" content="1200"/>
+		<meta property="og:image:height" content="630"/>
+		<meta property="og:image:alt" content="Live at the Chancellery by The Stardust Engine — Album Cover &amp; Lore on The Listening Room"/>
+		<meta property="music:musician" content="https://music.raggiesoft.com/the-stardust-engine"/>
+		<meta property="music:release_date" content="2026-10-25"/>
+		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:title" content="Live at the Chancellery — The Stardust Engine"/>
+		<meta name="twitter:description" content="Play free song samples from Live at the Chancellery, the 2002 story live album by The Stardust Engine (2026 release), read lyrics &amp; lore, and stream…"/>
+		<meta name="twitter:image" content="https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/social-preview.jpg"/>
+		<meta name="twitter:image:alt" content="Live at the Chancellery by The Stardust Engine — Album Cover &amp; Lore on The Listening Room"/>
+		<link href="/_app/immutable/entry/start.CpasJL-v.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CRzLMJPS.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BvIq98un.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bm5xFR_w.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D0GS5le6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B__yVS3q.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/GLzI72S9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D_jZJlGT.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.DWgNLjzT.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.CZ9gRbWl.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/-WzTJFvF.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/SGqLGkvo.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BIYRFV89.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/kivJJv6O.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/d79BDWwq.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CrL902aD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/absNTdJW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CkFVYGPv.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/_ur0ppxI.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/5.CDzusjAP.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CHm5XyO_.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dk3ybmM2.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CpcmzdNs.js" rel="modulepreload">
+		<!--k0if7m-->                   <!----><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"MusicAlbum","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery#album","name":"Live at the Chancellery","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery","image":"https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/album-art.jpg","description":"Original 2026 Live Arena Rock / 1980s Synth-Rock release written and produced by Michael P. Ragsdale under Engine Room Records (2002 story setting for The Stardust Engine). Free 128 kbps song samples available on The Listening Room with full high-resolution streaming on official music platforms. Recorded in May 2002 at The Chancellery in Charlottesville, Virginia during the 2001–2002 Across The World Tour and released in October 2002 following the debut of Crimson Node. Opens with 'The Stardust Engine', closes the main set with 'Electric Color', and culminates in the historic surprise encore where Ryan and Cassidy O'Connell officially introduce Crimson Node to the world with a joint performance of 'The Flight Path'.","disambiguatingDescription":"Original 2026 Engine Room Records release by Michael P. Ragsdale; the 2002 narrative date, The Stardust Engine band lore, and any in-universe record label references (such as Apex Records or OmniCorp) belong to the fictional RaggieSoft story universe.","genre":"Live Arena Rock / 1980s Synth-Rock","inLanguage":"en-US","albumProductionType":"https://schema.org/LiveAlbum","albumReleaseType":"https://schema.org/AlbumRelease","byArtist":{"@type":"MusicGroup","@id":"https://music.raggiesoft.com/the-stardust-engine#artist","name":"The Stardust Engine","url":"https://music.raggiesoft.com/the-stardust-engine"},"numTracks":14,"datePublished":"2026-10-25","temporalCoverage":"2002-10-25","recordLabel":{"@id":"https://engineroom.raggiesoft.com/#organization"},"creator":{"@id":"https://michaelpragsdale.com/#michael-ragsdale"},"copyrightHolder":{"@id":"https://michaelpragsdale.com/#michael-ragsdale"},"copyrightYear":2026,"isPartOf":{"@id":"https://music.raggiesoft.com/#website"},"track":[{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-flight-path#recording","name":"The Flight Path (feat. Crimson Node) (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-flight-path","position":14,"duration":"PT6M23S","isrcCode":"QTAHP2600025","publisher":{"@id":"https://engineroom.raggiesoft.com/#organization"},"datePublished":"2026-10-25"}]},{"@type":"BreadcrumbList","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://music.raggiesoft.com/"},{"@type":"ListItem","position":2,"name":"Discography","item":"https://music.raggiesoft.com/discography"},{"@type":"ListItem","position":3,"name":"The Stardust Engine","item":"https://music.raggiesoft.com/the-stardust-engine"},{"@type":"ListItem","position":4,"name":"Live at the Chancellery","item":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"}]}]}</script><!----><!---->
+		<link href="/_app/immutable/assets/0.D8p1mXxc.css" rel="stylesheet">
+
+		<!-- PWA Manifest, Standards-Compliant Web App Meta & Dynamic OS Theme Colors -->
 		<link rel="manifest" href="/manifest.json" />
 		<meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 		<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Listening Room" />
 
-		<!-- Adaptive Favicons & Touch Icons (Cache-busted with ?v=3 to bypass Cloudflare/Chrome cache) -->
+		<!-- Adaptive Favicons & Touch Icons -->
 		<link rel="icon" href="/favicon.ico?v=3" sizes="32x32" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
 		<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=3" />
@@ -64,14 +137,110 @@
 			href="https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/apple-icon-180.png?v=3"
 		/>
 
+		<!-- Global Entity Graph (Organization, Creator, WebSite & Music Discovery WebApplication) -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@graph": [
+					{
+						"@type": "Organization",
+						"@id": "https://engineroom.raggiesoft.com/#organization",
+						"name": "Engine Room Records",
+						"url": "https://engineroom.raggiesoft.com",
+						"logo": {
+							"@type": "ImageObject",
+							"@id": "https://engineroom.raggiesoft.com/#logo",
+							"url": "https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png",
+							"contentUrl": "https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png",
+							"caption": "Engine Room Records"
+						},
+						"description": "Independent real-world music publishing imprint founded and operated by Michael P. Ragsdale (US ISRC Prefix: QTAHP), releasing original concept albums, rock operas, and soundtracks across global streaming platforms and under CC BY-SA 4.0.",
+						"disambiguatingDescription": "Engine Room Records is the real-world unincorporated music imprint of Michael P. Ragsdale, distinct from the fictional in-universe label Engine Room Records, LLC depicted in RaggieSoft novels.",
+						"sameAs": [
+							"https://engineroom.raggiesoft.com",
+							"https://engineroom-records.com",
+							"https://store.raggiesoft.com",
+							"https://github.com/raggiesoft"
+						],
+						"founder": { "@id": "https://michaelpragsdale.com/#michael-ragsdale" },
+						"parentOrganization": {
+							"@type": "Organization",
+							"@id": "https://raggiesoft.com/#organization",
+							"name": "RaggieSoft",
+							"url": "https://raggiesoft.com"
+						}
+					},
+					{
+						"@type": "Person",
+						"@id": "https://michaelpragsdale.com/#michael-ragsdale",
+						"name": "Michael P. Ragsdale",
+						"url": "https://michaelpragsdale.com",
+						"sameAs": [
+							"https://michaelpragsdale.com",
+							"https://raggiesoft.com",
+							"https://github.com/raggiesoft"
+						]
+					},
+					{
+						"@type": "WebSite",
+						"@id": "https://music.raggiesoft.com/#website",
+						"url": "https://music.raggiesoft.com/",
+						"name": "The Listening Room",
+						"alternateName": "The Listening Room — Engine Room Records",
+						"description": "Official music discovery platform for Engine Room Records where listeners play free 128 kbps song samples, read synchronized lyrics and story lore, and jump directly to Spotify, Apple Music, Amazon Music, and YouTube Music for high-resolution lossless audio.",
+						"publisher": { "@id": "https://engineroom.raggiesoft.com/#organization" },
+						"creator": { "@id": "https://michaelpragsdale.com/#michael-ragsdale" },
+						"inLanguage": "en-US"
+					},
+					{
+						"@type": "WebApplication",
+						"@id": "https://music.raggiesoft.com/#webapp",
+						"name": "The Listening Room",
+						"url": "https://music.raggiesoft.com/",
+						"applicationCategory": "MultimediaApplication",
+						"operatingSystem": "Web, macOS, Windows, Linux, iOS, Android",
+						"description": "Free music discovery web application for Engine Room Records offering 128 kbps reference song previews, time-synced lyrics, and one-click handoff to Spotify, Apple Music, Amazon Music, and YouTube Music for full high-resolution streaming.",
+						"author": { "@id": "https://michaelpragsdale.com/#michael-ragsdale" },
+						"publisher": { "@id": "https://engineroom.raggiesoft.com/#organization" },
+						"license": "https://opensource.org/licenses/MIT",
+						"isAccessibleForFree": true,
+						"offers": {
+							"@type": "Offer",
+							"price": "0",
+							"priceCurrency": "USD"
+						}
+					}
+				]
+			}
+		</script>
+
+		<!-- Cross-Network Navigation Assets & Async GA4 Telemetry -->
+		<link
+			rel="stylesheet"
+			href="https://assets.raggiesoft.com/common/css/raggiesoft-network.css?v=20261115h"
+		/>
+		<script
+			src="https://assets.raggiesoft.com/common/js/raggiesoft-network.js?v=20261115h"
+			defer
+		></script>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9RG9JVYB6"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag('js', new Date());
+
+			gtag('config', 'G-P9RG9JVYB6');
+		</script>
+
 		<!--
 			========================================================================
 			PWA iOS STARTUP SPLASH SCREENS (LIGHT MODE & DARK MODE)
 			========================================================================
-			Covers all iPhone and iPad device widths, heights, pixel ratios, and
-			orientations across both `(prefers-color-scheme: light)` and
-			`(prefers-color-scheme: dark)`. Hosted on the RaggieSoft CDN
-			(`assets.raggiesoft.com/engine-room-records/images/pwa-icons/`).
+			Placed at the bottom of `<head>` so 68 device-specific media-query
+			links never push `<title>`, canonical, or OpenGraph tags out of the
+			initial social-unfurler buffer.
 			========================================================================
 		-->
 		<!-- iPad Pro 12.9" (1024x1366 @ 2x) -->
@@ -579,136 +748,6 @@
 			href="https://assets.raggiesoft.com/engine-room-records/images/pwa-icons/apple-splash-dark-1136-640.jpg?v=3"
 			media="(prefers-color-scheme: dark) and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
 		/>
-
-		<!--
-			========================================================================
-			GOOGLE ANALYTICS 4 (GA4) TELEMETRY INTEGRATION (G-P9RG9JVYB6)
-			========================================================================
-			Unified RaggieSoft ecosystem measurement property. Loaded asynchronously
-			via gtag.js so it never blocks audio playback, SPA routing, or LCP.
-			========================================================================
-		-->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9RG9JVYB6"></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() {
-				dataLayer.push(arguments);
-			}
-			gtag('js', new Date());
-
-			gtag('config', 'G-P9RG9JVYB6');
-		</script>
-
-		<link
-			rel="stylesheet"
-			href="https://assets.raggiesoft.com/common/css/raggiesoft-network.css?v=20261115h"
-		/>
-		<script
-			src="https://assets.raggiesoft.com/common/js/raggiesoft-network.js?v=20261115h"
-			defer
-		></script>
-		<script type="application/ld+json">
-			{
-				"@context": "https://schema.org",
-				"@graph": [
-					{
-						"@type": "Organization",
-						"@id": "https://engineroom-records.com/#organization",
-						"name": "Engine Room Records",
-						"url": "https://engineroom.raggiesoft.com",
-						"sameAs": [
-							"https://engineroom-records.com",
-							"https://engineroom.raggiesoft.com",
-							"https://music.raggiesoft.com"
-						],
-						"founder": { "@id": "https://michaelpragsdale.com/#person" },
-						"parentOrganization": {
-							"@type": "Organization",
-							"@id": "https://raggiesoft.com/#organization",
-							"name": "RaggieSoft",
-							"url": "https://raggiesoft.com"
-						}
-					},
-					{
-						"@type": "Person",
-						"@id": "https://michaelpragsdale.com/#person",
-						"name": "Michael P. Ragsdale",
-						"url": "https://michaelpragsdale.com"
-					},
-					{
-						"@type": "WebSite",
-						"@id": "https://music.raggiesoft.com/#website",
-						"url": "https://music.raggiesoft.com/",
-						"name": "The Listening Room",
-						"alternateName": "The Listening Room — Engine Room Records",
-						"publisher": { "@id": "https://engineroom-records.com/#organization" },
-						"creator": { "@id": "https://michaelpragsdale.com/#person" },
-						"inLanguage": "en-US"
-					},
-					{
-						"@type": "WebApplication",
-						"@id": "https://music.raggiesoft.com/#webapp",
-						"name": "The Listening Room",
-						"url": "https://music.raggiesoft.com/",
-						"applicationCategory": "MultimediaApplication",
-						"operatingSystem": "Web, macOS, Windows, Linux, iOS, Android",
-						"description": "Official music discovery, lyrics, and narrative lore platform for Engine Room Records with free 128 kbps previews and official DSP streaming links.",
-						"author": { "@id": "https://michaelpragsdale.com/#person" },
-						"publisher": { "@id": "https://engineroom-records.com/#organization" },
-						"license": "https://opensource.org/licenses/MIT",
-						"offers": {
-							"@type": "Offer",
-							"price": "0",
-							"priceCurrency": "USD"
-						}
-					}
-				]
-			}
-		</script>
-		<script>
-			(function () {
-				try {
-					var isPwa =
-						(window.navigator && window.navigator.standalone === true) ||
-						(document.referrer && document.referrer.indexOf('android-app://') === 0) ||
-						(window.matchMedia &&
-							window.matchMedia(
-								'(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)'
-							).matches);
-					if (isPwa) {
-						document.documentElement.classList.add('is-pwa-standalone');
-					}
-				} catch (e) {}
-			})();
-		</script>
-
-		<link href="/_app/immutable/entry/start.CpasJL-v.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CRzLMJPS.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/BvIq98un.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Bm5xFR_w.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D0GS5le6.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/B__yVS3q.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/GLzI72S9.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D_jZJlGT.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.CUazEJd5.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.BEmDs-Mf.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DlBion7o.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/SGqLGkvo.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Dmvhy-Vt.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/kivJJv6O.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/d79BDWwq.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CrL902aD.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/BeeZyhBy.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CkFVYGPv.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/_ur0ppxI.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/5.CPk9UixQ.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CHm5XyO_.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Dk3ybmM2.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/C_VVHW-E.js" rel="modulepreload">
-		<!--k0if7m--><meta name="description" content="Explore Live at the Chancellery, the fictional 2002 live album by The Stardust Engine (2026 DSP release). Preview 14 songs, lyrics &amp; lore."/> <link rel="canonical" href="https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"/> <meta property="og:type" content="music.album"/> <meta property="og:site_name" content="The Listening Room — Engine Room Records"/> <meta property="og:url" content="https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"/> <meta property="og:title" content="Live at the Chancellery — The Stardust Engine"/> <meta property="og:description" content="Explore Live at the Chancellery, the fictional 2002 live album by The Stardust Engine (2026 DSP release). Preview 14 songs, lyrics &amp; lore."/> <meta property="og:image" content="https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/social-preview.jpg"/> <meta property="og:image:width" content="1200"/> <meta property="og:image:height" content="630"/> <meta property="og:image:alt" content="Live at the Chancellery by The Stardust Engine — Album Cover &amp; Lore on The Listening Room"/> <meta property="music:musician" content="https://music.raggiesoft.com/the-stardust-engine"/> <meta property="music:release_date" content="2026-10-25"/> <meta name="twitter:card" content="summary_large_image"/> <meta name="twitter:url" content="https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"/> <meta name="twitter:title" content="Live at the Chancellery — The Stardust Engine"/> <meta name="twitter:description" content="Explore Live at the Chancellery, the fictional 2002 live album by The Stardust Engine (2026 DSP release). Preview 14 songs, lyrics &amp; lore."/> <meta name="twitter:image" content="https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/social-preview.jpg"/> <meta name="twitter:image:alt" content="Live at the Chancellery by The Stardust Engine — Album Cover &amp; Lore on The Listening Room"/>  <!----><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"MusicAlbum","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery#album","name":"Live at the Chancellery","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery","image":"https://assets.raggiesoft.com/engine-room-records/artists/the-stardust-engine/2002-live-at-the-chancellery/album-art.jpg","description":"Recorded in May 2002 at The Chancellery in Charlottesville, Virginia during the 2001–2002 Across The World Tour and released in October 2002 following the debut of Crimson Node. Opens with 'The Stardust Engine', closes the main set with 'Electric Color', and culminates in the historic surprise encore where Ryan and Cassidy O'Connell officially introduce Crimson Node to the world with a joint performance of 'The Flight Path'.","genre":"Live Arena Rock / 1980s Synth-Rock","albumProductionType":"https://schema.org/LiveAlbum","albumReleaseType":"https://schema.org/AlbumRelease","byArtist":{"@type":"MusicGroup","@id":"https://music.raggiesoft.com/the-stardust-engine#artist","name":"The Stardust Engine","url":"https://music.raggiesoft.com/the-stardust-engine"},"numTracks":14,"datePublished":"2026-10-25","temporalCoverage":"2002-10-25","recordLabel":{"@id":"https://engineroom-records.com/#organization"},"creator":{"@id":"https://michaelpragsdale.com/#person"},"copyrightHolder":{"@id":"https://michaelpragsdale.com/#person"},"copyrightYear":2026,"isPartOf":{"@id":"https://music.raggiesoft.com/#website"},"track":[{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-stardust-engine#recording","name":"The Stardust Engine (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-stardust-engine","position":1,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/neon-pulse#recording","name":"Neon Pulse (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/neon-pulse","position":2,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/midnight-drivers#recording","name":"Midnight Drivers (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/midnight-drivers","position":3,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/hard-reset#recording","name":"Hard Reset (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/hard-reset","position":4,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/static#recording","name":"Static (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/static","position":5,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/not-your-doll#recording","name":"Not Your Doll (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/not-your-doll","position":6,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/moon-1-tidal-lock#recording","name":"Moon 1: Tidal Lock (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/moon-1-tidal-lock","position":7,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/echoes-in-the-wire#recording","name":"Echoes in the Wire (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/echoes-in-the-wire","position":8,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/no-hidden-gravity#recording","name":"No Hidden Gravity (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/no-hidden-gravity","position":9,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/thunderhead#recording","name":"Thunderhead (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/thunderhead","position":10,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/my-anchor-the-sail#recording","name":"My Anchor: The Sail (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/my-anchor-the-sail","position":11,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/brand-new-scene#recording","name":"Brand New Scene (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/brand-new-scene","position":12,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/electric-color#recording","name":"Electric Color (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/electric-color","position":13,"datePublished":"2026-10-25"},{"@type":"MusicRecording","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-flight-path#recording","name":"The Flight Path (feat. Crimson Node) (Live at the Chancellery)","url":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery/the-flight-path","position":14,"duration":"PT6M23S","isrcCode":"QTAHP2600025","datePublished":"2026-10-25"}]},{"@type":"BreadcrumbList","@id":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"The Listening Room","item":"https://music.raggiesoft.com/"},{"@type":"ListItem","position":2,"name":"The Stardust Engine","item":"https://music.raggiesoft.com/the-stardust-engine"},{"@type":"ListItem","position":3,"name":"Live at the Chancellery","item":"https://music.raggiesoft.com/the-stardust-engine/2002-live-at-the-chancellery"}]}]}</script><!----><!----><title>Live at the Chancellery by The Stardust Engine: Lyrics, Lore &amp; Preview</title>
-		<link href="/_app/immutable/assets/0.BKIVyJSd.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents"><!--[--><!--[--><!--[0--><!--[--><div class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] text-slate-100 selection:bg-blue-600 selection:text-white"><nav class="rs-network-bar" aria-label="RaggieSoft Ecosystem Network"><div class="rs-network-bar-inner"><span class="rs-network-label">✦ RaggieSoft Network:</span> <ul class="rs-network-links"><li><a href="https://raggiesoft.com">🌐 Hub</a></li> <li><a href="https://nebulae.raggiesoft.com">🌌 Nebulae</a></li> <li><a href="https://books.raggiesoft.com">📚 Books</a></li> <li class="rs-network-dropdown"><button type="button" class="rs-network-dropdown-toggle is-active" aria-expanded="false" aria-haspopup="true"><span aria-hidden="true">⚙️</span> <span>Engine Room</span> <span class="rs-network-caret" aria-hidden="true">▾</span></button> <ul class="rs-network-dropdown-menu" role="menu" aria-label="Engine Room Records &amp; Band Roster"><li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com"><span aria-hidden="true">⚙️</span><span>Engine Room Records Hub</span></a></li> <li role="none"><a role="menuitem" href="https://music.raggiesoft.com" aria-current="page" class="is-active"><span aria-hidden="true">🎧</span><span>The Listening Room</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists"><span aria-hidden="true">🎸</span><span>All Artists Directory (7)</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/isrc"><span aria-hidden="true">🏷️</span><span>Official Music Catalog Registry</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/dsp-verification"><span aria-hidden="true">🔍</span><span>DSP Verification Ledger</span></a></li> <li class="rs-network-dropdown-divider" role="separator"></li> <li class="rs-network-dropdown-header" role="presentation">✦ Band Roster (A–Z)</li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/crimson-node"><span aria-hidden="true">🔴</span><span>Crimson Node</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/firelight"><span aria-hidden="true">🔥</span><span>Firelight</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/fractured-prisms"><span aria-hidden="true">💎</span><span>Fractured Prisms</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/mana-canvas"><span aria-hidden="true">🎨</span><span>Mana Canvas</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-arctic-symphony-project"><span aria-hidden="true">❄️</span><span>The Arctic Symphony Project</span></a></li> <li role="none"><a role="menuitem" href="https://engineroom.raggiesoft.com/artists/the-paper-wall"><span aria-hidden="true">🧱</span><span>The Paper Wall</span></a></li> <li role="none"><a role="menuitem" href="https://stardust.raggiesoft.com"><span aria-hidden="true">🚀</span><span>The Stardust Engine</span></a></li></ul></li> <li><a href="https://corporate.raggiesoft.com">🏢 Corporate</a></li> <li><a href="https://storetrainer.raggiesoft.com">💾 StoreTrainer</a></li> <li><a href="https://michaelpragsdale.com">👔 Michael P. Ragsdale</a></li></ul></div></nav> <header class="er-global-header sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"><div class="mx-auto flex max-w-7xl items-center justify-between gap-2"><a href="/" title="Return to The Listening Room Home (music.raggiesoft.com)" aria-label="The Listening Room by Engine Room Records — Home" class="group flex min-w-0 items-center gap-2.5 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:gap-3"><div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 shadow-md transition-transform group-hover:scale-105 sm:h-11 sm:w-11"><img src="/icons/icon-192.png?v=3" alt="The Listening Room App Icon" width="44" height="44" decoding="async" class="h-full w-full object-cover"/></div> <div class="min-w-0"><span class="block truncate text-sm leading-tight font-extrabold tracking-tight text-white sm:text-base">The Listening Room</span> <span class="flex items-center gap-1 truncate text-[10px] font-semibold tracking-wider text-blue-400 uppercase sm:text-[11px]"><img src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo.png" alt="" width="14" height="14" decoding="async" aria-hidden="true" class="er-logo-light inline-block h-3.5 w-3.5 shrink-0 object-contain"/> <img src="https://assets.raggiesoft.com/engine-room-records/images/logos/engine-room-records-logo-white.png" alt="" width="14" height="14" decoding="async" aria-hidden="true" class="er-logo-dark inline-block h-3.5 w-3.5 shrink-0 object-contain"/> <span>by Engine Room Records</span></span></div></a> <div class="flex shrink-0 items-center gap-1.5 sm:gap-2"><nav class="hidden items-center gap-1 text-xs font-semibold md:flex lg:gap-2 lg:text-sm" aria-label="Global Navigation"><!--[-1--><!--]--> <a href="/discography" class="rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 bg-blue-600 text-white shadow-sm">Discography</a> <a href="/playlists" class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 text-slate-300 hover:bg-slate-800 hover:text-white"><span>Playlists</span></a> <a href="/radio" class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 text-slate-300 hover:bg-slate-800 hover:text-white"><span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> <span>Radio</span></a> <a href="/settings" class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:px-3 text-slate-300 hover:bg-slate-800 hover:text-white" aria-label="Theme and Preferences Settings" title="Themes &amp; Settings"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> <span class="hidden lg:inline">Settings</span></a></nav> <button type="button" class="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-blue-500/50 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-3 sm:text-sm" aria-label="Open Search and Filter Menu" title="Search &amp; Filter Catalog"><svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg> <span class="hidden sm:inline">Search</span></button> <button type="button" id="mobile-menu-toggle" aria-expanded="false" aria-controls="music-mobile-navigation" aria-label="Open navigation menu" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-blue-500/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 md:hidden"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><!--[-1--><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M4 6h16M4 12h16M4 18h16"></path><!--]--></svg></button></div></div> <div id="music-mobile-navigation" class="hidden mx-auto mt-3 max-w-7xl border-t border-slate-800 pt-3 md:hidden"><nav class="grid grid-cols-2 gap-2 text-xs font-bold" aria-label="Mobile Listening Room Navigation"><a href="/" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">🏠 Home</a> <a href="/discography" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">💿 Discography</a> <a href="/playlists" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">🎶 Playlists</a> <a href="/radio" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">📻 Radio</a> <a href="/behind-the-scenes" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">🎚️ Studio Workflow</a> <a href="/settings" class="flex items-center gap-2 rounded-lg border px-3 py-2.5 border-slate-800 bg-slate-900/90 text-slate-200">⚙️ Themes &amp; Settings</a></nav></div></header> <main class="mx-auto w-full max-w-7xl flex-grow overflow-x-clip px-4 py-8 sm:px-6 lg:px-8"><aside class="mb-6 rounded-2xl border border-amber-500/40 bg-amber-950/35 px-4 py-3 text-xs leading-relaxed text-amber-100 shadow-md sm:px-5 sm:py-3.5" aria-label="Dual Timelines and DSP Copyright Verification Disclaimer"><div class="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between"><p class="font-extrabold tracking-wide text-amber-300 uppercase">⏱️ Dual Timelines Disclaimer (In-Universe Lore Era vs. 2026 Real-World Release)</p> <div class="flex flex-wrap items-center gap-3 text-[11px] font-bold"><a href="https://engineroom.raggiesoft.com/dsp-verification/?artist=the-stardust-engine&amp;album=2002-live-at-the-chancellery" target="_blank" rel="noopener noreferrer" class="text-amber-300 underline hover:text-white">DSP Verification (The Stardust Engine — Live at the Chancellery) ↗</a> <!--[0--><span class="text-amber-500/60" aria-hidden="true">•</span> <a href="https://engineroom.raggiesoft.com/dsp-verification/" target="_blank" rel="noopener noreferrer" class="text-amber-300 underline hover:text-white">Official Catalog Registry ↗</a><!--]--> <span class="text-amber-500/60" aria-hidden="true">•</span> <a href="/behind-the-scenes" class="text-amber-300 underline hover:text-white">Behind the Scenes →</a></div></div> <p class="mt-1 text-amber-100/95"><!--[0--><strong>The Stardust Engine</strong> and the historical release date for <em>Live at the Chancellery</em> (2002-10-25) represent <strong>in-universe story dates</strong> within the fictional
@@ -747,16 +786,16 @@
 			
 			<script>
 				{
-					__sveltekit_1tur5r0 = {
+					__sveltekit_kjhr86 = {
 						base: "",
-						version: "1795045587787"
+						version: "1795046772832"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CpasJL-v.js").then(async (kit) => {
-						kit.init(__sveltekit_1tur5r0);
-						const app = await import("/_app/immutable/entry/app.CUazEJd5.js");
+						kit.init(__sveltekit_kjhr86);
+						const app = await import("/_app/immutable/entry/app.DWgNLjzT.js");
 						kit.start(app, element, {
 							node_ids: [0, 5],
 							data: [null,null],
