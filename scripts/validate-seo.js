@@ -1,8 +1,19 @@
 /**
  * @license MIT
  * ============================================================================
- * validate-seo.js — Automated Static Build SEO, Entity Graph & CWV Validator
+ * scripts/validate-seo.js — Automated Static Build SEO, Entity Graph & CWV Validator
  * ============================================================================
+ * Plain-English Overview (100-Level JavaScript & Web Engineering Guide):
+ *   What is this script, and why does it run after `vite build`?
+ *     Think of `validate-seo.js` as an automated quality-control inspector that
+ *     reads every single generated `.html` and `.xml` file inside `build/`
+ *     before we ever deploy to `music.raggiesoft.com`. If even one page out of
+ *     550+ pages is missing an `alt` description on an image, has two `<h1>`
+ *     headings, has a broken internal `<a href>` link, or accidentally leaks an
+ *     in-universe fictional year (`1987`) into a real-world Schema.org
+ *     `datePublished` field, this script prints the exact route and exits with
+ *     code `1` (`process.exit(1)`) to stop a broken deploy in its tracks!
+ *
  * Audits the prerendered static build output (`build/`) of The Listening Room
  * (`https://music.raggiesoft.com`) to guarantee zero regressions across:
  *   1. Unique `<title>` and `<meta name="description">` across all indexable pages
@@ -30,7 +41,10 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 const SITE_ORIGIN = 'https://music.raggiesoft.com';
 
+// Build the set of routes expected to carry `<meta name="robots" content="noindex,...">`:
+// utility routes (`/settings`, `/studio`, `/404`) PLUS unrecorded story-only setlist stub tracks.
 const CATALOG_JSON_PATH = path.join(PROJECT_ROOT, 'src/lib/data/musicCatalog.json');
+// IIFE `(() => { ... })()` runs once immediately at startup and assigns the resulting `Set`
 const EXPECTED_NOINDEX_ROUTES = (() => {
 	const set = new Set(['/settings', '/studio', '/404']);
 	if (fs.existsSync(CATALOG_JSON_PATH)) {
@@ -589,7 +603,8 @@ function main() {
 		}
 	}
 
-	// 3. Orphan catalog page check (every non-root indexable page must have >= 1 incoming internal link)
+	// 3. Orphan catalog page check (every non-root indexable page must have >= 1 incoming internal `<a href>` link
+	//    so search engine crawlers and keyboard users can reach every Artist, Album, Track, and Playlist naturally!)
 	for (const [routePath, count] of incomingLinkCounts.entries()) {
 		if (routePath === '/') continue;
 		if (count === 0) {
@@ -597,7 +612,9 @@ function main() {
 		}
 	}
 
-	// 4. Unified XML Sitemap (`build/sitemap.xml`) & category sitemaps parity check
+	// 4. Unified XML Sitemap (`build/sitemap.xml`) & category sitemaps parity check:
+	//    Guarantees exact two-way set equality (`rootUrlSet` === `indexableCanonicalUrls` === `sitemapUrls`)
+	//    so `sitemap.xml` never omits a live page and never lists a `noindex` or deleted page.
 	const sitemapIndexPath = path.join(BUILD_DIR, 'sitemap.xml');
 	if (fs.existsSync(sitemapIndexPath)) {
 		const rootXml = fs.readFileSync(sitemapIndexPath, 'utf-8');

@@ -2,22 +2,31 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Artist Dedicated Route: /[artist])
+	 * FILE: src/routes/[artist]/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/[artist]
+	 *             (e.g., `/the-stardust-engine`, `/fractured-prisms`)
 	 * ============================================================================
-	 * Dedicated, SEO-friendly artist profile and discography showcase for
-	 * Engine Room Records (`music.raggiesoft.com/$artist-slug`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/[artist]/+page.js` (which resolves `params.artist`
+	 * into `{ artist, artistAlbums, featuredTracks, relatedArtists }`), this
+	 * component renders a band's dedicated profile and complete discography!
+	 *
+	 * HOW `data` PROP REACTIVITY WORKS WHEN CLICKING BETWEEN BANDS:
+	 * When you are viewing `/the-stardust-engine` and click a "Related Artist" card
+	 * at the bottom (say, `/firelight`), SvelteKit re-runs `load()` in `+page.js`
+	 * and updates the `data` prop on THIS same component instance! Wrapping
+	 * `data.artist`, `data.artistAlbums`, etc. inside `$derived(...)` guarantees
+	 * that every heading, SEO tag, and album list updates seamlessly.
 	 *
 	 * Architectural Principles:
 	 * 1. Artist-First Heading Hierarchy: The Artist Name is the primary `<h1>`
-	 *    heading at the top of the page, never subordinated to "Engine Room Records"
-	 *    or buried beneath a massive filter bar.
-	 * 2. Hierarchical URLs: Every album on this page links directly to
-	 *    `/[artist]/[album]` (`music.raggiesoft.com/$artist-slug/$album-slug`).
-	 * 3. Collapsible Search & Filter Menu: Provides a clean toolbar button to open
-	 *    `SearchFilterModal` on demand, plus quick in-page search/type filtering.
+	 *    heading at the top of the page.
+	 * 2. Hierarchical URLs: Every album links to `/[artist]/[album]` and every
+	 *    song links to `/[artist]/[album]/[track]`.
+	 * 3. Collapsible Search & Filter Menu: Toolbar button opens `SearchFilterModal`
+	 *    bound to local `$state` filters (`searchQuery`, `activeTypeFilter`, `activeStatusFilter`).
 	 * 4. Book-Reader-Style Social Sharing: Includes both a Share Modal for
-	 *    individual albums and an inline `<ShareSection />` at the bottom of the
-	 *    artist page with OpenGraph preview card, Facebook, Bluesky, and Copy Link.
+	 *    individual albums and an inline `<ShareSection />` at the bottom.
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
@@ -35,8 +44,10 @@
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 
+	// Receive `{ artist, artistAlbums, featuredTracks, relatedArtists }` from `[artist]/+page.js`
 	let { data } = $props();
 
+	// Derive reactive references so navigating client-side between artists refreshes everything
 	let artist = $derived(data.artist);
 	let artistAlbums = $derived(data.artistAlbums);
 	let featuredTracks = $derived(data.featuredTracks || []);
@@ -44,7 +55,7 @@
 	let artistHasDspOrStore = $derived(hasAnyDsp(artist) || Boolean(artist.storefrontUrl));
 	let seo = $derived(buildArtistSeoMeta(artist));
 
-	// Optional local filter within this artist's catalog (populated via collapsible menu)
+	// Optional local filter `$state` within this artist's catalog (two-way bound to `SearchFilterModal`)
 	let searchQuery = $state('');
 	let activeTypeFilter = $state('all');
 	let activeStatusFilter = $state('all');
@@ -998,6 +1009,10 @@
 	</div>
 </div>
 
+<!--
+	Two-way prop binding (`bind:searchQuery`, `bind:activeTypeFilter`, `bind:activeStatusFilter`)
+	keeps this artist page's local filter `$state` synchronized with `<SearchFilterModal />`.
+-->
 <!-- Collapsible Search & Filter Menu -->
 <SearchFilterModal
 	isOpen={showFilterMenu}

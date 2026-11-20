@@ -2,23 +2,34 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Complete Discography Route: /discography)
+	 * FILE: src/routes/discography/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/discography
 	 * ============================================================================
-	 * Dedicated, SEO-friendly Complete Discography & Archive view for
-	 * Engine Room Records (`music.raggiesoft.com/discography`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/discography/+page.js`, this component renders the
+	 * Complete Discography & Archive page at `/discography`.
+	 *
+	 * HOW LIVE FILTERING & TWO-WAY BINDING WORK IN SVELTE 5:
+	 * 1. Four `$state(...)` variables hold the user's active filter choices:
+	 *    `searchQuery`, `activeFilter` (band or `'rock-opera'`), `activeTypeFilter`
+	 *    (`'studio' | 'live' | 'compilation' | 'soundtrack'`), and `activeStatusFilter`.
+	 * 2. When the user types in `<input bind:value={searchQuery} />` or selects a
+	 *    filter inside `<SearchFilterModal bind:searchQuery ... />`, Svelte's `bind:`
+	 *    directive updates those `$state` variables automatically in both directions!
+	 * 3. Every `$derived(...)` value (`pageHeading`, `activeFilterCount`,
+	 *    `filteredAlbums`, and `groupedAlbumSections`) instantly recalculates and
+	 *    updates the album grid with zero page reloads!
 	 *
 	 * Architectural Principles:
-	 * 1. Clean Top Heading: Replaces the permanently visible 3-tier filter wall
-	 *    with a focused `<h1>` heading that dynamically updates to reflect the
+	 * 1. Clean Top Heading: Dynamically updates the `<h1>` heading to reflect the
 	 *    selected filter (e.g., "Complete Discography", "Rock Operas & Concept Albums",
-	 *    or an Artist's name), paired with a compact toolbar and Search & Filter Menu
-	 *    button.
-	 * 2. URL Query Parameter Synchronization: Reads and updates `?q=`, `?filter=`,
-	 *    `?type=`, and `?status=` so filtered discography views can be bookmarked
-	 *    and shared directly.
+	 *    or an Artist's name), paired with a compact search input and Filter Menu button.
+	 * 2. URL Query Parameter Synchronization: Reads optional `?q=`, `?filter=`,
+	 *    `?type=`, and `?status=` query parameters on mount so filtered views can
+	 *    be linked directly.
 	 * 3. Direct SEO Navigation: Artist badges and album titles link directly to
-	 *    `/artist/[slug]` and `/album/[slug]` so the browser URL always reflects
-	 *    where the listener is in the library.
+	 *    `/[artist]` and `/[artist]/[album]`, and expandable track drawers link
+	 *    each song to `/[artist]/[album]/[track]`.
 	 * ============================================================================
 	 */
 	import { onMount } from 'svelte';
@@ -40,6 +51,8 @@
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
+	// Reactive `$state` variables driving the discography search, filters,
+	// expanded tracklist accordion (`expandedAlbumId`), and modals.
 	let currentCatalog = $state(allAlbums);
 	let searchQuery = $state('');
 	let activeFilter = $state('all');
@@ -49,7 +62,8 @@
 	let showFilterMenu = $state(false);
 	let shareModalData = $state(/** @type {any} */ (null));
 
-	// Read optional URL query params on mount
+	// Read optional URL query params (`?q=...&filter=...&type=...&status=...`) once
+	// when the page mounts in the browser using the Web `URLSearchParams` API.
 	onMount(() => {
 		if (typeof window !== 'undefined') {
 			const params = new URLSearchParams(window.location.search);
@@ -65,7 +79,7 @@
 		}
 	});
 
-	// Dynamic top heading based on active filter
+	// Dynamic top `<h1>` heading computed from whichever filter is currently active.
 	let pageHeading = $derived.by(() => {
 		if (activeFilter === 'rock-opera') return 'Rock Operas & Concept Albums';
 		if (activeFilter !== 'all') {
@@ -79,7 +93,7 @@
 		return 'Complete Discography';
 	});
 
-	// Count of active filters for badge indicator
+	// Count how many filters are non-default (`0` to `4`) to display on the badge pill.
 	let activeFilterCount = $derived(
 		(searchQuery.trim() ? 1 : 0) +
 			(activeFilter !== 'all' ? 1 : 0) +
@@ -87,7 +101,9 @@
 			(activeStatusFilter !== 'all' ? 1 : 0)
 	);
 
-	// Filtered albums based on active criteria
+	// Reactive multi-stage `.filter()` pipeline: an album must pass EVERY active
+	// criterion (status, type, artist/rock-opera, and case-insensitive text search
+	// across album fields + track titles/lore/lyrics/ISRCs via `.some()`).
 	let filteredAlbums = $derived(
 		currentCatalog.filter((album) => {
 			if (activeStatusFilter !== 'all' && album.status !== activeStatusFilter) return false;
@@ -108,6 +124,7 @@
 					album.genre.toLowerCase().includes(q) ||
 					album.year.includes(q) ||
 					(album.temporalCoverage && album.temporalCoverage.includes(q));
+				// `.some(...)` returns `true` as soon as AT LEAST ONE track on the album matches `q`.
 				const matchTrack = album.tracks.some(
 					(t) =>
 						t.title.toLowerCase().includes(q) ||
@@ -121,7 +138,8 @@
 		})
 	);
 
-	// Grouped sections by production category
+	// Bucket `filteredAlbums` into production categories (Studio Albums, Live Albums,
+	// Compilations, Soundtracks) and drop any empty category sections.
 	let groupedAlbumSections = $derived.by(() => {
 		return albumTypeDefinitions
 			.map((def) => ({
@@ -132,7 +150,10 @@
 	});
 
 	/**
-	 * Plays an album sequentially.
+	 * Plays an album sequentially in the persistent global audio player.
+	 * Smart ISRC resume: if the listener is ALREADY playing a track whose ISRC
+	 * appears on this album, start at that track's index instead of restarting at Track 1.
+	 *
 	 * @param {import('#lib/data/musicData.js').Album} album
 	 */
 	function playAlbum(album) {
@@ -151,7 +172,7 @@
 	}
 
 	/**
-	 * Plays a specific track from an album.
+	 * Loads an album's playable queue and starts playback at the clicked `track`.
 	 * @param {import('#lib/data/musicData.js').Album} album
 	 * @param {import('#lib/data/musicData.js').Track} track
 	 */
@@ -169,7 +190,7 @@
 	}
 
 	/**
-	 * Opens the book-reader-style Share Modal for an album.
+	 * Populates `shareModalData` to open `<ShareModal />` for a specific album card.
 	 * @param {import('#lib/data/musicData.js').Album} album
 	 */
 	function openAlbumShareModal(album) {
@@ -190,6 +211,12 @@
 	]);
 </script>
 
+<!--
+	SEO & Social `<head>` metadata:
+	Notice `{#if activeFilterCount > 0}` adds `noindex,follow` dynamically if a
+	crawler lands on a query-filtered state, keeping canonical indexing focused
+	on the unfiltered `/discography` archive!
+-->
 <svelte:head>
 	<title>{pageHeading} | The Listening Room (Engine Room Records)</title>
 	<meta name="description" content={discographyDescription} />
@@ -716,6 +743,12 @@
 	</div>
 </div>
 
+<!--
+	TWO-WAY COMPONENT PROP BINDING (`bind:searchQuery`, etc.):
+	Passing `bind:searchQuery` connects our parent `$state` variables directly to
+	the bindable `$props()` inside `<SearchFilterModal />`, so changing a filter
+	inside the modal updates `/discography` in real time!
+-->
 <!-- Collapsible Search & Filter Menu -->
 <SearchFilterModal
 	isOpen={showFilterMenu}
@@ -726,6 +759,10 @@
 	bind:activeFilter
 />
 
+<!--
+	`!!shareModalData` converts an object or `null` into a strict boolean (`true` / `false`).
+	When the user closes the modal, `onClose` resets `shareModalData = null`.
+-->
 <!-- Book-Reader-Style Share Modal -->
 <ShareModal
 	isOpen={!!shareModalData}

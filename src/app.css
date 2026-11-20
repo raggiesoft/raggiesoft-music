@@ -1,7 +1,23 @@
 /**
  * ============================================================================
- * ARCHITECTURE & DESIGN: Engine Room Records Global Theme & Stylesheet
+ * ARCHITECTURE & DESIGN: Engine Room Records Global Theme & Stylesheet (`src/app.css`)
  * ============================================================================
+ * Plain-English Overview (Beginner Guide to Tailwind CSS v4 & CSS Variables):
+ *   What is Tailwind CSS v4, and how does our Multi-Palette Theme Engine work?
+ *     In Tailwind CSS v4, `@import 'tailwindcss'` generates utility classes like
+ *     `bg-slate-900`, `text-slate-200`, and `bg-blue-600` powered under the hood
+ *     by native CSS Custom Properties ("CSS variables", written as `--color-slate-900`).
+ *
+ *     Because every Tailwind color utility points to a CSS variable, we don't have
+ *     to write messy `dark:bg-... industrial:bg-... sepia:bg-...` classes on every
+ *     HTML tag! Instead, `src/app.html` and `src/lib/theme.svelte.js` set two
+ *     attributes on the root `<html>` element:
+ *       - `data-theme="studio" | "industrial" | "sepia" | "stardust" | "solstice"`
+ *       - `data-color-scheme="dark" | "light"`
+ *     Whenever those attributes change, CSS attribute selectors in this file
+ *     (`html[data-theme='stardust'][data-color-scheme='light']`) instantly swap
+ *     the `--color-*` hex values across the entire app with zero flicker!
+ *
  * Purpose:
  *   Configures Tailwind CSS v4 and implements a multi-palette adaptive theme
  *   engine that respects OS `prefers-color-scheme` while allowing users to
@@ -23,6 +39,7 @@
  *      `.er-logo-dark` (white on transparent) based on `data-color-scheme`.
  * ============================================================================
  */
+/* Load Tailwind CSS v4 core utility engine plus official Forms and Typography plugins */
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
@@ -54,6 +71,8 @@ body {
  *    iOS Dynamic Island, notch, status bar, or Home Indicator when running with
  *    `viewport-fit=cover` and `apple-mobile-web-app-status-bar-style="black-translucent"`.
  */
+/* CSS `display-mode` media query automatically matches when the user opens The Listening Room
+ * as an installed desktop or mobile Progressive Web App rather than inside a browser tab */
 @media (display-mode: standalone),
 	(display-mode: window-controls-overlay),
 	(display-mode: minimal-ui),
@@ -64,17 +83,22 @@ body {
 	}
 }
 
+/* Backup class-based rule set by `src/app.html` for older iOS `navigator.standalone` WebViews */
 html.is-pwa-standalone .rs-network-bar,
 html.is-pwa-standalone .rs-mobile-network-section {
 	display: none !important;
 }
 
+/* `env(safe-area-inset-*)` reads hardware screen cutout dimensions (such as the iPhone
+ * Dynamic Island at the top or Home Indicator bar at the bottom) and `max(a, b)` ensures
+ * we always keep comfortable minimum padding even on rectangular desktop monitors. */
 .er-global-header {
 	padding-top: max(0.625rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
 	padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
 	padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
 }
 
+/* Slightly wider horizontal padding on screens >= 640px (`sm:` breakpoint in Tailwind) */
 @media (min-width: 640px) {
 	.er-global-header {
 		padding-top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
@@ -83,12 +107,14 @@ html.is-pwa-standalone .rs-mobile-network-section {
 	}
 }
 
+/* Keeps the fixed bottom `<Player />` bar clear of the iOS swipe-home indicator bar */
 .er-bottom-player-bar {
 	padding-bottom: env(safe-area-inset-bottom, 0px);
 	padding-left: env(safe-area-inset-left, 0px);
 	padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Safe-area padding for centered modal dialogs (`AddToPlaylistModal`, `SearchFilterModal`) */
 .er-safe-modal-overlay {
 	padding-top: max(3rem, calc(env(safe-area-inset-top, 0px) + 1rem));
 	padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
@@ -96,6 +122,7 @@ html.is-pwa-standalone .rs-mobile-network-section {
 	padding-right: max(1rem, env(safe-area-inset-right, 0px));
 }
 
+/* Safe-area sizing for the bottom-sheet Now Playing / Lyrics drawer (`100dvh` = dynamic viewport height) */
 .er-safe-drawer-overlay {
 	padding-top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
 }
@@ -107,6 +134,8 @@ html.is-pwa-standalone .rs-mobile-network-section {
 
 /* ============================================================================
  * 1. LOGO VISIBILITY RULES (LIGHT VS. DARK MODE)
+ *    Both logo `<img>` tags exist in the header HTML so switching Light/Dark
+ *    mode toggles visibility via pure CSS before JavaScript hydration even runs!
  * ============================================================================ */
 .er-logo-light {
 	display: none !important;
@@ -441,6 +470,9 @@ html[data-theme='solstice'][data-color-scheme='dark'] {
  * 4. STARDUST PARSEDOWN LORE & LYRICS PROSE TYPOGRAPHY
  *    Styles HTML compiled by `stardust-parsedown.php` (StardustParsedown)
  *    across all 5 palettes in both Dark Mode and Light Mode.
+ *    Note on `.er-lore-prose > * + *`: This is the CSS "lobotomized owl"
+ *    combinator—it adds top spacing ONLY between adjacent child paragraphs/lists
+ *    without adding unwanted space above the very first paragraph!
  * ============================================================================ */
 .er-lore-prose,
 .er-lyrics-prose {

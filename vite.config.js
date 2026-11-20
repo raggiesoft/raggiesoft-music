@@ -1,21 +1,40 @@
 /**
  * @license MIT
  * ============================================================================
- * vite.config.js
+ * vite.config.js — Build Bundler, Static PWA Adapter & Local Studio Dev API
  * ============================================================================
- * Vite 8 configuration for Engine Room Records (music.raggiesoft.com).
- * Configures Tailwind CSS v4, a dedicated static PWA adapter that outputs
- * production-ready HTML/JS/CSS bundles for high-performance Nginx hosting,
- * and the local Studio IDE filesystem middleware (`/__studio_api`) for
- * writing human-verified VTT files (`SYNC_TYPE: HUMAN_VERIFIED`), album
- * metadata, and track lore directly to `raggiesoft-assets` during `vite dev`.
+ * Plain-English Overview (100-Level JavaScript Guide):
+ *   What is Vite (`vite.config.js`)?
+ *     Browsers don't natively understand `.svelte` component files or Tailwind
+ *     CSS `@import 'tailwindcss'` directives out of the box. Vite is our lightning-fast
+ *     build tool and local development server:
+ *       - During `npm run dev`: Vite starts a local web server with instant
+ *         Hot Module Replacement (HMR) and attaches our custom `/__studio_api/*`
+ *         middleware so the local `/studio` editor can read/save lyrics & JSON.
+ *       - During `npm run build`: Vite compiles all Svelte 5 Runes, Tailwind CSS
+ *         v4 styles, and prerendered routes into static `.html`, `.js`, and `.css`
+ *         files inside `build/` ready for Nginx on `music.raggiesoft.com`.
+ *
+ *   How this file connects to The Listening Room:
+ *     1. `staticPwaAdapter()`: Custom SvelteKit adapter that writes prerendered
+ *        HTML pages to `build/`, normalizes asset paths to `/_app/...`, hoists
+ *        `<title>` and OpenGraph `<meta>` tags to the top of `<head>`, and creates
+ *        `<route>/index.html` mirror files for zero-downtime static serving.
+ *     2. `engineRoomStudioDevApi()`: Local-only Node HTTP middleware mounted at
+ *        `/__studio_api/*` during `vite dev` (completely excluded from `build/`).
+ *     3. `defineConfig(...)`: Wires together Studio Dev API + Tailwind CSS v4 +
+ *        SvelteKit (with `runes: true` enforced globally).
  * ============================================================================
  */
+// Node.js built-in modules for filesystem (`fs`), cross-OS paths (`path`), and running child scripts (`execFileSync`)
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+// Official Tailwind CSS v4 Vite plugin (compiles `src/app.css` without needing PostCSS config)
 import tailwindcss from '@tailwindcss/vite';
+// Official SvelteKit Vite plugin (handles routing, SSR, prerendering, and `.svelte` compilation)
 import { sveltekit } from '@sveltejs/kit/vite';
+// Vite helper that provides IDE autocomplete for configuration properties
 import { defineConfig } from 'vite';
 
 /**
@@ -25,33 +44,43 @@ import { defineConfig } from 'vite';
  * @returns {import('@sveltejs/kit').Adapter}
  */
 function staticPwaAdapter(options = {}) {
+	// Default output directory is `build/`, with `200.html` as the Single-Page App (SPA) fallback shell
 	const out = options?.pages || 'build';
 	const fallback = options?.fallback || '200.html';
 
 	return {
 		name: 'engine-room-static-pwa-adapter',
+		// SvelteKit calls `adapt(builder)` at the very end of `vite build` once JS/CSS/SSR bundles are ready
 		async adapt(builder) {
+			// Step 1: Delete any previous `build/` folder (`rimraf`) and recreate an empty `build/` directory (`mkdirp`)
 			builder.rimraf(out);
 			builder.mkdirp(out);
 
+			// Step 2: Write static client assets (`static/*` + `/_app/immutable/*`) and all prerendered `.html` routes
 			builder.writeClient(out);
 			builder.writePrerendered(out);
 
+			// Step 3: Emit `build/200.html` fallback shell for client-side dynamic/offline PWA routing
 			if (fallback) {
 				builder.generateFallback(`${out}/${fallback}`);
 			}
 
+			// Step 4: Post-process generated HTML so social-media link previews (Discord, iMessage, Bluesky, Facebook)
+			// always find `<title>`, `<link rel="canonical">`, and `og:*` / `twitter:*` meta tags within the first ~2 KB
+			// of `<head>`, rather than buried underneath dozens of `<link rel="modulepreload">` tags.
 			// Normalize relative `./_app/` and `../_app/` asset references in generated HTML
 			// to root-relative `/_app/` AND hoist `<title>`, `<link rel="canonical">`, and
 			// SEO / OpenGraph / Twitter `<meta>` tags above SvelteKit's `modulepreload` block
 			// so social unfurlers and crawlers parse all primary metadata within the first ~2 KB.
 			/** @param {string} rawHtml */
 			function hoistSeoHeadTagsAbovePreloads(rawHtml) {
+				// Find where SvelteKit's `<link href="/_app/immutable/..."` preload block starts inside `<head>`
 				const preloadStart = rawHtml.indexOf('<link href="/_app/immutable/');
 				const headEnd = rawHtml.indexOf('</head>');
 				if (preloadStart === -1 || headEnd === -1 || preloadStart > headEnd) {
 					return rawHtml;
 				}
+				// Slice out the portion of `<head>` from the first preload link down to `</head>`
 				const headSlice = rawHtml.slice(preloadStart, headEnd);
 				/** @type {string[]} */
 				const hoisted = [];
@@ -60,6 +89,7 @@ function staticPwaAdapter(options = {}) {
 				const seoMetaRegex =
 					/<meta\b[^>]*(?:name=["'](?:description|robots|twitter:[^"']+)["']|property=["'](?:og:[^"']+|music:[^"']+)["'])[^>]*>/gi;
 
+				// Extract matching SEO tags into `hoisted[]` while removing them from their lower position
 				let strippedSlice = headSlice
 					.replace(titleRegex, (m) => {
 						hoisted.push(m);
@@ -78,10 +108,13 @@ function staticPwaAdapter(options = {}) {
 					return rawHtml;
 				}
 
+				// Reassemble HTML with the hoisted SEO tags placed immediately BEFORE `<link href="/_app/immutable/...">`
 				const formattedHoisted = hoisted.join('\n\t\t') + '\n\t\t';
 				return rawHtml.slice(0, preloadStart) + formattedHoisted + strippedSlice + rawHtml.slice(headEnd);
 			}
 
+			// Recursively walk every folder in `build/` to rewrite relative `../_app/` paths to `/_app/`
+			// and apply `hoistSeoHeadTagsAbovePreloads` to every `.html` file.
 			/** @param {string} dir */
 			function normalizeHtmlAssetPaths(dir) {
 				for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -102,6 +135,8 @@ function staticPwaAdapter(options = {}) {
 			}
 			normalizeHtmlAssetPaths(out);
 
+			// Step 5: Mirror `<route>.html` (e.g., `build/discography.html`) to `build/discography/index.html`
+			// so static file servers resolve both clean paths and directory lookups seamlessly.
 			// Mirror prerendered `<route>.html` files (`trailingSlash = 'never'`) to
 			// `<route>/index.html` as a zero-downtime static bridge while keeping
 			// `<route>.html` at its canonical path for `try_files $uri $uri.html =404;`
@@ -111,11 +146,13 @@ function staticPwaAdapter(options = {}) {
 				for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
 					const fullPath = path.join(dir, entry.name);
 					if (entry.isDirectory()) {
+						// Skip asset/sitemap folders that never contain prerendered route pages
 						if (entry.name === '_app' || entry.name === 'sitemaps' || entry.name === 'icons') {
 							continue;
 						}
 						mirrorDirectoryIndexes(fullPath);
 					} else if (entry.isFile() && entry.name.endsWith('.html')) {
+						// Skip root `index.html`, SPA fallback `200.html`, and error page `404.html`
 						if (
 							entry.name === 'index.html' ||
 							entry.name === '200.html' ||
@@ -123,6 +160,7 @@ function staticPwaAdapter(options = {}) {
 						) {
 							continue;
 						}
+						// Strip `.html` (5 characters) to get the directory name and copy `<route>.html` -> `<route>/index.html`
 						const baseName = entry.name.slice(0, -5);
 						const indexTarget = path.join(dir, baseName, 'index.html');
 						if (!fs.existsSync(indexTarget)) {
@@ -153,6 +191,7 @@ function staticPwaAdapter(options = {}) {
  * @returns {import('vite').Plugin}
  */
 function engineRoomStudioDevApi() {
+	// Locate the local `raggiesoft-assets/engine-room-records/artists` sibling folder on disk
 	const candidateDirs = [
 		path.resolve(import.meta.dirname, '../../../raggiesoft-assets/engine-room-records/artists'),
 		path.resolve(import.meta.dirname, '../raggiesoft-assets/engine-room-records/artists')
@@ -162,6 +201,8 @@ function engineRoomStudioDevApi() {
 
 	/**
 	 * Safely resolves a path inside `artistsDir` and prevents path traversal.
+	 * Security note: If someone passed `"../../etc/passwd"`, `resolved.startsWith(...)`
+	 * catches that it escaped `artistsDir` and throws an error immediately.
 	 * @param  {...string} segments
 	 */
 	function resolveSafeArtistPath(...segments) {
@@ -174,6 +215,9 @@ function engineRoomStudioDevApi() {
 
 	/**
 	 * Reads JSON body from an incoming Node HTTP request.
+	 * In raw Node.js HTTP servers, POST request bodies arrive in streaming chunks
+	 * (`req.on('data', ...)` followed by `req.on('end', ...)`). Wrapping this in a
+	 * `new Promise(...)` lets our route handlers simply write `await readJsonBody(req)`.
 	 * @param {import('node:http').IncomingMessage} req
 	 * @returns {Promise<any>}
 	 */
@@ -195,7 +239,7 @@ function engineRoomStudioDevApi() {
 	}
 
 	/**
-	 * Sends a JSON response.
+	 * Sends a JSON response with UTF-8 encoding and the given HTTP status code (e.g., 200 OK, 400 Bad Request).
 	 * @param {import('node:http').ServerResponse} res
 	 * @param {number} statusCode
 	 * @param {any} payload
@@ -208,8 +252,10 @@ function engineRoomStudioDevApi() {
 
 	return {
 		name: 'engine-room-studio-dev-api',
+		// `configureServer(server)` ONLY runs during `vite dev`—never during production `vite build`!
 		configureServer(server) {
 			server.middlewares.use(async (req, res, next) => {
+				// Ignore normal page/asset requests; pass them along to SvelteKit via `next()`
 				if (!req.url || !req.url.startsWith('/__studio_api/')) {
 					return next();
 				}
@@ -218,7 +264,7 @@ function engineRoomStudioDevApi() {
 				const pathname = parsedUrl.pathname;
 
 				try {
-					// 1. GET /__studio_api/status
+					// 1. GET /__studio_api/status — Tells `/studio` UI whether local disk write mode is available
 					if (req.method === 'GET' && pathname === '/__studio_api/status') {
 						return sendJson(res, 200, {
 							available: fs.existsSync(artistsDir),
@@ -226,7 +272,7 @@ function engineRoomStudioDevApi() {
 						});
 					}
 
-					// 2. GET /__studio_api/vtt
+					// 2. GET /__studio_api/vtt — Reads raw `.vtt` synchronized lyrics file from local disk
 					if (req.method === 'GET' && pathname === '/__studio_api/vtt') {
 						const artist = parsedUrl.searchParams.get('artist') || '';
 						const album = parsedUrl.searchParams.get('album') || '';
@@ -256,6 +302,8 @@ function engineRoomStudioDevApi() {
 					}
 
 					// 3. GET /__studio_api/audio (Local disk M4A stream with HTTP Range support)
+					//    Implements HTTP 206 Partial Content byte-range streaming so the `/studio`
+					//    waveform/lyric-timing editor can scrub freely across local `.m4a` files.
 					if (req.method === 'GET' && pathname === '/__studio_api/audio') {
 						const artist = parsedUrl.searchParams.get('artist') || '';
 						const album = parsedUrl.searchParams.get('album') || '';
@@ -287,6 +335,7 @@ function engineRoomStudioDevApi() {
 						const total = stat.size;
 						const range = req.headers.range;
 
+						// If the `<audio>` tag sent a `Range: bytes=start-end` header, stream just that byte slice (HTTP 206)
 						if (range) {
 							const parts = range.replace(/bytes=/, '').split('-');
 							const start = parseInt(parts[0], 10);
@@ -302,6 +351,7 @@ function engineRoomStudioDevApi() {
 							return;
 						}
 
+						// Otherwise stream the entire audio file from byte 0 (HTTP 200)
 						res.writeHead(200, {
 							'Content-Length': total,
 							'Accept-Ranges': 'bytes',
@@ -311,7 +361,7 @@ function engineRoomStudioDevApi() {
 						return;
 					}
 
-					// 4. POST /__studio_api/save-vtt
+					// 4. POST /__studio_api/save-vtt — Saves human-verified WebVTT cues to disk & rebuilds catalog
 					if (req.method === 'POST' && pathname === '/__studio_api/save-vtt') {
 						const body = await readJsonBody(req);
 						const { artistSlug, albumId, fileName, vttContent } = body;
@@ -361,7 +411,7 @@ function engineRoomStudioDevApi() {
 						});
 					}
 
-					// 5. POST /__studio_api/save-metadata
+					// 5. POST /__studio_api/save-metadata — Updates `album.json`, `tracks.json`, and `lyrics/{fileName}.md`
 					if (req.method === 'POST' && pathname === '/__studio_api/save-metadata') {
 						const body = await readJsonBody(req);
 						const { artistSlug, albumId, albumUpdates, trackUpdates } = body;
@@ -429,6 +479,7 @@ function engineRoomStudioDevApi() {
 									}
 								};
 
+								// Handle all three supported `tracks.json` shapes (flat array, `{ discs: [...] }`, or `{ tracks: [...] }`)
 								if (Array.isArray(tracksData)) {
 									tracksData.forEach(updateTrackEntry);
 								} else if (tracksData && Array.isArray(tracksData.discs)) {
@@ -486,16 +537,23 @@ function engineRoomStudioDevApi() {
 	};
 }
 
+// ============================================================================
+// MAIN VITE CONFIGURATION EXPORT
+// ============================================================================
 export default defineConfig({
+	// Plugins run in order: Studio local API -> Tailwind CSS v4 compiler -> SvelteKit
 	plugins: [
 		engineRoomStudioDevApi(),
 		tailwindcss(),
 		sveltekit({
+			// Export static HTML/JS/CSS into `build/` with `200.html` SPA fallback
 			adapter: staticPwaAdapter({ pages: 'build', fallback: '200.html' }),
 			paths: {
+				// Emit root-absolute `/_app/...` URLs rather than relative `../_app/...` URLs
 				relative: false
 			},
 			compilerOptions: {
+				// Globally enable Svelte 5 Runes mode (`$state`, `$derived`, `$effect`, `$props`)
 				runes: true
 			}
 		})

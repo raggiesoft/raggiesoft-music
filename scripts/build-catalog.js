@@ -1,9 +1,29 @@
 /**
  * @license MIT
  * ============================================================================
- * build-catalog.js
+ * scripts/build-catalog.js — Automated Catalog Compiler & XML Sitemap Generator
  * ============================================================================
- * Automated Discovery & Compilation Engine for Engine Room Records Catalog.
+ * Plain-English Overview (100-Level JavaScript & Node.js Guide):
+ *   What does this script do, and when does it run?
+ *     In a traditional website, adding a new album or fixing a song lyric means
+ *     logging into a database admin panel or hand-editing dozens of pages.
+ *     Instead, The Listening Room (`music.raggiesoft.com`) uses a "Zero-Database
+ *     Flat-File" build pipeline!
+ *
+ *     Whenever `npm run build` runs (or whenever the `/studio` editor saves a
+ *     change), Node.js executes this script BEFORE SvelteKit builds the website:
+ *       - Inputs: Walks every artist & album folder inside
+ *         `raggiesoft-assets/engine-room-records/artists/` (`album.json`,
+ *         `tracks.json`, `albums.json`, `lyrics/*.md`, `lyrics/*.vtt`, and
+ *         `web-mp3/*.mp3`).
+ *       - Processing: Resolves CDN URLs, checks whether `.vtt` karaoke files are
+ *         `HUMAN_VERIFIED`, enforces the Dual-Chronology rule (in-universe story
+ *         dates like `1997` go in `temporalCoverage`, while real-world release
+ *         dates `>= 2026` go in `datePublished`), and batch-compiles Markdown
+ *         lore/lyrics into HTML via `stardust-parsedown.php`.
+ *       - Outputs: Writes `src/lib/data/musicCatalog.json` (imported by
+ *         `src/lib/data/musicData.js`), mirrors `catalog.json` to the CDN folder,
+ *         and generates `static/sitemap.xml` + 5 category sitemaps in `static/sitemaps/`.
  *
  * Architecture & Design Decisions:
  * 1. Single Source of Truth: Scans `raggiesoft-assets/engine-room-records/artists`
@@ -29,11 +49,16 @@
  * ============================================================================
  */
 
+// Node.js built-in modules:
+// - `spawnSync`: Runs an external CLI program (here, `php`) synchronously and captures stdout
+// - `fs`: Reads/writes files and inspects file modification timestamps (`statSync`)
+// - `path` & `fileURLToPath`: Computes cross-platform folder paths in ES Modules (`import.meta.url`)
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Recreate classic CommonJS `__filename` and `__dirname` constants inside an ES Module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -43,7 +68,12 @@ const HUB_BASE = 'https://raggiesoft.com';
 const SITE_ORIGIN = 'https://music.raggiesoft.com';
 
 /**
- * Converts an arbitrary string into a clean lowercase URL slug.
+ * Converts an arbitrary string (like `"Ryan's Song (Live)!"`) into a clean
+ * lowercase URL slug (`"ryans-song-live"`):
+ *   1. `.toLowerCase().trim()` normalizes case and outer spaces
+ *   2. `.replace(/[’‘']/g, '')` drops apostrophes cleanly (`"ryan's"` -> `"ryans"`)
+ *   3. `.replace(/[^a-z0-9]+/g, '-')` turns runs of punctuation/spaces into single hyphens
+ *   4. `.replace(/^-+|-+$/g, '')` trims any leftover leading/trailing hyphens
  * @param {string} raw
  * @returns {string}
  */
@@ -1174,6 +1204,10 @@ function buildCatalog() {
 	// Batch-compile track loreNote & lyrics Markdown via StardustParsedown
 	// (stardust-parsedown.php) so The Listening Room renders formatted HTML
 	// while retaining raw loreNote/lyrics for search and /studio editing.
+	// Why batch in one array instead of calling `php` 1,000 separate times?
+	// Spawning 1,000 child OS processes would take several seconds; sending one
+	// JSON array over STDIN (`[lore0, lyrics0, lore1, lyrics1, ...]`) compiles
+	// the entire discography in ~50 milliseconds!
 	// =========================================================================
 	const allTracksFlat = [];
 	const markdownPayload = [];
@@ -1186,6 +1220,7 @@ function buildCatalog() {
 	}
 	const compiledHtmlList = batchCompileStardustParsedown(markdownPayload);
 	for (let i = 0; i < allTracksFlat.length; i++) {
+		// Even indices (`i * 2`) hold compiled `loreNoteHtml`; odd indices (`i * 2 + 1`) hold `lyricsHtml`
 		allTracksFlat[i].loreNoteHtml = compiledHtmlList[i * 2] || '';
 		allTracksFlat[i].lyricsHtml = compiledHtmlList[i * 2 + 1] || '';
 	}

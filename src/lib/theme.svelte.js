@@ -1,10 +1,25 @@
 /**
  * @license MIT
  * ============================================================================
- * theme.svelte.js
+ * src/lib/theme.svelte.js — Global Reactive Theme & Appearance Engine
  * ============================================================================
- * Global Reactive Theme & Appearance Engine for Engine Room Records
- * (music.raggiesoft.com).
+ * Plain-English Overview (100-Level JavaScript & Svelte 5 Runes Guide):
+ *   Why is this file named `.svelte.js` instead of `.js`?
+ *     In Svelte 5, naming a JavaScript module `.svelte.js` unlocks "Universal
+ *     Reactivity"—allowing us to use Svelte 5 Runes (`$state`, `$derived`, and
+ *     `$derived.by`) directly inside a JavaScript `class`! Whenever any UI
+ *     component reads `themeManager.theme` or `themeManager.isDark`, Svelte
+ *     automatically re-renders that component the instant the value changes.
+ *
+ *   How this file connects to The Listening Room (`music.raggiesoft.com`):
+ *     - Inputs: Reads the visitor's OS color preference via
+ *       `window.matchMedia('(prefers-color-scheme: dark)')` and saved settings
+ *       from `localStorage.getItem('engine_room_settings')`.
+ *     - Outputs: Updates `data-theme`, `data-color-scheme`, and `data-color-mode`
+ *       on `<html>` (which drives the CSS variables in `src/app.css`), updates
+ *       `<meta name="theme-color">` for mobile browser toolbars, and exports
+ *       `THEME_PALETTES` + the `themeManager` singleton used by `+layout.svelte`
+ *       and `/settings`.
  *
  * Architectural Overview:
  * 1. OS `prefers-color-scheme` Integration:
@@ -28,11 +43,13 @@
  * ============================================================================
  */
 
+// Key used in `window.localStorage` (must match the zero-FOUC inline script in `src/app.html`!)
 const STORAGE_KEY = 'engine_room_settings';
 
 /**
  * Available user-selectable theme palettes.
- * Every palette natively supports both Light and Dark `prefers-color-scheme` modes.
+ * Every palette natively supports both Light and Dark `prefers-color-scheme` modes,
+ * and includes swatch preview hex codes for the visual theme picker cards on `/settings`.
  */
 export const THEME_PALETTES = [
 	{
@@ -76,20 +93,27 @@ export const THEME_PALETTES = [
 ];
 
 class ThemeManager {
+	// `$state(...)` is a Svelte 5 Rune that turns a normal class property into a reactive signal.
+	// Assigning `this.theme = 'stardust'` automatically updates every component reading `themeManager.theme`!
 	/** @type {'studio' | 'industrial' | 'sepia' | 'stardust' | 'solstice'} */
 	theme = $state('studio');
 
+	// Tracks whether the user chose `'auto'` (follow OS), `'light'`, or `'dark'`
 	/** @type {'auto' | 'light' | 'dark'} */
 	colorMode = $state('auto');
 
+	// Tracks the live boolean result of `window.matchMedia('(prefers-color-scheme: dark)')`
 	/** @type {boolean} */
 	osPrefersDark = $state(false);
 
+	// True once `init()` has hydrated saved settings in the browser
 	/** @type {boolean} */
 	initialized = $state(false);
 
 	/**
 	 * Resolved active color scheme ('light' | 'dark').
+	 * `$derived.by(() => { ... })` is Svelte 5's multi-line computed value rune:
+	 * it automatically recalculates whenever `this.colorMode` or `this.osPrefersDark` changes!
 	 * Always respects OS `prefers-color-scheme` when `colorMode === 'auto'`.
 	 */
 	resolvedColorScheme = $derived.by(() => {
@@ -100,6 +124,7 @@ class ThemeManager {
 
 	/**
 	 * Boolean convenience getter indicating if dark mode is currently active.
+	 * `$derived(expression)` is the concise single-expression form of `$derived.by`.
 	 */
 	isDark = $derived(this.resolvedColorScheme === 'dark');
 
@@ -119,24 +144,26 @@ class ThemeManager {
 	 * media query listener, and applies the saved or default preferences.
 	 */
 	init() {
+		// Guard against Server-Side Rendering (SSR) where `window` does not exist
 		if (typeof window === 'undefined') return;
 
 		// 1. Detect initial OS prefers-color-scheme
 		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 		this.osPrefersDark = mediaQuery.matches;
 
-		// 2. Listen for real-time OS theme changes
+		// 2. Listen for real-time OS theme changes (e.g., macOS/iOS Sunset auto-switch)
 		const handleMediaChange = (/** @type {MediaQueryListEvent} */ e) => {
 			this.osPrefersDark = e.matches;
 			this.applyToDom();
 		};
 		mediaQuery.addEventListener('change', handleMediaChange);
 
-		// 3. Load saved settings from localStorage
+		// 3. Load saved settings from localStorage (wrapped in try/catch in case private browsing blocks storage)
 		try {
 			const raw = localStorage.getItem(STORAGE_KEY);
 			if (raw) {
 				const parsed = JSON.parse(raw);
+				// Validate saved IDs against known palettes/modes before applying
 				if (parsed.theme && THEME_PALETTES.some((p) => p.id === parsed.theme)) {
 					this.theme = parsed.theme;
 				}
@@ -173,10 +200,11 @@ class ThemeManager {
 	}
 
 	/**
-	 * Cycles or toggles between Light, Dark, and Auto modes.
+	 * Cycles or toggles between Light, Dark, and Auto modes (used by the header quick-toggle button).
 	 */
 	cycleColorMode() {
 		if (this.colorMode === 'auto') {
+			// Jump immediately to the opposite of the current OS mode so the first click has an obvious visual effect
 			this.setColorMode(this.osPrefersDark ? 'light' : 'dark');
 		} else if (this.colorMode === 'light') {
 			this.setColorMode('dark');
@@ -196,7 +224,7 @@ class ThemeManager {
 	}
 
 	/**
-	 * Persists current settings to localStorage.
+	 * Persists current settings as a JSON string in `window.localStorage`.
 	 */
 	save() {
 		if (typeof window === 'undefined') return;
@@ -215,16 +243,18 @@ class ThemeManager {
 
 	/**
 	 * Synchronizes `data-theme`, `data-color-scheme`, and `data-color-mode` attributes
-	 * on `document.documentElement` so CSS custom properties update immediately.
+	 * on `document.documentElement` (`<html>`) so CSS custom properties in `src/app.css` update immediately.
 	 */
 	applyToDom() {
 		if (typeof document === 'undefined') return;
 		const root = document.documentElement;
 		const scheme = this.resolvedColorScheme;
 
+		// Note: `root.dataset.colorScheme = 'dark'` sets the HTML attribute `data-color-scheme="dark"`
 		root.dataset.theme = this.theme;
 		root.dataset.colorScheme = scheme;
 		root.dataset.colorMode = this.colorMode;
+		// `style.colorScheme` tells native browser scrollbars and form controls whether to render dark or light
 		root.style.colorScheme = scheme;
 
 		// Update PWA <meta name="theme-color"> for native browser chrome matching
@@ -237,4 +267,5 @@ class ThemeManager {
 	}
 }
 
+// Export a single shared ("singleton") instance so every page and component shares one theme state
 export const themeManager = new ThemeManager();

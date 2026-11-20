@@ -2,27 +2,26 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (/playlists/[slug])
+	 * FILE: src/routes/playlists/[slug]/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/playlists/[slug]
+	 *             (e.g., `/playlists/john-and-erin`)
 	 * ============================================================================
-	 * Dedicated Showcase & Interactive Story Reader/Player Route for Official
-	 * Curated Story Playlists (e.g., `/playlists/john-and-erin`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/playlists/[slug]/+page.js` (which resolves `params.slug`
+	 * into a curated story playlist object), this component receives `data.playlist`
+	 * via Svelte 5's `let { data } = $props()` rune and renders a dedicated,
+	 * shareable Story Playlist & Chapter Soundtrack showcase!
 	 *
-	 * Architectural Responsibilities:
-	 * 1. Cross-Property Narrative Integration:
-	 *    - Links directly to the standalone Ocean View Archives novel
-	 *      (`https://books.raggiesoft.com/erin` and `https://raggiesoft.com/raggiesoft-books/books/erin`)
-	 *      as well as individual chapter/scene deep links for every track in the arc.
-	 *    - Links directly to the official Stardust Engine lore page
-	 *      (`https://raggiesoft.com/engine-room/artists/stardust-engine/story/john-and-erin`).
-	 *    - Highlights Cross-Universe Echoes (such as Jessica's Train Ride at Kent Station
-	 *      and Freddie & Paige on the CPI campus).
-	 * 2. Full Continuous Queue Playback & Lyrics/Lore Inspection:
-	 *    - Allows listeners to play the complete 5-song narrative sequence from start
-	 *      to finish or jump to any act while viewing inline lyrics, lore notes, and
-	 *      book chapter connections.
-	 * 3. SEO & Rich Social Graph Metadata:
-	 *    - Emits dedicated 16:9 OpenGraph (`og:image`) and Schema.org `MusicPlaylist`
-	 *      structured data.
+	 * WHAT THE USER SEES & INTERACTS WITH ON THIS SCREEN:
+	 * 1. Cinematic 16:9 Hero Card + 1:1 Cover Art with "Play Complete Story Arc"
+	 *    and "Share Story Playlist" controls.
+	 * 2. Companion Novel & Band Lore Gateway Box linking directly to Ocean View
+	 *    Archives (`https://books.raggiesoft.com/...`) and Stardust Engine lore.
+	 * 3. Chapter-by-Chapter Playable Track Suite where each act displays its POV,
+	 *    parent album link, scene deep-link, MP3 download, "+ Playlist" adder,
+	 *    and an expandable inline Lyrics & Archival Liner Note drawer.
+	 * 4. Cross-Universe Echoes grid showing where characters in other RaggieSoft
+	 *    books encounter these songs in-universe.
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
@@ -32,13 +31,22 @@
 	import { buildPlaylistJsonLdScript, truncateMeta } from '#lib/seo.js';
 	import ShareModal from '#lib/components/ShareModal.svelte';
 
+	// Receive `{ playlist }` returned from `playlists/[slug]/+page.js` -> `load()`.
 	let { data } = $props();
+
+	// Keep `playlist` reactive with `$derived` so navigating client-side from one
+	// `/playlists/[slug]` URL to another updates every heading and track row cleanly!
 	let playlist = $derived(data.playlist);
+
+	// Tracks which song card's "Lyrics & Lore" accordion is currently open (`null` = all closed).
 	let expandedTrackId = $state(/** @type {string | null} */ (null));
+
+	// Controls the `<ShareModal />` popup (`null` when closed, metadata object when open).
 	let shareModalData = $state(/** @type {any} */ (null));
 
 	/**
-	 * Starts continuous playback of the story playlist from the given index.
+	 * Loads the full story playlist into the persistent bottom `<Player />` queue
+	 * and begins playing immediately from track `index` (defaults to `0`).
 	 * @param {number} [index=0]
 	 */
 	function playPlaylist(index = 0) {
@@ -48,13 +56,17 @@
 	}
 
 	/**
-	 * Toggles inline lyrics & lore accordion for a track.
+	 * Toggles inline lyrics & lore accordion for a track: clicking an already-open
+	 * track collapses it (`null`); clicking a closed track opens it (`id`).
 	 * @param {string} id
 	 */
 	function toggleExpandTrack(id) {
 		expandedTrackId = expandedTrackId === id ? null : id;
 	}
 
+	/**
+	 * Opens `<ShareModal />` pre-populated with this story playlist's canonical URL and artwork.
+	 */
 	function openShare() {
 		shareModalData = {
 			title: playlist.title,
@@ -65,12 +77,14 @@
 		};
 	}
 
-	// Build Schema.org MusicPlaylist + BreadcrumbList @graph JSON-LD with ISO 8601 durations
+	// Build Schema.org MusicPlaylist + BreadcrumbList @graph JSON-LD with ISO 8601 durations,
+	// and clamp OpenGraph title (<= 60 chars) & description (<= 155 chars) for social cards.
 	let playlistJsonLdScript = $derived(buildPlaylistJsonLdScript(playlist));
 	let seoOgTitle = $derived(truncateMeta(playlist.ogTitle || playlist.title, 60));
 	let seoDescription = $derived(truncateMeta(playlist.ogDescription || playlist.description, 155));
 </script>
 
+<!-- Inject playlist-specific `<title>`, `og:type="music.playlist"`, social preview art, and JSON-LD -->
 <svelte:head>
 	<title>{playlist.ogTitle || `${playlist.title} | The Listening Room`}</title>
 	<meta name="description" content={seoDescription} />
@@ -281,6 +295,11 @@
 		</div>
 
 		<div class="space-y-4">
+			<!--
+				Loop over every curated track in story-arc order, computing `isPlayingThis`
+				and `isExpanded` per row via `{@const ...}` so active playback and inline
+				Lyrics & Archival Liner Note drawers update independently per song.
+			-->
 			{#each playlist.tracks as track, idx (track.id + '-' + idx)}
 				{@const isPlayingThis = player.currentTrack.audioUrl === track.audioUrl && player.isPlaying}
 				{@const isExpanded = expandedTrackId === track.id}

@@ -1,10 +1,20 @@
 /**
  * @license MIT
  * ============================================================================
- * dspPreference.svelte.js
+ * src/lib/dspPreference.svelte.js — Preferred Streaming App & Respectful Nudge Manager
  * ============================================================================
- * Global Reactive DSP Preference & Respectful Nudge State Manager for
- * The Listening Room by Engine Room Records (music.raggiesoft.com).
+ * Plain-English Overview (100-Level JavaScript & Svelte 5 Runes Guide):
+ *   What is a "DSP", and what does this file do?
+ *     "DSP" stands for Digital Service Provider—streaming music apps like
+ *     Spotify, Apple Music, Amazon Music, and YouTube Music. On The Listening
+ *     Room (`music.raggiesoft.com`), listeners can preview free 128 kbps song
+ *     streams and then click one button (`<StoreButton />`) to jump straight
+ *     to full lossless/high-res audio on their favorite streaming app.
+ *
+ *     Rather than cluttering every album page with four separate buttons,
+ *     this `.svelte.js` Svelte 5 Runes module remembers which streaming app the
+ *     listener prefers (`preferredDsp`), saves it in `localStorage`, and keeps
+ *     every `<StoreButton />` across the entire website synchronized instantly!
  *
  * Architectural Responsibilities:
  * 1. Global Preferred Streaming Platform (`preferredDsp`):
@@ -29,10 +39,12 @@
  * ============================================================================
  */
 
+// Keys used in `window.localStorage` to persist user preferences across visits
 const STORAGE_KEY_DSP = 'user_preferred_dsp';
 const LEGACY_STORAGE_KEY_DSP = 'preferredMusicStore';
 const STORAGE_KEY_NUDGE_DISMISSALS = 'raggiesoft_listening_room_nudge_dismissals';
 const STORAGE_KEY_AUTOPLAY_DEEPLINKS = 'raggiesoft_music_autoplay_deeplinks_v1';
+// Maximum number of times the end-of-song support banner may be dismissed before staying hidden forever
 export const MAX_NUDGE_DISMISSALS = 3;
 
 /**
@@ -52,6 +64,7 @@ export const MAX_NUDGE_DISMISSALS = 3;
  * @returns {'spotify' | 'apple' | 'amazon' | 'youtube'}
  */
 export function detectSystemDefaultDsp() {
+	// During Server-Side Rendering (Node.js), `navigator` does not exist yet, so default to `'spotify'`
 	if (typeof navigator === 'undefined') return 'spotify';
 	const ua = navigator.userAgent || '';
 	const platform = navigator.platform || '';
@@ -66,7 +79,7 @@ export function detectSystemDefaultDsp() {
 }
 
 /**
- * Canonical configuration for each supported streaming platform.
+ * Canonical configuration dictionary for each supported streaming platform.
  * Brand colors and labels mirror `raggiesoft-hub/includes/components/store-button.php`
  * while framing the audio fidelity upgrade over the 128kbps web preview stream.
  */
@@ -117,12 +130,15 @@ export const DSP_PLATFORMS = {
 	}
 };
 
+// Ordered tuple of platform keys used when iterating over DSP options in UI menus
 export const DSP_ORDER = /** @type {const} */ (['spotify', 'apple', 'amazon', 'youtube']);
 
 class DspPreferenceManager {
+	// Svelte 5 `$state()` rune: changing `this.preferredDsp` instantly updates every `<StoreButton />` on screen
 	/** @type {'spotify' | 'apple' | 'amazon' | 'youtube'} */
 	preferredDsp = $state('spotify');
 
+	// Reactive counter tracking how many times the user dismissed the gentle player support banner
 	/** @type {number} */
 	nudgeDismissCount = $state(0);
 
@@ -139,6 +155,7 @@ class DspPreferenceManager {
 	initialized = false;
 
 	constructor() {
+		// Automatically hydrate saved `localStorage` values when instantiated in a browser
 		if (typeof window !== 'undefined') {
 			this.init();
 		}
@@ -154,6 +171,7 @@ class DspPreferenceManager {
 		this.initialized = true;
 
 		try {
+			// Check both current key (`user_preferred_dsp`) and legacy hub key (`preferredMusicStore`)
 			const savedDsp =
 				localStorage.getItem(STORAGE_KEY_DSP) || localStorage.getItem(LEGACY_STORAGE_KEY_DSP);
 			if (
@@ -167,6 +185,7 @@ class DspPreferenceManager {
 				this.preferredDsp = detectSystemDefaultDsp();
 			}
 
+			// Parse base-10 integer dismissal count from localStorage
 			const savedDismissals = parseInt(
 				localStorage.getItem(STORAGE_KEY_NUDGE_DISMISSALS) || '0',
 				10
@@ -175,6 +194,7 @@ class DspPreferenceManager {
 				this.nudgeDismissCount = savedDismissals;
 			}
 
+			// `localStorage` stores strings, so `'true'` converts back to boolean `true`
 			const savedAutoplay = localStorage.getItem(STORAGE_KEY_AUTOPLAY_DEEPLINKS);
 			this.autoplayDeepLinks = savedAutoplay === 'true';
 		} catch {
@@ -194,7 +214,7 @@ class DspPreferenceManager {
 			try {
 				localStorage.setItem(STORAGE_KEY_AUTOPLAY_DEEPLINKS, String(this.autoplayDeepLinks));
 			} catch {
-				// Ignore storage errors
+				// Ignore storage errors (e.g., Safari Private Browsing quota restrictions)
 			}
 		}
 	}
@@ -218,7 +238,8 @@ class DspPreferenceManager {
 	}
 
 	/**
-	 * Whether the gentle DSP support nudge is still allowed to appear after tracks finish.
+	 * JavaScript getter (`dspManager.canShowPlayerNudge`) that evaluates reactively
+	 * because it reads `this.nudgeDismissCount` (`$state`).
 	 * Respects the user's decision once they have dismissed it `MAX_NUDGE_DISMISSALS` times.
 	 */
 	get canShowPlayerNudge() {
@@ -227,7 +248,7 @@ class DspPreferenceManager {
 
 	/**
 	 * Increments the dismissal counter when the user closes a player DSP nudge.
-	 * @param {boolean} [permanent=false] - If true, immediately suppresses future nudges.
+	 * @param {boolean} [permanent=false] - If true ("Don't remind me"), jumps straight to `MAX_NUDGE_DISMISSALS`.
 	 */
 	dismissPlayerNudge(permanent = false) {
 		this.nudgeDismissCount = permanent
@@ -257,8 +278,9 @@ class DspPreferenceManager {
 	}
 
 	/**
-	 * Builds the dictionary of available DSP URLs for a given album or artist.
-	 * Handles partial DSP availability cleanly by omitting platforms without an ID.
+	 * Builds the array of available DSP URLs for a given album or artist.
+	 * Handles partial DSP availability cleanly by omitting platforms without an ID,
+	 * and returns `[]` immediately when `item.dspExempt` is `true` (e.g., cover songs or CC-only bonuses).
 	 *
 	 * @param {Object} item
 	 * @param {'album' | 'artist'} [item.type='album']
@@ -276,6 +298,7 @@ class DspPreferenceManager {
 		/** @type {Array<{ id: 'spotify' | 'apple' | 'amazon' | 'youtube', url: string, config: typeof DSP_PLATFORMS['spotify'] }>} */
 		const list = [];
 
+		// 1. Spotify (`/artist/<id>` vs. `/album/<id>`)
 		const spotifyId = (item.spotifyId || '').trim();
 		if (spotifyId) {
 			list.push({
@@ -288,6 +311,7 @@ class DspPreferenceManager {
 			});
 		}
 
+		// 2. Apple Music (`/us/artist/<id>` vs. `/us/album/<id>`)
 		const appleId = (item.appleId || '').trim();
 		if (appleId) {
 			list.push({
@@ -300,6 +324,7 @@ class DspPreferenceManager {
 			});
 		}
 
+		// 3. Amazon Music (`/artists/<id>` vs. `/albums/<id>`)
 		const amazonId = (item.amazonId || '').trim();
 		if (amazonId) {
 			list.push({
@@ -312,6 +337,7 @@ class DspPreferenceManager {
 			});
 		}
 
+		// 4. YouTube / YouTube Music (strips any stray trailing `&` query character)
 		const youtubeId = (item.youtubeId || '').trim().replace(/&+$/, '');
 		if (youtubeId) {
 			list.push({
@@ -329,8 +355,8 @@ class DspPreferenceManager {
 
 	/**
 	 * Resolves the active DSP entry for an item based on `this.preferredDsp`,
-	 * falling back gracefully to the first available platform if the user's
-	 * preferred platform is missing on a partial-DSP release.
+	 * falling back gracefully to `available[0]` (the first available platform) if
+	 * the user's preferred platform is missing on a partial-DSP release.
 	 *
 	 * @param {Parameters<DspPreferenceManager['getAvailablePlatforms']>[0]} item
 	 */
@@ -341,4 +367,5 @@ class DspPreferenceManager {
 	}
 }
 
+// Export singleton instance shared across `<StoreButton />`, `<Player />`, and `/settings`
 export const dspManager = new DspPreferenceManager();

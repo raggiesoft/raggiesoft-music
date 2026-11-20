@@ -2,24 +2,35 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Home & Discovery Dashboard: /)
+	 * FILE: src/routes/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/ (The Root Home & Discovery Dashboard)
 	 * ============================================================================
-	 * Discovery & Welcoming Dashboard for Engine Room Records (music.raggiesoft.com).
-	 * Modeled after the Sophia PWA architecture from the RaggieSoft Book Library.
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Because this `+page.svelte` sits directly at the top of `src/routes/` (not
+	 * inside any subfolder), it serves the root home URL `/` of The Listening Room!
+	 * It inherits `export const prerender = true` from `src/routes/+layout.js`, so
+	 * SvelteKit pre-builds `build/index.html` at compile time, and then "hydrates"
+	 * interactive features (time-of-day greetings, "Jump Back In" session resume,
+	 * and date-driven seasonal showcases) as soon as the page loads in the browser.
 	 *
-	 * Architectural Principles:
+	 * Architectural Principles & What the Listener Sees on Screen:
 	 * 1. SEO-Friendly Navigation & Changing URLs:
-	 *    - Every Artist card links directly to `/artist/[slug]`.
-	 *    - Every Album card links directly to `/album/[slug]`.
-	 *    - "Browse Complete Discography" links to `/discography`.
-	 *    - The complex multi-tier search and filter matrix lives inside the
-	 *      toggleable `<SearchFilterModal />` so the main heading stays clean.
+	 *    - Every Artist card links directly to `/[artist]`.
+	 *    - Every Album card links directly to `/[artist]/[album]`.
+	 *    - "Full Discography" links to `/discography`, and "Engine Room Radio" links
+	 *      to `/radio`.
+	 *    - The multi-tier search and filter matrix lives inside the toggleable
+	 *      `<SearchFilterModal />` so the welcome header stays clean.
 	 * 2. Session Persistence ("Jump Back In"):
 	 *    - Restores last played album, track, and playback timestamp from
 	 *      `localStorage` so returning listeners can resume with one tap.
-	 * 3. Book-Reader-Style Social Sharing:
-	 *    - Includes `<ShareModal />` for instant social sharing of spotlight releases
-	 *      and an inline `<ShareSection />` at the bottom of the Home dashboard.
+	 * 3. Automatic Date-Driven Showcases (`America/New_York` Eastern Time):
+	 *    - Displays the Sir Patrick Stewart *In Memoriam* Cosmic Quartet through
+	 *      Nov 28, 2026 (`23:59:59 EST`), then automatically switches to the yearly
+	 *      Winter & Holiday Symphonic Showcase through Jan 1!
+	 * 4. Book-Reader-Style Social Sharing:
+	 *    - Includes `<ShareModal />` for spotlight cards and an inline `<ShareSection />`
+	 *      at the bottom of the Home dashboard.
 	 * ============================================================================
 	 */
 	import { onMount } from 'svelte';
@@ -40,6 +51,8 @@
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
+	// Reactive `$state` & `$derived` state for the Home Discovery Dashboard:
+	// `currentCatalog` starts with build-time `allAlbums` and refreshes from CDN in `onMount`.
 	let currentCatalog = $state(allAlbums);
 	let featuredStoryPlaylist = $derived(getCuratedPlaylistBySlug('john-and-erin', currentCatalog));
 	let savedSession = $state(/** @type {any} */ (null));
@@ -48,7 +61,8 @@
 	let shareModalData = $state(/** @type {any} */ (null));
 
 	/**
-	 * Dismisses the Transparency & Dual Timeline notice and persists preference.
+	 * Dismisses the Transparency & Dual Timeline notice and persists `'true'` in
+	 * `window.localStorage` so returning listeners aren't interrupted repeatedly.
 	 */
 	function dismissTransparencyNotice() {
 		showTransparencyNotice = false;
@@ -61,7 +75,7 @@
 		}
 	}
 
-	// Dynamic time-of-day greeting
+	// Dynamic time-of-day greeting computed via `$derived.by()` from the 24-hour clock (`0`..`23`)
 	let timeGreeting = $derived.by(() => {
 		const hour = new Date().getHours();
 		if (hour < 12) return 'Good morning, Listener.';
@@ -143,9 +157,11 @@
 			// Fallback to local calendar
 		}
 
-		if (month === 12) return true;
-		if (month === 1) return day === 1;
+		if (month === 12) return true; // Active all of December
+		if (month === 1) return day === 1; // Active on New Year's Day; packs away Jan 2
 		if (month === 11) {
+			// Compute Black Friday: US Thanksgiving is the 4th Thursday of November,
+			// so Black Friday is `firstThursday + 21` days + `1` day = `firstThursday + 22`.
 			const nov1Dow = new Date(Date.UTC(year, 10, 1)).getUTCDay();
 			const firstThursday = 1 + ((4 - nov1Dow + 7) % 7);
 			const blackFridayDay = firstThursday + 22;
@@ -718,6 +734,13 @@
 	{/if}
 
 	<!-- 2. FEATURED ROCK OPERA SPOTLIGHT (Evergreen LCP Hero) -->
+	<!--
+		CORE WEB VITALS PERFORMANCE TIP (Largest Contentful Paint / LCP):
+		Notice the hero `<img>` below sets `fetchpriority="high"` and explicit
+		`width="600" height="600"` WITHOUT `loading="lazy"`, so the browser fetches
+		the spotlight cover immediately with zero layout shift. Images further down
+		the page use `loading="lazy"` to save mobile bandwidth!
+	-->
 	{#if spotlightAlbum}
 		<section class="relative rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl">
 			<div class="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">

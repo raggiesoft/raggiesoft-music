@@ -1,10 +1,30 @@
 /**
  * @license MIT
  * ============================================================================
- * musicData.js
+ * src/lib/data/musicData.js — Hand-Authored Catalog Query, Radio & Song-Family Engine
  * ============================================================================
- * Central catalog and canonical metadata registry for The Listening Room
- * by Engine Room Records (music.raggiesoft.com).
+ * Plain-English Overview (100-Level JavaScript Guide):
+ *   How do `musicCatalog.json` and `musicData.js` work together?
+ *     1. `scripts/build-catalog.js` automatically generates `musicCatalog.json`
+ *        (the raw array of every album and track on disk).
+ *     2. THIS file (`musicData.js`) is hand-authored JavaScript that imports
+ *        `rawCatalog` from `./musicCatalog.json` and turns it into rich,
+ *        ready-to-use helper functions and derived collections for every page
+ *        and component in The Listening Room:
+ *          - `allAlbums`, `allArtists`, `getArtistBySlug()`, `catalogStats`
+ *          - `formatAlbumQueue()` & `formatSingleTrackForPlayer()`: Flattens
+ *            album artwork, artist name, and DSP links onto each playable track
+ *            using the JavaScript object spread operator (`{ ...t, album: album.title }`).
+ *          - `buildRadioBroadcast()`: Builds *Engine Room Radio* (`/radio`) using
+ *            ISRC deduplication and a block-level Fisher-Yates shuffle so multi-album
+ *            Rock Opera Series play in unbroken story order!
+ *          - `formatReleaseDate()`: Formats `YYYY-MM-DD` dates using local calendar
+ *            integers (`new Date(year, monthIndex, day)`) + `Intl.DateTimeFormat`
+ *            so UTC midnight timezone shifts never subtract a day!
+ *          - `getSongFamilyKey()`, `getRelatedSongs()`, & `buildSongFamilyComparisonQueue()`:
+ *            Groups studio originals, early demos, live concert versions, and
+ *            Cosmic Tidal Lock Mixes of the same song so listeners can compare
+ *            versions side-by-side!
  *
  * Architecture & Design Decisions:
  * 1. Data-Driven Architecture: Ingests the unified `musicCatalog.json` generated
@@ -23,6 +43,7 @@
  * ============================================================================
  */
 
+// Vite natively supports importing `.json` files directly as parsed JavaScript arrays/objects!
 import rawCatalog from './musicCatalog.json';
 
 /**
@@ -685,7 +706,10 @@ export function buildRadioBroadcast(catalog = allAlbums) {
 		});
 	}
 
-	// Fisher-Yates shuffle at the block level (preserving internal track order of every Rock Opera & Series)
+	// Fisher-Yates ("Knuth") Shuffle Algorithm at the block level:
+	// Walks backward from the last index `i` down to `1`, picking a random index `0 <= j <= i`
+	// and swapping `shuffleableBlocks[i]` with `shuffleableBlocks[j]`. Every possible ordering
+	// is mathematically equally likely, while multi-track Rock Opera blocks stay intact inside!
 	for (let i = shuffleableBlocks.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
 		const temp = shuffleableBlocks[i];
@@ -693,7 +717,8 @@ export function buildRadioBroadcast(catalog = allAlbums) {
 		shuffleableBlocks[j] = temp;
 	}
 
-	// Flatten shuffled blocks into the final continuous broadcast queue
+	// `.flatMap((b) => b.tracks)` unwraps all 1-track blocks and multi-track Rock Opera blocks
+	// into one continuous 1D array of tracks ready for `player.loadQueue(...)`.
 	const flattenedTracks = shuffleableBlocks.flatMap((b) => b.tracks);
 
 	// Calculate days, hours, and minutes

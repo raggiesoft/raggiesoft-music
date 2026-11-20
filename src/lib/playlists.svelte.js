@@ -1,10 +1,25 @@
 /**
  * @license MIT
  * ============================================================================
- * playlists.svelte.js
+ * src/lib/playlists.svelte.js — Official Story Playlists & Custom User Playlist Store
  * ============================================================================
- * Canonical Story Playlists Registry & Custom User Playlist Manager for
- * The Listening Room by Engine Room Records (music.raggiesoft.com).
+ * Plain-English Overview (100-Level JavaScript & Svelte 5 Runes Guide):
+ *   This `.svelte.js` module powers BOTH kinds of playlists in The Listening Room:
+ *     1. Official Curated Story Playlists (`curatedPlaylists` array):
+ *        Hand-crafted multi-album story arcs (like *Before the Distance: The Story
+ *        of John & Erin* and *The Cosmic Tidal Lock Sound™*) that pair lightweight
+ *        track pointers (`artistSlug`, `albumSlug`, `trackId`) with book chapter
+ *        links and point-of-view story summaries. `resolvePlaylistTracks()` joins
+ *        those pointers with `allAlbums` from `musicData.js` (just like a relational
+ *        join, but in pure in-memory JavaScript!).
+ *     2. Custom Listener Playlists (`UserPlaylistManager` class -> `playlistManager`):
+ *        Uses Svelte 5 `$state([])` + browser `localStorage` (`engine_room_user_playlists_v1`)
+ *        so any visitor can build their own playlists, reorder songs, and even share
+ *        a playlist with friends—without needing user accounts or a backend database!
+ *        How does serverless sharing work? `buildShareUrl()` packs the playlist's
+ *        title and track IDs into a compact JSON string, Base64-encodes it with
+ *        `btoa(...)` into `?import=...`, and `importFromEncoded()` decodes it with
+ *        `atob(...)` on the recipient's device!
  *
  * Architectural Responsibilities:
  * 1. Official Curated Story Playlists (`curatedPlaylists`):
@@ -769,7 +784,10 @@ class UserPlaylistManager {
 	}
 
 	/**
-	 * Moves a track up or down within a custom user playlist.
+	 * Moves a track up or down within a custom user playlist using immutable array copying:
+	 *   1. `const copy = [...pl.trackSpecs]` clones the array so we don't mutate in place
+	 *   2. `const [moved] = copy.splice(fromIndex, 1)` removes 1 element at `fromIndex`
+	 *   3. `copy.splice(toIndex, 0, moved)` inserts `moved` back at `toIndex`
 	 *
 	 * @param {string} playlistId
 	 * @param {number} fromIndex

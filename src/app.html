@@ -1,8 +1,32 @@
 <!doctype html>
+<!--
+	============================================================================
+	src/app.html — Master HTML Document Shell for The Listening Room
+	============================================================================
+	Plain-English Overview (100-Level JavaScript & Web Guide):
+	  Every page on `music.raggiesoft.com` starts from this single HTML skeleton.
+	  SvelteKit takes this file and fills in two special template slots:
+	    1. The head slot inside `<head>`: Replaced with each page's title,
+	       meta tags, canonical `rel="canonical"` URL, and CSS/JS bundle imports.
+	    2. The body slot inside `<body>`: Replaced with the rendered HTML from
+	       `src/routes/+layout.svelte` and the current route's `+page.svelte`.
+
+	  Why is there an inline `<script>` inside `<head>` BEFORE any CSS or body?
+	    Browsers execute synchronous `<script>` tags in `<head>` BEFORE painting
+	    a single pixel on screen. By reading `localStorage.getItem('engine_room_settings')`
+	    and `window.matchMedia('(prefers-color-scheme: dark)')` right here, we set
+	    `data-theme` and `data-color-scheme` on `<html>` immediately—preventing a
+	    jarring "Flash of Unstyled/Wrong-Theme Content" (FOUC) when someone reloads
+	    the page in Light Mode or Sepia Mode!
+	============================================================================
+-->
 <html lang="en" data-theme="studio" data-color-scheme="dark" data-color-mode="auto">
 	<head>
+		<!-- UTF-8 character encoding ensures curly quotes, em-dashes, and musical symbols render cleanly -->
 		<meta charset="utf-8" />
+		<!-- `viewport-fit=cover` extends background surfaces into iOS notch / Dynamic Island safe areas -->
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<!-- Respects OS-level dynamic text scaling for low-vision accessibility -->
 		<meta name="text-scale" content="scale" />
 
 		<!--
@@ -14,11 +38,14 @@
 			and tag standalone PWA display mode. Server-side 301 redirects for
 			`/artists/*` are enforced by Nginx and `src/hooks.server.js`; the
 			client check remains solely as an offline Service Worker fallback.
+			Note: Written as an IIFE `(function () { ... })();` using ES5 `var` so
+			variables stay private and never collide with global `window` scope.
 			========================================================================
 		-->
 		<script>
 			(function () {
 				try {
+					// 1. Offline Service Worker fallback redirect for legacy `/artists/*` URLs
 					if (window.location && /^\/artists(\/|$)/i.test(window.location.pathname)) {
 						var stripped = window.location.pathname.replace(/^\/artists\/?/i, '/');
 						var cleanPath = stripped === '/' ? '/discography' : stripped;
@@ -27,10 +54,12 @@
 						);
 						return;
 					}
+					// 2. Read saved theme palette & light/dark mode preference from browser localStorage
 					var raw = localStorage.getItem('engine_room_settings');
 					var parsed = raw ? JSON.parse(raw) : {};
 					var theme = parsed.theme || 'studio';
 					var colorMode = parsed.colorMode || 'auto';
+					// Check if the visitor's OS (macOS, Windows, iOS, Android) prefers Dark Mode
 					var osDark =
 						window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 					var scheme =
@@ -41,12 +70,14 @@
 								: osDark
 									? 'dark'
 									: 'light';
+					// Stamp resolved attributes onto `<html>` (`document.documentElement`) before first paint
 					var root = document.documentElement;
 					root.setAttribute('data-theme', theme);
 					root.setAttribute('data-color-scheme', scheme);
 					root.setAttribute('data-color-mode', colorMode);
 					root.style.colorScheme = scheme;
 
+					// 3. Detect if launched from an installed OS Home Screen / Desktop PWA icon
 					var isPwa =
 						(window.navigator && window.navigator.standalone === true) ||
 						(document.referrer && document.referrer.indexOf('android-app://') === 0) ||
@@ -704,6 +735,12 @@
 			media="(prefers-color-scheme: dark) and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
 		/>
 	</head>
+	<!--
+		`data-sveltekit-preload-data="hover"`: When a user hovers their mouse (or begins a tap)
+		over an internal `<a href="...">` link, SvelteKit preloads the next page's code/data in
+		the background so clicking feels instantaneous!
+		`style="display: contents"` makes the wrapper `<div>` layout-transparent to CSS Flexbox/Grid.
+	-->
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>

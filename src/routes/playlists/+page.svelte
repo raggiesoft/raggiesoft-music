@@ -2,27 +2,28 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (/playlists)
+	 * FILE: src/routes/playlists/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/playlists
 	 * ============================================================================
-	 * Official Story Playlists Hub & Custom User Playlist Studio for
-	 * The Listening Room by Engine Room Records (music.raggiesoft.com/playlists).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Placed inside `src/routes/playlists/`, this component serves `/playlists`
+	 * (prerendered into `build/playlists.html` via root `+layout.js`). Notice how
+	 * `src/routes/playlists/` ALSO has a child folder `[slug]/`—in SvelteKit,
+	 * `playlists/+page.svelte` handles the exact `/playlists` index hub, while
+	 * `playlists/[slug]/+page.svelte` handles individual playlist detail URLs
+	 * like `/playlists/john-and-erin`!
 	 *
-	 * Architectural Responsibilities:
-	 * 1. Official Curated Story Playlists:
-	 *    - Highlights multi-album narrative arcs published by Engine Room Records
-	 *      artists, starting with "Before the Distance: The Story of John & Erin"
-	 *      by The Stardust Engine.
-	 *    - Provides one-click continuous playback, direct links to the dedicated
-	 *      showcase route (`/playlists/john-and-erin`), the Ocean View Archives
-	 *      novel (`https://books.raggiesoft.com/erin`), and the official Stardust
-	 *      Engine lore page (`https://raggiesoft.com/engine-room/artists/stardust-engine/story/john-and-erin`).
-	 * 2. Interactive Custom Playlist Builder:
-	 *    - Allows listeners to create unlimited custom playlists persisted in
-	 *      `localStorage` (`engine_room_user_playlists_v1`).
-	 *    - Includes an integrated 344-track catalog search & picker so users can
-	 *      search by song title, artist, or album and add tracks directly to their
-	 *      active custom playlist, reorder tracks, play them sequentially, or
-	 *      export a shareable URL (`?import=...`).
+	 * WHAT THE USER SEES & INTERACTS WITH ON THIS SCREEN:
+	 * 1. Official Curated Story Playlists (Section 1):
+	 *    - Multi-album narrative suites curated by Engine Room Records bands
+	 *      (such as "Before the Distance: The Story of John & Erin"), complete
+	 *      with one-click playback, act badges, and companion Ocean View Archives
+	 *      book & lore links.
+	 * 2. Interactive Custom User Playlist Studio (Section 2):
+	 *    - Lets visitors create, rename, delete, reorder (`↑` / `↓`), play, and
+	 *      share unlimited custom playlists stored privately in `localStorage`.
+	 *    - Includes an instant catalog search picker across every playable song
+	 *      plus automatic URL import when someone opens a shared `?import=...` link!
 	 * ============================================================================
 	 */
 	import { onMount } from 'svelte';
@@ -38,10 +39,11 @@
 		computePlaylistDuration
 	} from '#lib/playlists.svelte.js';
 
+	// Catalog & official story playlists (recomputed reactively if `currentCatalog` updates).
 	let currentCatalog = $state(allAlbums);
 	let officialPlaylists = $derived(getAllCuratedPlaylists(currentCatalog));
 
-	// Custom playlist creation & editing state
+	// Custom playlist creation & editing `$state` variables bound to form inputs and buttons.
 	let newTitle = $state('');
 	let newDescription = $state('');
 	let selectedCustomId = $state(/** @type {string | null} */ (null));
@@ -49,7 +51,8 @@
 	let copiedShareId = $state(/** @type {string | null} */ (null));
 	let importNotice = $state('');
 
-	// Flatten all playable tracks across the catalog for the custom playlist track picker
+	// Flatten all playable tracks across every album into a single searchable array
+	// so the "Add Songs" picker can search the entire catalog in milliseconds.
 	let allPlayableCatalogTracks = $derived.by(() => {
 		/** @type {Array<any>} */
 		const list = [];
@@ -62,7 +65,9 @@
 		return list;
 	});
 
-	// Filtered catalog tracks for the custom playlist track adder
+	// Reactive search filter for the custom playlist track picker:
+	// Shows the first 12 tracks when empty, or up to 20 matching songs when typing
+	// (`.slice(0, 20)` keeps the scrollable DOM list fast and compact).
 	let filteredPickerTracks = $derived.by(() => {
 		const q = trackSearchQuery.trim().toLowerCase();
 		if (!q) return allPlayableCatalogTracks.slice(0, 12);
@@ -76,7 +81,10 @@
 			.slice(0, 20);
 	});
 
-	// Currently selected custom playlist object + hydrated tracks
+	// Hydrate the currently selected custom playlist:
+	// `playlistManager.playlists` stores lightweight `{ artistSlug, albumSlug, trackId }`
+	// references in `localStorage`. `resolvePlaylistTracks()` joins those references
+	// against `currentCatalog` to attach full titles, artwork, durations, and MP3 URLs!
 	let activeCustomPlaylist = $derived.by(() => {
 		const found =
 			playlistManager.playlists.find((p) => p.id === selectedCustomId) ||
@@ -85,6 +93,7 @@
 		if (!found) return null;
 		const hydratedTracks = resolvePlaylistTracks(found.trackSpecs, currentCatalog);
 		const durationInfo = computePlaylistDuration(hydratedTracks);
+		// Object spread (`...found`) copies all properties of `found` and adds `tracks` + `formattedDuration`.
 		return {
 			...found,
 			tracks: hydratedTracks,
@@ -93,9 +102,13 @@
 	});
 
 	onMount(() => {
+		// Load any saved custom playlists from `localStorage`.
 		playlistManager.init();
 
-		// Check if a shared playlist is being imported via ?import=
+		// URL-Based Playlist Sharing (`?import=...`):
+		// Because we have zero backend database, sharing a custom playlist encodes its
+		// title and track IDs directly into a URL query parameter! When a friend opens
+		// that link, `importFromEncoded()` decodes it and saves a copy to their browser.
 		const importParam = page.url?.searchParams?.get('import');
 		if (importParam) {
 			const importedId = playlistManager.importFromEncoded(importParam);
@@ -112,7 +125,8 @@
 	});
 
 	/**
-	 * Plays a hydrated track list in the global player.
+	 * Plays a hydrated track list in the global player starting at `startIndex`
+	 * (defaults to `0`, the first song, when omitted).
 	 * @param {Array<any>} tracks
 	 * @param {number} [startIndex=0]
 	 */
@@ -123,7 +137,9 @@
 	}
 
 	/**
-	 * Creates a new custom user playlist.
+	 * Form `onsubmit` handler that creates a new custom user playlist.
+	 * Calling `e.preventDefault()` stops the browser's default HTML `<form>`
+	 * behavior of refreshing the whole page on submit!
 	 * @param {SubmitEvent} e
 	 */
 	function handleCreatePlaylist(e) {
@@ -136,7 +152,8 @@
 	}
 
 	/**
-	 * Copies a shareable URL for a custom playlist to the clipboard.
+	 * Encodes a custom playlist into a shareable `?import=...` URL and copies it
+	 * to the system clipboard using the async `navigator.clipboard.writeText()` API.
 	 * @param {any} pl
 	 */
 	async function handleShareCustomPlaylist(pl) {
@@ -160,6 +177,7 @@
 	]);
 </script>
 
+<!-- SEO, OpenGraph, Twitter Card, and BreadcrumbList JSON-LD metadata for `/playlists` -->
 <svelte:head>
 	<title>Story Playlists &amp; Custom Queue Builder | The Listening Room</title>
 	<meta name="description" content={playlistsDescription} />
@@ -664,6 +682,10 @@
 						</div>
 
 						<!-- Current Tracks in Active Custom Playlist -->
+						<!--
+							Allows one-click playback from any row, upward/downward reordering
+							(`playlistManager.moveTrack`), and single-track removal (`removeTrackAt`).
+						-->
 						{#if activeCustomPlaylist.tracks.length === 0}
 							<div
 								class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/50 p-6 text-center"

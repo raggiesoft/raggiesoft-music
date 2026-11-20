@@ -2,10 +2,37 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * Player.svelte
+	 * src/lib/components/Player.svelte — Persistent Bottom Audio Bar & Karaoke Drawer
 	 * ============================================================================
-	 * High-performance, WCAG 2.1 AA compliant persistent audio player built with
-	 * Svelte 5 Runes.
+	 * Plain-English Overview (100-Level JavaScript, Svelte 5 & Web Audio Guide):
+	 *   This component is the visual and browser-API bridge for `src/lib/player.svelte.js`.
+	 *   Mounted once inside `+layout.svelte`, it stays alive across every route
+	 *   transition on `music.raggiesoft.com` and connects FIVE major web concepts:
+	 *
+	 *   1. Svelte 5 `$effect(() => { ... })` Side Effects:
+	 *      Unlike `$derived()` (which computes a pure value), `$effect()` runs code
+	 *      that talks to the *outside world* (the DOM or browser APIs) whenever any
+	 *      reactive `$state` read inside it changes—such as scrolling the active
+	 *      lyric line into the center of `lyricsContainer`, adjusting `audioElement.volume`,
+	 *      or pushing album art to the operating system's lock screen!
+	 *   2. HTML5 `<audio>` Lifecycle Events:
+	 *      - `ontimeupdate`: Fires ~4x/sec while audio plays -> updates `player.currentTime`
+	 *      - `onloadedmetadata`: Fires when MP3 headers arrive -> sets `player.duration`
+	 *      - `onwaiting` / `oncanplay`: Toggles the spinning loading indicator while buffering
+	 *      - `onended`: Fires when a song finishes -> triggers `player.onTrackEnded()`
+	 *   3. W3C `navigator.mediaSession` API:
+	 *      Sends track title, band name, album name, and artwork to macOS Now Playing,
+	 *      Windows Media Overlay, iOS Lock Screen / Dynamic Island, CarPlay, and Android,
+	 *      and wires hardware Play/Pause/Next/Previous/Scrub media keys back to `player`!
+	 *   4. Interactive WebVTT Karaoke Highlighting & Click-to-Seek:
+	 *      Loops through `player.cues` (`{#each}`), computes `{@const isActive = ...}`
+	 *      for the current timestamp, highlights the active line, auto-scrolls it smoothly,
+	 *      and lets listeners click ANY lyric line to jump straight to that verse!
+	 *   5. Accessibility (`WCAG 2.1 AA`):
+	 *      Includes an invisible `aria-live="polite"` announcer for screen readers,
+	 *      keyboard shortcuts (`Space`, `ArrowLeft`, `ArrowRight`, `M`, `Escape`), and
+	 *      safe scrubber dragging (`isScrubbing` prevents `ontimeupdate` from fighting
+	 *      the user's finger/mouse while dragging the slider).
 	 *
 	 * Features:
 	 * - Seamless gapless queue playback for multi-disc rock operas.
@@ -25,11 +52,14 @@
 	} from '#lib/data/musicData.js';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
+	// `bind:this={audioElement}` binds the invisible `<audio>` HTML tag below directly to this `$state` variable.
+	// `isScrubbing` + `scrubTime` hold temporary slider position while the user drags the progress bar
+	// so `ontimeupdate` doesn't snap the thumb backward mid-drag!
 	let audioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
 	let isScrubbing = $state(false);
 	let scrubTime = $state(0);
 
-	// Reactively compute related recordings and alternate versions for the active track
+	// Reactively compute related recordings and alternate versions (demos, live takes, mixes) for the active track
 	let currentRelatedSongs = $derived(
 		player.currentTrack?.title
 			? getRelatedSongs(player.currentTrack, player.currentTrack.albumSlug)
@@ -65,11 +95,13 @@
 		}
 	}
 
-	// Synchronized WebVTT lyrics scroll container and tracking
+	// Synchronized WebVTT lyrics scroll container (`bind:this={lyricsContainer}`) and previous cue index
 	let lyricsContainer = $state(/** @type {HTMLElement | null} */ (null));
 	let lastActiveIndex = -1;
 
-	// Automatically scroll the synchronized lyrics container to keep the active cue in view
+	// EFFECT 1: Auto-scroll synchronized karaoke lyrics to keep `player.activeCue` centered vertically.
+	// Math breakdown: `elTop - containerHeight / 2 + elHeight / 2` aligns the middle of the active lyric
+	// button with the exact vertical midpoint of the scrollable `lyricsContainer` box!
 	$effect(() => {
 		if (!player.isExpanded || player.drawerTab !== 'lyrics-lore') {
 			lastActiveIndex = -1;
@@ -97,13 +129,15 @@
 		}
 	});
 
-	// Register the mounted HTML5 audio element with the global player store
+	// EFFECT 2: Register the mounted HTML5 `<audio>` element with `player` in `player.svelte.js`.
+	// Returning a cleanup arrow function `() => player.setAudioElement(null)` tells Svelte to clean up
+	// the reference automatically if `Player.svelte` is ever unmounted.
 	$effect(() => {
 		player.setAudioElement(audioElement);
 		return () => player.setAudioElement(null);
 	});
 
-	// Synchronize audio element playback state with player store
+	// EFFECT 3: Synchronize `<audio>` DOM `.play()` / `.pause()` calls whenever `audioUrl`, `isPlaying`, or `_playTrigger` changes
 	$effect(() => {
 		const url = player.currentTrack.audioUrl;
 		const playing = player.isPlaying;
@@ -123,20 +157,21 @@
 		}
 	});
 
-	// Synchronize volume and mute properties
+	// EFFECT 4: Synchronize `<audio>` volume (`0.0` to `1.0`) and boolean `.muted` property
 	$effect(() => {
 		if (!audioElement) return;
 		audioElement.volume = player.volume;
 		audioElement.muted = player.isMuted;
 	});
 
-	// Synchronize audio playback rate
+	// EFFECT 5: Synchronize `<audio>` playback speed (`0.8x`, `1.0x`, `1.25x`, `1.5x`)
 	$effect(() => {
 		if (!audioElement) return;
 		audioElement.playbackRate = player.playbackRate;
 	});
 
-	// Synchronize browser Media Session API
+	// EFFECT 6: W3C `navigator.mediaSession` integration for OS lock screens, Bluetooth headphones,
+	// CarPlay / Android Auto, and MacBook / desktop hardware media keys (`play`, `pause`, `nexttrack`, etc.)
 	$effect(() => {
 		if (
 			typeof navigator === 'undefined' ||
@@ -176,7 +211,10 @@
 	});
 
 	/**
-	 * Keyboard shortcut handling (Space, Arrow keys, Mute)
+	 * Global keyboard shortcut handler (`Space` = play/pause, `ArrowLeft`/`ArrowRight` = +/- 5s,
+	 * `M` = mute, `Escape` = close expanded drawer).
+	 * Crucial guard: ignores keystrokes when focus is inside `<input>`, `<textarea>`, or `<select>`
+	 * so typing a space or "m" inside the Search bar doesn't accidentally pause or mute the music!
 	 * @param {KeyboardEvent} event
 	 */
 	function handleKeydown(event) {
@@ -204,6 +242,9 @@
 	}
 
 	/**
+	 * Fires continuously (`oninput`) while the user drags the range slider thumb.
+	 * Sets `isScrubbing = true` so `ontimeupdate` on `<audio>` pauses overwriting the slider
+	 * while updating `scrubTime` for live visual feedback.
 	 * @param {Event} e
 	 */
 	function onScrubInput(e) {
@@ -213,6 +254,8 @@
 	}
 
 	/**
+	 * Fires once (`onchange`) when the user releases the range slider thumb (or presses an arrow key on the slider),
+	 * committing the new playback timestamp to `player.seek(targetTime)`.
 	 * @param {Event} e
 	 */
 	function onScrubChange(e) {
@@ -223,9 +266,17 @@
 	}
 </script>
 
+<!-- Attach global keyboard shortcut listener (`Space`, `ArrowLeft`, `ArrowRight`, `M`, `Escape`) -->
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- Invisible HTML5 Audio Engine (preload="none" while idle so page load never fetches full audio) -->
+<!--
+	Invisible HTML5 Audio Engine:
+	- `bind:this={audioElement}` connects this real DOM `<audio>` tag to our JavaScript `audioElement` variable.
+	- `preload={player.isPlaying ? 'auto' : 'none'}` ensures static HTML renders with `preload="none"` so
+	  visiting a page NEVER wastes mobile bandwidth downloading MP3 bytes until the listener presses Play!
+	- `ontimeupdate`, `onloadedmetadata`, `onwaiting`, `oncanplay`, `onended`, and `onerror` push browser
+	  media engine events straight back into `player` (`player.svelte.js`).
+-->
 <audio
 	bind:this={audioElement}
 	src={player.currentTrack.audioUrl || undefined}
@@ -251,7 +302,12 @@
 	}}
 ></audio>
 
-<!-- Screen Reader Announcement Live Region (WCAG 2.1 AA) -->
+<!--
+	Screen Reader Announcement Live Region (WCAG 2.1 AA):
+	`.sr-only` visually hides this `<div>` while keeping it readable by VoiceOver / NVDA / JAWS.
+	`aria-live="polite"` waits until the screen reader finishes speaking its current sentence
+	before announcing the new song title and artist!
+-->
 <div class="sr-only" aria-live="polite" aria-atomic="true">
 	{#if player.currentTrack.title}
 		Now playing {player.currentTrack.title} by {player.currentTrack.artist}.
@@ -751,7 +807,14 @@
 							</div>
 						{/if}
 
-						<!-- Synchronized Lyrics (WebVTT Cues) -->
+						<!--
+							Synchronized Lyrics (WebVTT Cues):
+							- `{#each player.cues as cue, idx (cue.start + '-' + idx)}` renders one clickable `<button>` per lyric cue.
+							- `{@const isActive = ...}` is Svelte's local template constant: it evaluates `true` while the audio
+							  playhead (`player.currentTime`) sits between `cue.start` and `cue.end`, applying bold white styling
+							  and `aria-current="true"` for assistive technologies.
+							- Clicking any lyric line calls `player.seek(cue.start)` to jump straight to that timestamp!
+						-->
 						{#if player.cues.length > 0}
 							<div class="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
 								<div class="mb-3 flex items-center justify-between">

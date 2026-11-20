@@ -2,35 +2,44 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * src/routes/studio/+page.svelte
+	 * FILE: src/routes/studio/+page.svelte
+	 * URL SERVED: music.raggiesoft.com/studio (and http://localhost:5173/studio)
 	 * ============================================================================
-	 * Engine Room Records — Local Studio IDE & DistroKid-Style Hold-Spacebar
-	 * VTT Lyric Synchronizer (`/studio`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/studio/+page.js`, this component is our built-in
+	 * **Engine Room Studio IDE & DistroKid-Style Hold-Spacebar WebVTT (`.vtt`)
+	 * Lyric Synchronizer**.
 	 *
-	 * Architectural Overview:
-	 * 1. DistroKid-Style Hold-Spacebar VTT Synchronizer:
-	 *    - Loads any Artist -> Album -> Track from `musicCatalog.json`.
-	 *    - Streams audio directly from `raggiesoft-assets` via `/__studio_api/audio`
-	 *      when running locally (`./studio.sh` / `npm run dev`), or falls back to
-	 *      the DigitalOcean Spaces CDN (`track.audioUrl`).
-	 *    - Parses either an existing `.vtt` file or strips structural markdown
-	 *      headers (`[Verse 1]`, `[Chorus]`, `*stage directions*`) from `track.lyrics`
-	 *      into clean, singable lyric lines.
-	 *    - Hold-Spacebar Capture Engine:
-	 *      - Pressing and HOLDING `Spacebar` stamps `startTime = currentTime` on
-	 *        the active lyric line (`isHoldingSpace = true`).
-	 *      - RELEASING `Spacebar` stamps `endTime = currentTime`, marks the cue
-	 *        synced, and automatically advances `activeLineIndex` to the next line.
-	 *    - One-click save writes `WEBVTT\nNOTE SYNC_TYPE: HUMAN_VERIFIED` directly
-	 *      to `raggiesoft-assets/engine-room-records/artists/{artist}/{album}/lyrics/{fileName}.vtt`
-	 *      (and `streaming-services/lyrics/{fileName}.vtt`), causing `harper.sh`
-	 *      (`04-track-processor.sh`) to automatically skip AI WhisperX overwriting.
+	 * WHAT IS A `.vtt` (WebVTT) FILE?
+	 * WebVTT ("Web Video Text Tracks") is the W3C browser standard for time-synced
+	 * captions and karaoke-style scrolling lyrics! Every `.vtt` file begins with
+	 * `WEBVTT`, optional `NOTE` metadata comments, and a list of timed "cues":
 	 *
-	 * 2. Album & Track Metadata / Lore Editor:
-	 *    - Edits `album.json` (`title`, `subtitle`, `genre`, `year`, `datePublished`,
-	 *      `upc`, `description`, `linerNotes`) and `tracks.json` + `lyrics/{fileName}.md`
-	 *      (`title`, `isrc`, `legacyTier`, `stylePrompt`, `loreNote`, `lyrics`)
-	 *      and saves directly to disk via `/__studio_api/save-metadata`.
+	 *   WEBVTT
+	 *   NOTE SYNC_TYPE: HUMAN_VERIFIED
+	 *
+	 *   00:00:12.450 --> 00:00:16.800
+	 *   First line of the verse sung here
+	 *
+	 * HOW THE HOLD-SPACEBAR SYNCHRONIZER WORKS (END-TO-END):
+	 * 1. Pick an Artist -> Album -> Track from the 3 cascading `<select>` menus.
+	 * 2. `loadTrackIntoStudio()` either parses an existing `.vtt` file OR calls
+	 *    `extractSingableLines()` to strip `[Verse 1]` / `*guitar solo*` headers
+	 *    from `track.lyrics`, creating an array of `cueDrafts` (`$state([])`).
+	 * 3. `<svelte:window onkeydown={...} onkeyup={...} />` listens for `Spacebar`:
+	 *    - Pressing & HOLDING `Spacebar` when the singer starts a line captures
+	 *      `audioEl.currentTime` into `cueDrafts[activeLineIndex].startTime`!
+	 *    - RELEASING `Spacebar` when the singer finishes that line captures
+	 *      `audioEl.currentTime` into `cueDrafts[activeLineIndex].endTime`, marks
+	 *      `synced = true`, and automatically advances `activeLineIndex` to the
+	 *      next lyric line!
+	 * 4. `generatedVttText` (`$derived.by(...)`) formats every cue in real time
+	 *    using `formatVttTimestamp()` (`HH:MM:SS.mmm --> HH:MM:SS.mmm`) with
+	 *    `NOTE SYNC_TYPE: HUMAN_VERIFIED` on line 2 so `harper.sh` never overwrites
+	 *    human-verified timing.
+	 * 5. Clicking "Save Human-Verified VTT" either POSTs directly to disk via the
+	 *    local Vite dev server (`/__studio_api/save-vtt` when running `./studio.sh`)
+	 *    OR downloads a `.vtt` file straight in the browser via `Blob` (`downloadVttFile()`).
 	 * ============================================================================
 	 */
 	import { onMount } from 'svelte';
@@ -38,8 +47,11 @@
 	import { player } from '#lib/player.svelte.js';
 
 	// ---------------------------------------------------------------------------
-	// 1. STUDIO NAVIGATION & SELECTION STATE
+	// 1. STUDIO NAVIGATION & CASCADING SELECTION STATE (`Artist -> Album -> Track`)
 	// ---------------------------------------------------------------------------
+	// Notice how `$state` and `$derived` chain together like dominoes:
+	// Changing `selectedArtistSlug` recalculates `selectedArtist` -> `artistAlbums`
+	// -> `selectedAlbum` -> `selectedTrack` -> `activeTrackFile` automatically!
 	let selectedArtistSlug = $state(allArtists[0]?.slug || 'the-stardust-engine');
 	let selectedArtist = $derived(
 		allArtists.find((a) => a.slug === selectedArtistSlug) || allArtists[0]
@@ -61,18 +73,23 @@
 	);
 	let activeTrackFile = $derived(selectedTrack?.fileName || selectedTrack?.id || '');
 
+	// Active workspace tab: `'vtt'` (Hold-Spacebar Lyric Sync) or `'metadata'` (Lore IDE)
 	/** @type {'vtt' | 'metadata'} */
 	let studioTab = $state('vtt');
 
-	// Local Vite Dev Server API connection state
+	// Local Vite Dev Server API connection state (`true` when running `./studio.sh` / `npm run dev`)
 	let localApiAvailable = $state(false);
 	let statusMessage = $state('');
 	let statusTone = $state(/** @type {'info' | 'success' | 'error'} */ ('info'));
 	let isSaving = $state(false);
 
 	// ---------------------------------------------------------------------------
-	// 2. AUDIO DECK STATE (Dedicated Studio Audio Element)
+	// 2. AUDIO DECK STATE (Dedicated Studio `<audio>` Element)
 	// ---------------------------------------------------------------------------
+	// Why use a dedicated `<audio bind:this={audioEl}>` instead of the bottom `<Player />`?
+	// Because in Studio Sync mode we frequently scrub +/- 3s, slow down to `0.75x` / `0.9x`
+	// playback speed, and seek 1.5s before individual cues without disturbing the
+	// listener's normal music queue!
 	/** @type {HTMLAudioElement | null} */
 	let audioEl = $state(null);
 	let isPlaying = $state(false);
@@ -81,6 +98,8 @@
 	let playbackRate = $state(1.0);
 	let audioSourceUrl = $derived.by(() => {
 		if (!selectedArtist || !selectedAlbum || !selectedTrack) return '';
+		// Stream directly from local `raggiesoft-assets` disk if Vite dev server is running,
+		// otherwise fall back to the public CDN MP3 URL (`selectedTrack.audioUrl`).
 		if (localApiAvailable && activeTrackFile) {
 			const params = new URLSearchParams({
 				artist: selectedArtist.slug,
@@ -97,20 +116,27 @@
 	// ---------------------------------------------------------------------------
 	/**
 	 * @typedef {Object} LyricCueDraft
-	 * @property {number} id
-	 * @property {string} text
-	 * @property {number | null} startTime
-	 * @property {number | null} endTime
-	 * @property {boolean} synced
+	 * @property {number} id        - Unique numeric key for `{#each cueDrafts as cue (cue.id)}`
+	 * @property {string} text      - Singable lyric line text (editable inline!)
+	 * @property {number | null} startTime - Timestamp in seconds when Spacebar went DOWN
+	 * @property {number | null} endTime   - Timestamp in seconds when Spacebar came UP
+	 * @property {boolean} synced   - `true` once both `startTime` and `endTime` are recorded
 	 */
 
+	// SVELTE 5 DEEP REACTIVITY (`$state([])`):
+	// In Svelte 5, arrays and objects passed to `$state(...)` are wrapped in a
+	// JavaScript `Proxy`. That means mutating nested properties directly—like
+	// `cueDrafts[activeLineIndex].startTime = now`—automatically triggers UI updates
+	// and recalculates `generatedVttText`!
 	/** @type {LyricCueDraft[]} */
 	let cueDrafts = $state([]);
-	let activeLineIndex = $state(0);
-	let isHoldingSpace = $state(false);
+	let activeLineIndex = $state(0); // Index (`0`..`length-1`) of the next line waiting for Spacebar
+	let isHoldingSpace = $state(false); // `true` while the user's finger is holding down Spacebar
 	let isHumanVerifiedOnDisk = $state(false);
 
-	// Which cue is currently active during audio playback (for live preview highlight)
+	// Live Karaoke Preview Highlight:
+	// As `currentTime` ticks forward during audio playback, find which cue's
+	// `[startTime, endTime]` window contains `currentTime` (or `-1` during instrumental gaps).
 	let livePlaybackCueIndex = $derived.by(() => {
 		for (let i = 0; i < cueDrafts.length; i++) {
 			const c = cueDrafts[i];
@@ -126,13 +152,17 @@
 		return -1;
 	});
 
-	// Generated WebVTT file content with HUMAN_VERIFIED header for Harper
+	// Real-Time W3C WebVTT Compiler (`$derived.by()`):
+	// Rebuilds the complete `.vtt` file string every time ANY cue timestamp or lyric
+	// text changes! Includes `NOTE SYNC_TYPE: HUMAN_VERIFIED` on line 2 so `harper.sh`
+	// knows a human verified these timestamps.
 	let generatedVttText = $derived.by(() => {
 		const lines = ['WEBVTT', 'NOTE SYNC_TYPE: HUMAN_VERIFIED', ''];
 		for (const cue of cueDrafts) {
 			const cleanText = cue.text.trim();
 			if (!cleanText) continue;
 			const start = cue.startTime !== null ? cue.startTime : 0;
+			// Ensure `end` is always strictly after `start` (at least +0.2s, or +2.5s default if unsynced)
 			const end = cue.endTime !== null ? Math.max(start + 0.2, cue.endTime) : start + 2.5;
 			lines.push(`${formatVttTimestamp(start)} --> ${formatVttTimestamp(end)}`);
 			lines.push(cleanText);
@@ -141,6 +171,7 @@
 		return lines.join('\n');
 	});
 
+	// Count how many lines have `synced === true` for the progress button (`e.g., 24/24`).
 	let syncedCount = $derived(cueDrafts.filter((c) => c.synced).length);
 
 	// ---------------------------------------------------------------------------
@@ -205,7 +236,13 @@
 	});
 
 	/**
-	 * Formats seconds into WebVTT timestamp `HH:MM:SS.mmm`.
+	 * Formats floating-point seconds (e.g., `75.42`) into the strict W3C WebVTT
+	 * timestamp format `HH:MM:SS.mmm` (e.g., `"00:01:15.420"`):
+	 * - Hours:        `Math.floor(safe / 3600)` padded to 2 digits (`"00"`)
+	 * - Minutes:      `Math.floor((safe % 3600) / 60)` padded to 2 digits (`"01"`)
+	 * - Whole Secs:   `Math.floor(safe % 60)` padded to 2 digits (`"15"`)
+	 * - Milliseconds: fractional remainder * 1000, rounded & padded to 3 digits (`"420"`)
+	 *
 	 * @param {number} sec
 	 * @returns {string}
 	 */
@@ -227,7 +264,8 @@
 	}
 
 	/**
-	 * Formats seconds into compact `MM:SS.d` display for cue badges.
+	 * Formats seconds into compact `MM:SS.d` display (e.g., `"01:15.4"`) for cue badges,
+	 * or `"--:--.-"` when a cue hasn't been stamped yet (`sec === null`).
 	 * @param {number | null} sec
 	 * @returns {string}
 	 */
@@ -240,9 +278,13 @@
 	}
 
 	/**
-	 * Extracts clean, singable lyric lines from raw markdown lyrics by stripping
-	 * structural section headers (`[Verse 1]`, `[Chorus]`), stage directions,
-	 * and empty lines.
+	 * Extracts clean, singable lyric lines from raw markdown lyrics using Regular
+	 * Expressions (regexes) so non-sung structural markers aren't turned into cues:
+	 * - `.split(/\r?\n/)` splits on both Windows (`\r\n`) and Unix/macOS (`\n`) newlines.
+	 * - `/^\[.*\]$/` skips bracketed section headers like `[Verse 1]` or `[Chorus]`.
+	 * - `/^\*\(.*\)\*$/` and `/^\*[^*]+\*$/` skip italicized stage directions like `*(Guitar solo)*`.
+	 * - `/^\(.*instrumental.*\)$/i` skips parenthetical `(Instrumental Break)` markers.
+	 *
 	 * @param {string} rawLyrics
 	 * @returns {string[]}
 	 */
@@ -381,9 +423,24 @@
 	// 6. DISTROKID-STYLE HOLD-SPACEBAR KEYBOARD HANDLERS
 	// ---------------------------------------------------------------------------
 	/**
-	 * Handles `keydown` across the window. When in VTT mode and not typing in an
-	 * `<input>` / `<textarea>`, holding `Spacebar` stamps `startTime` on the
-	 * active lyric line.
+	 * STEP 1 OF SPACEBAR CAPTURE (`keydown` — Finger Presses Spacebar DOWN):
+	 * Bound globally via `<svelte:window onkeydown={handleWindowKeyDown} />`.
+	 *
+	 * Follow the guards from top to bottom:
+	 * 1. Only run when `studioTab === 'vtt'`.
+	 * 2. Ignore keystrokes inside `<input>`, `<textarea>`, `<select>`, or
+	 *    `contentEditable` elements—otherwise typing a space while editing a lyric
+	 *    word would hijack your cursor and stamp a timestamp!
+	 * 3. When `event.code === 'Space'`:
+	 *    - `event.preventDefault()` stops browsers from scrolling the page down.
+	 *    - `if (event.repeat || isHoldingSpace) return;` ignores operating-system
+	 *      key-repeat events (when you hold a key down, the OS fires dozens of
+	 *      `keydown` events per second; we ONLY want the initial press!).
+	 *    - Auto-starts `<audio>` playback if currently paused.
+	 *    - Reads `audioEl.currentTime` rounded to 2 decimal places (`0.01s` precision),
+	 *      clamps the previous line's `endTime` if needed so cues never overlap,
+	 *      and stamps `cueDrafts[activeLineIndex].startTime = now`!
+	 *
 	 * @param {KeyboardEvent} event
 	 */
 	function handleWindowKeyDown(event) {
@@ -428,8 +485,16 @@
 	}
 
 	/**
-	 * Handles `keyup` across the window. Releasing `Spacebar` stamps `endTime`
-	 * on the active lyric line and advances `activeLineIndex` to the next line.
+	 * STEP 2 OF SPACEBAR CAPTURE (`keyup` — Finger Releases Spacebar UP):
+	 * When the singer finishes the active line and the user lifts their finger off
+	 * `Spacebar`:
+	 * 1. Flips `isHoldingSpace = false`.
+	 * 2. Computes `endTime` using `Math.max(start + 0.25, audioEl.currentTime)` so
+	 *    even a quick tap produces a valid >= 250ms WebVTT cue.
+	 * 3. Marks `cue.synced = true` and advances `activeLineIndex += 1` (scrolling
+	 *    the next unsung line smoothly to the middle of the list), or displays a
+	 *    completion banner after the final lyric line!
+	 *
 	 * @param {KeyboardEvent} event
 	 */
 	function handleWindowKeyUp(event) {
@@ -622,7 +687,13 @@
 	}
 
 	/**
-	 * Downloads the generated `.vtt` file directly in the browser.
+	 * Downloads the generated `.vtt` file directly in the browser without needing a server!
+	 * HOW CLIENT-SIDE FILE DOWNLOADS WORK IN JAVASCRIPT:
+	 * 1. `new Blob([generatedVttText], ...)` packages our string in browser memory
+	 *    as a virtual `text/vtt` file.
+	 * 2. `URL.createObjectURL(blob)` mints a temporary `blob:...` URL pointing to that memory.
+	 * 3. Creating a temporary `<a download="{fileName}.vtt">` and calling `a.click()`
+	 *    triggers the browser's Save File action, then `URL.revokeObjectURL(url)` frees memory.
 	 */
 	function downloadVttFile() {
 		if (!selectedTrack || !activeTrackFile) return;
@@ -701,8 +772,14 @@
 	}
 </script>
 
+<!--
+	`<svelte:window>` attaches keyboard listeners (`onkeydown` & `onkeyup`) to the
+	global browser `window` object declaratively—and Svelte automatically cleans
+	them up when you navigate away from `/studio`!
+-->
 <svelte:window onkeydown={handleWindowKeyDown} onkeyup={handleWindowKeyUp} />
 
+<!-- Mark `/studio` with `noindex,follow` so internal studio tools stay out of search results -->
 <svelte:head>
 	<title>Engine Room Studio IDE &amp; VTT Lyric Sync | The Listening Room</title>
 	<meta name="robots" content="noindex,follow" />
@@ -712,7 +789,15 @@
 	/>
 </svelte:head>
 
-<!-- Hidden dedicated Studio Audio Element -->
+<!--
+	Hidden dedicated Studio `<audio>` Element:
+	- `bind:this={audioEl}` stores a direct reference to the underlying DOM
+	  `HTMLAudioElement` inside our `audioEl` `$state` variable so `audioEl.play()`,
+	  `audioEl.pause()`, and `audioEl.currentTime` work anywhere in `<script>`.
+	- `ontimeupdate` fires several times per second while audio plays, keeping
+	  `currentTime` (and `livePlaybackCueIndex` karaoke highlighting!) in sync.
+	- `onloadedmetadata` reads total `duration` in seconds and restores `playbackRate`.
+-->
 <audio
 	bind:this={audioEl}
 	src={audioSourceUrl}
@@ -1055,6 +1140,14 @@
 				</div>
 
 				<div class="max-h-[640px] space-y-2.5 overflow-y-auto pr-1">
+					<!--
+						Interactive Cue Row Loop (`{#each cueDrafts as cue, idx (cue.id)}`):
+						Each row highlights in one of four visual states:
+						1. `isTarget && isHoldingSpace` -> Emerald glow (actively stamping this line!)
+						2. `isTarget`                   -> Indigo outline (ready for next Spacebar press)
+						3. `isLivePlaying`              -> Cyan karaoke highlight (`currentTime` is inside `[startTime, endTime]`)
+						4. `cue.synced` / unsynced      -> Slate neutral card
+					-->
 					{#each cueDrafts as cue, idx (cue.id)}
 						{@const isTarget = idx === activeLineIndex}
 						{@const isLivePlaying = idx === livePlaybackCueIndex}
@@ -1178,6 +1271,11 @@
 			</div>
 
 			<!-- Right 4 Cols: Live WebVTT Output & Export Panel -->
+			<!--
+				Displays `generatedVttText` live inside a `readonly` `<textarea>` so you can
+				visually inspect the exact `WEBVTT` + `NOTE SYNC_TYPE: HUMAN_VERIFIED` +
+				`HH:MM:SS.mmm --> HH:MM:SS.mmm` cue blocks as you hold/release Spacebar!
+			-->
 			<div
 				class="flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 lg:col-span-4"
 			>

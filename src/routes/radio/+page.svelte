@@ -2,33 +2,47 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (The Listening Room Radio Route: /radio)
+	 * FILE: src/routes/radio/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/radio
 	 * ============================================================================
-	 * Dedicated continuous broadcast console for Engine Room Records
-	 * (`music.raggiesoft.com/radio`), migrated and enhanced from the legacy
-	 * `raggiesoft-hub/pages/engine-room/radio.php` station.
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Located at `src/routes/radio/+page.svelte` (prerendered into `build/radio.html`),
+	 * this component powers **The Listening Room Radio**—a continuous, commercial-free
+	 * broadcast station spanning every unique recording in the Engine Room Records catalog.
 	 *
-	 * Architectural Guarantees:
-	 * 1. Rock Opera & Multi-Album Rock Opera Series Integrity:
-	 *    - Powered by `buildRadioBroadcast()`, which deduplicates all catalog tracks
-	 *      by canonical ISRC (`isrc.trim().toUpperCase()`), glues multi-album Rock
-	 *      Opera Series (`rockOperaSetId`, such as The Paper Wall's `Guiding Stars` ->
-	 *      `Static & Silence Book 1` -> `Static & Silence Book 2` and `The Eleventh
-	 *      Child Book 1` -> `Book 2`) into unbroken chronological narrative blocks,
-	 *      glues single-album Rock Operas (`isRockOpera === true`) into unbroken
-	 *      album blocks, and shuffles at the block level.
-	 *    - Disables random per-track jumping (`player.isShuffle = false`) and enables
-	 *      continuous loop (`player.repeatMode = 'all'`) when the broadcast is active
-	 *      so Rock Operas are never broken apart mid-story.
-	 * 2. Gentle, Non-Interrupting DSP & Fourthwall Nudge:
-	 *    - Displays a live, non-blocking companion card for the currently playing
-	 *      (or queued) broadcast track with `<StoreButton />` and Fourthwall links.
-	 *    - Opening a DSP link or Fourthwall digital archive opens in a new tab and
-	 *      NEVER pauses or interrupts the active radio stream.
-	 * 3. Estimated Block Time & Reality Check:
-	 *    - Computes and displays the exact Days, Hours, and Minutes required to
-	 *      listen to the entire deduplicated broadcast from start to finish, paired
-	 *      with the classic Engine Room Records reality-check comparison.
+	 * HOW OUR "BLOCK-LEVEL" RADIO SHUFFLE LOGIC WORKS (VS. NORMAL RANDOM SHUFFLE):
+	 * In a normal music app, hitting "Shuffle" scrambles individual songs completely
+	 * at random. That ruins Rock Operas (where Act II Track 7 makes no narrative sense
+	 * without Act I Track 1!) and causes duplicate songs when a compilation album
+	 * reuses a studio master.
+	 *
+	 * Instead, `buildRadioBroadcast(allAlbums)` (imported from `#lib/data/musicData.js`)
+	 * builds our station queue using four smart steps:
+	 *   1. ISRC Deduplication: Every sound recording has a unique 12-character ISRC
+	 *      fingerprint (e.g., `QTAHP2600001`). If the same master recording appears
+	 *      on both a studio album and a Greatest Hits compilation, it is included
+	 *      ONLY ONCE per broadcast cycle.
+	 *   2. Multi-Album Rock Opera Series Locking (`rockOperaSetId`): Multi-album
+	 *      sagas (like `Guiding Stars -> Static & Silence Book 1 -> Book 2`) are
+	 *      glued together into a single indivisible "Series Block" in story order.
+	 *   3. Single-Album Rock Opera Locking (`isRockOpera === true`): Concept rock
+	 *      operas are glued together into a single indivisible "Opera Block".
+	 *   4. Fisher-Yates Block Shuffle: Standalone songs (each a 1-song block) and
+	 *      the glued Rock Opera blocks are shuffled at the BLOCK level, then flattened
+	 *      into `broadcast.tracks`!
+	 *
+	 * Finally, when `startRadioBroadcast()` loads `broadcast.tracks` into `player`:
+	 *   - It sets `player.isShuffle = false` (so the player walks straight down our
+	 *     pre-shuffled block schedule without breaking operas apart!).
+	 *   - It sets `player.repeatMode = 'all'` (so the 24/7 station loops seamlessly).
+	 *
+	 * WHAT THE USER SEES & INTERACTS WITH ON THIS SCREEN:
+	 * 1. Broadcast Console Hero with "Tune In", "Reshuffle Broadcast Blocks", and
+	 *    an Estimated Full-Catalog Block Time counter (Days / Hours / Minutes).
+	 * 2. Gentle, Non-Interrupting DSP & Vault Companion Card (links open in a new
+	 *    browser tab so live radio audio never pauses).
+	 * 3. Protected Rock Opera & Series Block cards with one-click "Jump to Start of Saga".
+	 * 4. Searchable Active Broadcast Queue Manifest showing every scheduled track.
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
@@ -44,11 +58,15 @@
 	import ShareModal from '#lib/components/ShareModal.svelte';
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
+	// Generate the initial block-shuffled broadcast schedule (`{ tracks, operaBlocks, stats }`).
+	// Stored in `$state(...)` so clicking "Reshuffle Broadcast Blocks" (`reshuffleBroadcast()`)
+	// triggers a reactive UI update across the entire schedule!
 	let broadcast = $state(buildRadioBroadcast(allAlbums));
 	let shareModalData = $state(/** @type {any} */ (null));
 	let searchFilter = $state('');
 
-	// Determine whether the global player is currently playing from the radio queue
+	// Determine whether the persistent global `<Player />` is currently loaded with
+	// our radio broadcast queue (comparing queue length and first track ID).
 	let isRadioActive = $derived(
 		player.queue.length > 0 &&
 			broadcast.tracks.length > 0 &&
@@ -57,19 +75,25 @@
 	);
 
 	// The track to highlight in the Broadcast Companion & DSP Nudge card:
-	// Uses `player.currentTrack` if a track is loaded, otherwise previews the first track of the broadcast.
+	// Uses `player.currentTrack` if any song is loaded in the player, otherwise
+	// previews the opening song of the generated radio schedule (`broadcast.tracks[0]`).
 	let activeCompanionTrack = $derived(
 		player.currentTrack?.id ? player.currentTrack : broadcast.tracks[0] || null
 	);
 
-	// Look up the matching radio queue entry so we can display Rock Opera Series progress badges
+	// Look up the matching radio queue entry so we can display Rock Opera Series
+	// progress badges (e.g., `Rock Opera Series (4 of 38)`).
 	let activeRadioQueueEntry = $derived(
 		activeCompanionTrack
 			? broadcast.tracks.find((t) => t.id === activeCompanionTrack.id) || activeCompanionTrack
 			: null
 	);
 
-	// Filterable view of the broadcast queue for quick navigation
+	// Filterable view of the broadcast queue for quick navigation:
+	// CRITICAL DETAIL: Notice we call `.map((track, index) => ({ track, index }))`
+	// BEFORE `.filter(...)`! Preserving each track's ORIGINAL `index` in `broadcast.tracks`
+	// ensures that clicking a filtered search result tunes the radio to its exact
+	// position in the full broadcast schedule (not index `0` of the filtered subset!).
 	let filteredQueue = $derived.by(() => {
 		const q = searchFilter.trim().toLowerCase();
 		return broadcast.tracks
@@ -101,7 +125,8 @@
 	}
 
 	/**
-	 * Toggles playback of the active radio broadcast.
+	 * Toggles play/pause if the radio broadcast is already loaded in `<Player />`,
+	 * or boots up the broadcast from Track #1 (`index 0`) on first click.
 	 */
 	function toggleRadioPlay() {
 		if (isRadioActive && player.currentTrack?.audioUrl) {
@@ -113,7 +138,7 @@
 
 	/**
 	 * Generates a fresh Rock-Opera-preserving Fisher-Yates block shuffle and
-	 * immediately loads it into the player if the radio is active.
+	 * immediately restarts playback on the new schedule if the station was active.
 	 */
 	function reshuffleBroadcast() {
 		broadcast = buildRadioBroadcast(allAlbums);
@@ -123,8 +148,8 @@
 	}
 
 	/**
-	 * Jumps directly to the first track of a specific Rock Opera or Rock Opera Series
-	 * block within the current broadcast queue.
+	 * Finds the first track belonging to a named Rock Opera or Rock Opera Series
+	 * block (`radioBlockTitle`) and tunes the live broadcast straight to its overture.
 	 *
 	 * @param {string} blockTitle
 	 */
@@ -136,7 +161,8 @@
 	}
 
 	/**
-	 * Formats duration seconds into `Xh Ym` for Rock Opera block badges.
+	 * Converts raw seconds into a compact human-readable `Xh Ym` or `Ym` label
+	 * using integer division (`Math.floor(secs / 3600)`) and modulo remainder (`secs % 3600`).
 	 * @param {number} secs
 	 * @returns {string}
 	 */
@@ -155,6 +181,7 @@
 	]);
 </script>
 
+<!-- Radio Station SEO, dedicated `og-radio.jpg` OpenGraph/Twitter card, and Breadcrumb JSON-LD -->
 <svelte:head>
 	<title>The Listening Room Radio | Engine Room Records</title>
 	<meta name="description" content={radioDescription} />
@@ -667,6 +694,11 @@
 
 		<div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl">
 			<div class="max-h-[640px] divide-y divide-slate-800/70 overflow-y-auto">
+				<!--
+					Destructures `{ track, index }` from `filteredQueue` so clicking ANY row
+					calls `startRadioBroadcast(index)` with that track's true position in the
+					unbroken broadcast schedule!
+				-->
 				{#each filteredQueue as { track, index } (track.id + '-' + index)}
 					{@const isCurrent =
 						player.currentTrack?.id === track.id &&

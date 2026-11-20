@@ -2,10 +2,25 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * SearchFilterModal.svelte
+	 * src/lib/components/SearchFilterModal.svelte — Catalog Search & Filter Drawer
 	 * ============================================================================
-	 * Collapsible Advanced Search & Filter Menu Drawer/Modal for Engine Room Records
-	 * (music.raggiesoft.com).
+	 * Plain-English Overview (100-Level JavaScript & Svelte 5 Guide):
+	 *   What does this modal do, and how does it work in TWO different places?
+	 *     1. On `/discography` (`isStandaloneGlobal = false`): The parent page passes
+	 *        its filter variables in via Svelte 5's `$bindable()` rune (`bind:searchQuery`,
+	 *        `bind:activeTypeFilter`, etc.), so clicking any filter pill inside this
+	 *        modal filters the `/discography` album grid in real time!
+	 *     2. In the Global Header (`+layout.svelte`, where `isStandaloneGlobal = true`):
+	 *        Listeners can open Search from ANY page (Home, Radio, Playlists, Artist).
+	 *        Typing shows up to 6 instant album matches (`quickMatches`), or pressing
+	 *        `Enter` / "View Matching Releases →" builds a clean query string with
+	 *        `SvelteURLSearchParams` and navigates via `goto('/discography?q=...')`!
+	 *
+	 *   What is `$bindable(...)` in Svelte 5?
+	 *     Normally, component props flow one-way (parent -> child). Declaring
+	 *     `searchQuery = $bindable('')` inside `$props()` opts that prop into safe
+	 *     two-way binding (`parent <-> child`) whenever the parent writes
+	 *     `<SearchFilterModal bind:searchQuery ... />`.
 	 *
 	 * Architectural Rationale:
 	 * Previously, the 3-tier sorting and filtering matrix (Release Types, Statuses,
@@ -26,6 +41,7 @@
 	import { goto } from '$app/navigation';
 	import { allAlbums, allArtists, catalogStats, formatReleaseDate } from '#lib/data/musicData.js';
 
+	// Receive modal visibility props + two-way `$bindable` filter states from parent
 	let {
 		isOpen = false,
 		onClose = () => {},
@@ -36,7 +52,7 @@
 		isStandaloneGlobal = false
 	} = $props();
 
-	// Compute counts for release production types
+	// Compute counts for release production types (`studio`, `live`, `compilation`, `soundtrack`)
 	let typeCounts = $derived.by(() => {
 		/** @type {Record<string, number>} */
 		const counts = { all: allAlbums.length, studio: 0, live: 0, compilation: 0, soundtrack: 0 };
@@ -47,7 +63,8 @@
 		return counts;
 	});
 
-	// Quick live search results preview when used from the global header
+	// Live full-text search preview across album titles, artists, dates, song titles, lore notes, lyrics, and ISRCs!
+	// `.slice(0, 6)` caps the instant preview at 6 cards so the modal stays compact on mobile screens.
 	let quickMatches = $derived.by(() => {
 		const q = searchQuery.trim().toLowerCase();
 		if (!q) return [];
@@ -75,7 +92,7 @@
 
 	/**
 	 * Applies filters and navigates to `/discography` with URL query parameters
-	 * when triggered from outside the discography page.
+	 * (`?q=...&type=...&status=...&filter=...`) when triggered from outside the discography page.
 	 */
 	function applyAndNavigate() {
 		if (isStandaloneGlobal) {
@@ -93,7 +110,7 @@
 	}
 
 	/**
-	 * Resets all active search & filter criteria to defaults.
+	 * Resets all active search & filter criteria back to `'all'` / empty string.
 	 */
 	function resetAllFilters() {
 		searchQuery = '';
@@ -103,7 +120,7 @@
 	}
 
 	/**
-	 * Closes modal on Escape key press.
+	 * Closes modal on Escape key press (`WCAG 2.1 AA` keyboard dismissal).
 	 * @param {KeyboardEvent} e
 	 */
 	function handleKeydown(e) {
@@ -113,6 +130,7 @@
 	}
 </script>
 
+<!-- Window-level Escape key listener -->
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen}
@@ -122,7 +140,7 @@
 		aria-modal="true"
 		aria-label="Search and Filter Catalog"
 	>
-		<!-- Backdrop click area -->
+		<!-- Backdrop click area (`tabindex="-1"` keeps keyboard focus inside the modal controls) -->
 		<button
 			type="button"
 			onclick={() => onClose()}
@@ -163,7 +181,7 @@
 			</div>
 
 			<div class="space-y-6">
-				<!-- 1. Keyword Search Bar -->
+				<!-- 1. Keyword Search Bar (`bind:value={searchQuery}` updates `quickMatches` on every keystroke) -->
 				<div>
 					<label
 						for="catalog-search-input"
@@ -204,7 +222,7 @@
 						{/if}
 					</div>
 
-					<!-- Instant Quick Matches Preview -->
+					<!-- Instant Quick Matches Preview (up to 6 direct album links matching `searchQuery`) -->
 					{#if quickMatches.length > 0}
 						<div class="mt-3 rounded-xl border border-slate-800 bg-slate-950/80 p-3">
 							<div class="mb-2 text-[11px] font-bold tracking-wider text-blue-400 uppercase">
@@ -245,7 +263,7 @@
 					{/if}
 				</div>
 
-				<!-- 2. Direct Artist Pages -->
+				<!-- 2. Direct Artist Pages (SEO `<a href>` links straight to `/[artist]`) -->
 				<div>
 					<div class="mb-2 flex items-center justify-between">
 						<span class="text-xs font-bold tracking-wider text-slate-300 uppercase">
@@ -261,6 +279,7 @@
 								class="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/70 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:border-blue-500/60 hover:bg-slate-800 hover:text-white"
 							>
 								{#if artist.logo}
+									<!-- Decorative icon next to visible artist name text uses `alt=""` + `aria-hidden="true"` so screen readers don't announce the artist name twice -->
 									<img
 										src={artist.logo}
 										alt=""

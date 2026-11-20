@@ -2,32 +2,31 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * src/routes/[artist]/[album]/[track]/+page.svelte
+	 * FILE: src/routes/[artist]/[album]/[track]/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/[artist]/[album]/[track]
+	 *             (e.g., `/the-stardust-engine/1996-ad-astra-single/escape-velocity-ad-astra`)
 	 * ============================================================================
-	 * Canonical pre-rendered HTML song page for The Listening Room
-	 * (`https://music.raggiesoft.com/[artist]/[album]/[track]`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/[artist]/[album]/[track]/+page.js` (which resolves
+	 * all three dynamic URL segments `[artist]`, `[album]`, and `[track]`), this
+	 * component renders the canonical standalone Song Page for every track in the
+	 * Engine Room Records catalog!
 	 *
-	 * Architectural Responsibilities:
-	 * 1. Authoritative Song Entity Destination:
-	 *    - Renders the song's `<h1>` title, artist & album links, disc/track
-	 *      position, runtime, genres, songwriter/producer credits, ISRC registry
-	 *      link, dual chronology (`Narrative Release` vs. `Real-World DSP Release`
-	 *      + `℗ 2026 Engine Room Records`), story lore, and full lyrics directly
-	 *      in server-rendered static HTML.
-	 * 2. Structured Data (`MusicRecording` + `BreadcrumbList` `@graph`):
-	 *    - Emits Schema.org `MusicRecording` with ISO 8601 duration (`PT5M8S`),
-	 *      `inAlbum`, `byArtist`, real-world `datePublished`, narrative
-	 *      `temporalCoverage`, `isrcCode`, `recordLabel`, `creator`,
-	 *      `copyrightHolder`, `sameAs` DSP URLs, and `BreadcrumbList`.
-	 * 3. User-Initiated Preview & Lossless DSP Upgrade Actions:
-	 *    - Streams the 128 kbps reference preview on click via the persistent
-	 *      global `player` (zero audio preload on initial page load) alongside
-	 *      prominent Spotify, Apple Music, Amazon Music, YouTube Music, and
-	 *      Fourthwall links (`StoreButton`).
-	 * 4. Rich Internal Link Graph:
-	 *    - Connects previous/next album tracks, alternate studio/live recordings,
-	 *      connected story playlists, same-era catalog releases, and the official
-	 *      DSP Verification Ledger using standard crawlable `<a href>` anchors.
+	 * WHAT THE USER (AND SEARCH CRAWLERS) SEE ON THIS SCREEN:
+	 * 1. Authoritative Song Hero Header:
+	 *    - Album cover art with a user-initiated Play/Pause preview button, disc &
+	 *      track position badge, runtime, genre, `<h1>` song title, artist & parent
+	 *      album links, Dual Chronology `<dl>` grid (Narrative Era vs. Real-World
+	 *      2026 DSP Release + clickable US ISRC Registry code), `<StoreButton />`
+	 *      lossless streaming links, free 128 kbps MP3 download, and "+ Add to Playlist".
+	 * 2. Album Sequence Navigation (`<nav>`):
+	 *    - One-click cards for `<- Previous Song`, `Full Album Tracklist`, and `Next Song ->`.
+	 * 3. Two-Column Story Lore & Official Lyrics Layout:
+	 *    - Left 5 columns: In-Universe Song Story & Lore Context + Connected Story Playlists.
+	 *    - Right 7 columns: Official Lyrics (intelligently linking unmastered live
+	 *      setlist entries to the primary studio recording via `resolveCanonicalComposition()`
+	 *      to avoid duplicate-content SEO penalties!).
+	 * 4. Alternate Versions Comparison & Same-Era Catalog Discovery Shelves.
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
@@ -49,8 +48,11 @@
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
+	// Receive the loaded song graph from `[artist]/[album]/[track]/+page.js` -> `load()`.
 	let { data } = $props();
 
+	// Reactive `$derived(...)` bindings ensure every field updates cleanly when
+	// clicking "Previous Song" or "Next Song" without a full browser reload!
 	let album = $derived(data.album);
 	let track = $derived(data.track);
 	let prevTrack = $derived(data.prevTrack);
@@ -59,10 +61,13 @@
 	let connectedPlaylists = $derived(data.connectedPlaylists || []);
 	let sameEraAlbums = $derived(data.sameEraAlbums || []);
 
+	// Build SEO meta tags, primary-composition deduplication info, and `MusicRecording` JSON-LD.
 	let seo = $derived(buildTrackSeoMeta(track, album));
 	let compositionMeta = $derived(resolveCanonicalComposition(track, album));
 	let jsonLdScript = $derived(buildTrackJsonLdScript(track, album));
 
+	// Check with `.some()` whether any track on this album sits on Disc 2+, formatting
+	// `positionSummary` accordingly (`"Disc 2, Track 4"` vs. `"Track 4 of 12"`).
 	let isMultiDisc = $derived(album.tracks.some((t) => (t.disc || 1) > 1));
 	let positionSummary = $derived(
 		isMultiDisc
@@ -70,10 +75,12 @@
 			: `Track ${track.track} of ${album.totalTracksCount}`
 	);
 
+	// Build a URL-encoded deep-link to the official DSP Verification Ledger for this exact track.
 	let dspVerificationHref = $derived(
 		`https://engineroom.raggiesoft.com/dsp-verification/?artist=${encodeURIComponent(album.artistSlug)}&album=${encodeURIComponent(album.slug)}&track=${encodeURIComponent(track.fileName || track.slug || track.id)}`
 	);
 
+	// Pre-compute the chronological multi-version comparison queue if alternate recordings exist.
 	let comparisonData = $derived(
 		relatedSongs.length > 0
 			? buildSongFamilyComparisonQueue(track, album)
@@ -81,7 +88,8 @@
 	);
 
 	/**
-	 * Checks whether this track is currently loaded in the persistent audio player.
+	 * Reactive boolean indicating whether THIS track (or an identical ISRC master)
+	 * is currently loaded inside the persistent bottom `<Player />`.
 	 */
 	let isActiveInPlayer = $derived.by(() => {
 		if (!player.currentTrack) return false;
@@ -132,6 +140,13 @@
 	}
 </script>
 
+<!--
+	Song-level `<svelte:head>`:
+	- Marks unmastered "In Studio" placeholder entries `noindex,follow` (`!seo.isIndexableRecording`)
+	  so search engines only index finished sound recordings or full lyric sheets.
+	- Emits `og:type="music.song"`, `music:album`, `music:duration`, `og:audio`,
+	  and Schema.org `MusicRecording` JSON-LD!
+-->
 <svelte:head>
 	<title>{seo.title}</title>
 	<meta name="description" content={seo.description} />
@@ -347,6 +362,11 @@
 						</span>
 					</div>
 
+					<!--
+						HTML `<dl>` (Description List) pairs `<dt>` (Description Term) labels
+						with `<dd>` (Description Details) values—ideal semantic HTML for key-value
+						metadata grids like Narrative Release vs. Real-World DSP Release!
+					-->
 					<!-- Dual Chronology & Provenance Grid -->
 					<dl
 						class="mt-5 grid grid-cols-1 gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/70 p-4 text-xs sm:grid-cols-2 lg:grid-cols-3"

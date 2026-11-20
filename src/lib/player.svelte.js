@@ -1,9 +1,31 @@
 /**
  * @license MIT
  * ============================================================================
- * player.svelte.js
+ * src/lib/player.svelte.js — Global Reactive Audio Player & WebVTT State Engine
  * ============================================================================
- * Reactive Audio Player State Engine built using Svelte 5 Runes ($state, $derived).
+ * Plain-English Overview (100-Level JavaScript & Svelte 5 Runes Guide):
+ *   How does music keep playing seamlessly even when you click from an Album
+ *   page to `/playlists` or `/discography`?
+ *     In SvelteKit, `Player.svelte` sits in the persistent root `+layout.svelte`,
+ *     and all of its brainpower lives right here in `player.svelte.js`!
+ *     Because this file ends in `.svelte.js`, its `AudioPlayer` class uses
+ *     Svelte 5 Runes (`$state` and `$derived`) to store one global source of
+ *     truth (`export const player = new AudioPlayer()`):
+ *       - `$state(...)` variables hold live changing data: `isPlaying`,
+ *         `currentTime`, `duration`, `volume`, `queue`, `currentTrack`, and
+ *         parsed `cues` (karaoke lyric lines).
+ *       - `$derived(...)` properties act like live spreadsheet formulas:
+ *         `activeCue` automatically finds whichever lyric line matches
+ *         `currentTime` ~4 times per second, and `progressPercent` computes
+ *         the scrubber bar width (`0` to `100%`) automatically!
+ *
+ *   Special Engine Room Feature — ISRC Continuous Playback:
+ *     Every commercial recording has a unique 12-character ISRC ("International
+ *     Standard Recording Code", like a fingerprint for a specific audio master).
+ *     If a song from a 1987 studio album is currently playing at `1:42` and you
+ *     click that exact same recording on a compilation album, `loadTrack()`
+ *     compares their ISRCs—updating the album cover and liner notes on screen
+ *     WITHOUT restarting the audio stream from `0:00`!
  *
  * Key Responsibilities:
  * 1. Global Playback State: Tracks playing/paused status, current time, duration,
@@ -23,7 +45,7 @@
 import { dspManager } from './dspPreference.svelte.js';
 
 export class AudioPlayer {
-	// Primary playback state
+	// Primary playback state — Svelte 5 `$state()` makes every field reactive across all `.svelte` components!
 	isPlaying = $state(false);
 	currentTime = $state(0);
 	duration = $state(0);
@@ -32,23 +54,26 @@ export class AudioPlayer {
 	isLoading = $state(false);
 	error = $state(/** @type {string | null} */ (null));
 
-	// Drawer / Modal overlay state for expanded lyrics & canonical lore view
+	// Drawer / Modal overlay state for expanded lyrics & canonical lore view (`Player.svelte` bottom sheet)
 	isExpanded = $state(false);
 	drawerTab = $state(
 		/** @type {'lyrics-lore' | 'versions' | 'queue' | 'credits'} */ ('lyrics-lore')
 	);
 
-	// Playback speed and timer
+	// Playback speed (`0.5` to `2.0`) and optional auto-pause sleep timer
 	playbackRate = $state(1);
 	sleepTimerMinutes = $state(/** @type {number | null} */ (null));
 	sleepTimerEnd = $state(/** @type {number | null} */ (null));
+	// Non-reactive internal timer ID returned by `setTimeout(...)` so we can cancel it via `clearTimeout(...)`
 	_sleepTimeout = /** @type {any} */ (null);
 
-	// Direct reference to the mounted HTML5 <audio> element & reactive play trigger counter
+	// Direct reference to the mounted HTML5 `<audio>` DOM element in `Player.svelte` & reactive play trigger counter.
+	// Why do we call `this._audioElement.play()` synchronously inside click handlers AND increment `_playTrigger`?
+	// Mobile browsers (especially iOS Safari) block `audio.play()` unless it is called directly inside a user tap gesture!
 	_audioElement = /** @type {HTMLAudioElement | null} */ (null);
 	_playTrigger = $state(0);
 
-	// Queue playback modes
+	// Queue playback modes: Shuffle toggle and 3-way Repeat cycle (`'none'` -> `'all'` -> `'one'`)
 	isShuffle = $state(false);
 	repeatMode = $state(/** @type {'none' | 'all' | 'one'} */ ('none'));
 
@@ -117,26 +142,30 @@ export class AudioPlayer {
 	// Synchronized WebVTT cues: [{ start: number, end: number, text: string }]
 	cues = $state(/** @type {Array<{ start: number, end: number, text: string }>} */ ([]));
 
-	// Derived state calculations
+	// Derived state calculations (`$derived` automatically recomputes whenever `currentIndex`, `queue`,
+	// `cues`, `currentTime`, or `duration` changes—no manual event listeners needed!)
 	hasPrevious = $derived(this.currentIndex > 0);
 	hasNext = $derived(this.currentIndex >= 0 && this.currentIndex < this.queue.length - 1);
 
-	// Active synchronized lyric cue corresponding to the current audio playback head
+	// Active synchronized lyric cue corresponding to the current audio playback head:
+	// `.find(...)` returns the first `{ start, end, text }` cue where `start <= currentTime <= end`.
 	activeCue = $derived(
 		this.cues.find((c) => this.currentTime >= c.start && this.currentTime <= c.end) || null
 	);
 
-	// Formatted human-readable timestamp strings (mm:ss)
+	// Formatted human-readable timestamp strings (mm:ss), e.g., `125` seconds -> `"2:05"`
 	formattedCurrentTime = $derived(this.formatTime(this.currentTime));
 	formattedDuration = $derived(this.formatTime(this.duration));
 
-	// Percentage head for progress sliders and scrubbers (0 - 100)
+	// Percentage head for progress sliders and scrubbers (`0` to `100`), guarded against divide-by-zero (`duration > 0`)
 	progressPercent = $derived(
 		this.duration > 0 ? Math.min(100, (this.currentTime / this.duration) * 100) : 0
 	);
 
 	/**
 	 * Formats a numeric second value into an accessible mm:ss string.
+	 * Uses integer division (`Math.floor(totalSeconds / 60)`) for minutes and the
+	 * remainder/modulo operator (`totalSeconds % 60`) for leftover seconds, padding `< 10` with `'0'`.
 	 * @param {number} totalSeconds
 	 * @returns {string}
 	 */
@@ -149,6 +178,10 @@ export class AudioPlayer {
 
 	/**
 	 * Initiates playback of the currently loaded track.
+	 * Note: `HTMLMediaElement.play()` returns a JavaScript `Promise`! If a browser's
+	 * autoplay policy blocks playback before the user has interacted with the page,
+	 * the Promise rejects—catching it resets `this.isPlaying = false` so the UI button
+	 * never gets stuck showing "Pause" while audio is silent.
 	 */
 	play() {
 		if (this.currentTrack.audioUrl) {
@@ -684,7 +717,9 @@ export class AudioPlayer {
 	}
 
 	/**
-	 * Fetches and parses WebVTT lyrics for karaoke/subtitle synchronization.
+	 * Fetches and parses WebVTT (`.vtt`) lyrics over HTTP for karaoke/subtitle synchronization.
+	 * Uses `async` / `await` with the browser's built-in `fetch()` API so downloading lyrics
+	 * happens asynchronously in the background without freezing audio playback.
 	 * @param {string} url
 	 */
 	async fetchVttCues(url) {
@@ -699,7 +734,22 @@ export class AudioPlayer {
 	}
 
 	/**
-	 * Simple parser for WebVTT timestamped subtitles.
+	 * Simple parser for W3C WebVTT ("Web Video Text Tracks") timestamped lyric files.
+	 *
+	 * How a `.vtt` file is formatted:
+	 *   WEBVTT
+	 *   NOTE SYNC_TYPE: HUMAN_VERIFIED
+	 *
+	 *   00:14.250 --> 00:18.900
+	 *   Standing beneath the Keystone Bridge in the rain
+	 *
+	 * How `parseVtt` works step-by-step:
+	 *   1. Splits the file into individual lines (`/\r?\n/` handles both Unix `\n` and Windows `\r\n`).
+	 *   2. Scans each line with `timeRegex` to match `MM:SS.mmm --> MM:SS.mmm` (with optional `HH:` hours).
+	 *   3. Converts hours, minutes, seconds, and milliseconds into floating-point seconds
+	 *      (e.g., `01:05.500` becomes `65.5` seconds) so comparing against `audioElement.currentTime` is instant!
+	 *   4. Collects all non-empty lyric text lines immediately below the timestamp arrow until the next blank line.
+	 *
 	 * @param {string} vttText
 	 * @returns {Array<{ start: number, end: number, text: string }>}
 	 */

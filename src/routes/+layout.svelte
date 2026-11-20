@@ -2,9 +2,23 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +layout.svelte
+	 * FILE: src/routes/+layout.svelte
+	 * ROUTE SCOPE: Global Visual Shell Wrapping EVERY Page on
+	 *              `https://music.raggiesoft.com/*`
 	 * ============================================================================
-	 * Root application layout for Engine Room Records (music.raggiesoft.com).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Think of `+layout.svelte` as the "picture frame" around the entire website.
+	 * When you click from `/` (Home) to `/discography` or `/the-stardust-engine`,
+	 * SvelteKit does NOT tear down and reload this layout! Instead, this layout
+	 * stays mounted in the browser—which is the secret to how our `<Player />`
+	 * bar at the bottom keeps playing music continuously without skipping a beat
+	 * while the middle of the screen (`{@render children()}`) swaps from page to page!
+	 *
+	 * HOW `+layout.svelte` PAIRS WITH `+layout.js` AND CHILD `+page.svelte` FILES:
+	 * - `+layout.js` sets global build options (`prerender = true`, `ssr = true`).
+	 * - `+layout.svelte` (this file) receives whatever child `+page.svelte` matches
+	 *   the current URL via `let { children } = $props()`, and renders that page
+	 *   inside `<main>` using `{@render children()}`.
 	 *
 	 * Architectural Responsibilities:
 	 * 1. Adaptive Theme & OS Color Scheme Initialization:
@@ -17,35 +31,64 @@
 	 *      `/logos/engine-room-records-logo-white.png` (pure white on transparent
 	 *      background for dark mode, `.er-logo-dark`). CSS rules in `app.css`
 	 *      toggle their visibility instantaneously with zero layout shift or FOUC.
-	 * 3. Global Navigation & Collapsible Search Menu:
-	 *    - Provides direct SEO links to Home (`/`), Discography (`/discography`),
-	 *      Settings (`/settings`), and Book Library, plus a global Search & Filter
-	 *      Menu trigger.
+	 * 3. Global Navigation, Dual-Timelines Disclaimer, Footer & Persistent Audio:
+	 *    - Renders the RaggieSoft Network bar, sticky header, mobile drawer,
+	 *      context-aware Dual Timelines / DSP Verification notice, legal footer,
+	 *      global Search & Add-to-Playlist modals, and the `<Player />` audio deck.
 	 * ============================================================================
 	 */
+
+	// Import the global Tailwind CSS + custom theme stylesheet once for the whole app.
 	import '../app.css';
+
+	// `onMount` schedules a function to run ONLY in the user's browser right after
+	// this layout first appears in the DOM (it never runs during build-time SSR,
+	// where `window` and `navigator` do not exist).
 	import { onMount } from 'svelte';
+
+	// Reactive URL query-string builder (`?artist=...&album=...&track=...`).
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+
+	// SvelteKit routing helpers: `resolve()` builds safe internal URLs, and `page`
+	// is a reactive state object holding the current URL, route `params`, and `data`.
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+
+	// Shared Svelte 5 reactive state managers (`.svelte.js` modules) for themes,
+	// preferred streaming apps (Spotify/Apple/Amazon/YouTube), and user playlists.
 	import { themeManager } from '#lib/theme.svelte.js';
 	import { dspManager } from '#lib/dspPreference.svelte.js';
 	import { playlistManager } from '#lib/playlists.svelte.js';
+
+	// Persistent UI components rendered once at the bottom of the root layout.
 	import Player from '#lib/components/Player.svelte';
 	import SearchFilterModal from '#lib/components/SearchFilterModal.svelte';
 	import AddToPlaylistModal from '#lib/components/AddToPlaylistModal.svelte';
 
+	// SVELTE 5 RUNE — `$props()`:
+	// Every layout receives a special `children` snippet prop representing the
+	// currently active `+page.svelte` (or `+error.svelte`) screen.
 	let { children } = $props();
 
-	let deferredPrompt = $state(/** @type {any} */ (null));
-	let canInstall = $state(false);
-	let showGlobalSearch = $state(false);
-	let mobileMenuOpen = $state(false);
+	// SVELTE 5 RUNE — `$state(...)`:
+	// Declares reactive variables. Whenever any `$state` value changes (for example,
+	// `mobileMenuOpen = true`), Svelte automatically updates ONLY the exact DOM
+	// elements that depend on that variable—no manual `document.querySelector` needed!
+	let deferredPrompt = $state(/** @type {any} */ (null)); // Holds browser's PWA install event
+	let canInstall = $state(false); // Controls whether the "Install App" button is shown
+	let showGlobalSearch = $state(false); // Opens/closes the global `<SearchFilterModal />`
+	let mobileMenuOpen = $state(false); // Expands/collapses the `< 768px` hamburger menu
 
-	// Track active route path for nav highlighting
+	// SVELTE 5 RUNE — `$derived(...)`:
+	// Automatically recomputes `currentPath` whenever the user navigates to a new URL,
+	// letting our `<nav>` links highlight whichever section is currently active.
 	let currentPath = $derived(page.url?.pathname || '/');
 
-	// Context-aware metadata for the Global Dual Timelines & DSP Verification Disclaimer
+	// Context-aware metadata for the Global Dual Timelines & DSP Verification Disclaimer:
+	// Child routes (`/[artist]`, `/[artist]/[album]`, `/[artist]/[album]/[track]`)
+	// return `artist`, `album`, and/or `track` from their `+page.js` `load()` functions.
+	// Reading `page.data` here lets the top disclaimer banner tailor its wording to the
+	// exact band/album on screen!
 	let activeTrack = $derived(/** @type {any} */ (page.data)?.track || null);
 	let activeAlbum = $derived(/** @type {any} */ (page.data)?.album || null);
 	let activeArtist = $derived(/** @type {any} */ (page.data)?.artist || null);
@@ -59,6 +102,11 @@
 	let activeRealDate = $derived(activeAlbum?.datePublished || '2026');
 	let queryTrackSlug = $state('');
 
+	// SVELTE 5 RUNE — `$effect(() => { ... })`:
+	// Runs in the browser after rendering and re-runs automatically whenever `page.url`
+	// changes. We guard `typeof window === 'undefined'` because query parameters on
+	// static builds (`?track=...`) only exist at runtime in the visitor's browser,
+	// not during `npm run build` static prerendering.
 	$effect(() => {
 		if (typeof window === 'undefined' || !page.url) {
 			queryTrackSlug = '';
@@ -71,10 +119,16 @@
 			'';
 	});
 
+	// Combine route track info, URL param `[track]`, or `?track=` query param into one slug.
 	let activeTrackSlug = $derived(
 		activeTrack?.fileName || page.params?.track || queryTrackSlug || ''
 	);
 
+	// SVELTE 5 RUNE — `$derived.by(() => { ... })`:
+	// Whereas `$derived(expr)` is for single-line expressions, `$derived.by(fn)` lets
+	// you write a multi-line function with `if` statements and local variables!
+	// Here it builds a deep link to the official DSP Verification Ledger pre-filtered
+	// to the active artist, album, and song.
 	let dspVerificationUrl = $derived.by(() => {
 		const baseUrl = 'https://engineroom.raggiesoft.com/dsp-verification/';
 		if (!activeArtistSlug) return baseUrl;
@@ -89,6 +143,7 @@
 		return `${baseUrl}?${params.toString()}`;
 	});
 
+	// Human-readable link text matching the deep-linked DSP Verification URL above.
 	let dspVerificationLabel = $derived.by(() => {
 		if (activeArtistName && activeAlbumTitle) {
 			return `DSP Verification (${activeArtistName} — ${activeAlbumTitle}) ↗`;
@@ -99,13 +154,14 @@
 		return 'DSP Verification & Official Catalog Registry ↗';
 	});
 
+	// Browser-only initialization hook: runs once when the layout mounts on screen.
 	onMount(() => {
-		// Initialize adaptive theme manager & prefers-color-scheme listener
+		// 1. Hydrate user preferences from `localStorage` and attach OS dark/light listeners.
 		themeManager.init();
 		dspManager.init();
 		playlistManager.init();
 
-		// Ensure the site-wide RaggieSoft Network menu dropdown & mobile drawer are bound after Svelte hydration
+		// 2. Bind the cross-site RaggieSoft Network dropdown & mobile menu script if loaded.
 		if (
 			typeof window !== 'undefined' &&
 			typeof (/** @type {any} */ (window).initRaggieSoftNetworkMenu) === 'function'
@@ -113,16 +169,19 @@
 			/** @type {any} */ (window).initRaggieSoftNetworkMenu();
 		}
 
-		// Register Service Worker for PWA capabilities
+		// 3. Register `/sw.js` Service Worker so The Listening Room can be installed as
+		//    an offline-capable Progressive Web App (PWA) on phones and desktops.
 		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 			navigator.serviceWorker.register('/sw.js').catch((err) => {
 				console.warn('PWA service worker registration failed:', err);
 			});
 		}
 
-		// Cross-PWA Incoming Link Consumer (Launch Handler API: window.launchQueue):
-		// Focuses an already-open Listening Room PWA window and routes client-side via
-		// SvelteKit's delegated anchor router without interrupting active audio playback.
+		// 4. Cross-PWA Incoming Link Consumer (Launch Handler API: `window.launchQueue`):
+		//    If the user already has The Listening Room installed as a standalone app
+		//    and clicks a `music.raggiesoft.com` link from another app, we synthesize
+		//    a hidden `<a href>` click so SvelteKit navigates client-side without
+		//    reloading the window or interrupting the song currently playing!
 		const winAny = /** @type {any} */ (window);
 		if (
 			typeof window !== 'undefined' &&
@@ -151,10 +210,10 @@
 			});
 		}
 
-		// Sibling RaggieSoft PWA Outbound Handoff Enhancer:
-		// When running as an installed standalone PWA, ensure clicks to Book Reader or
-		// Backstage use `target="_blank" rel="noopener"` so Chromium/Android PWA Link
-		// Capturing hands them directly to the sibling PWA window while audio keeps playing.
+		// 5. Sibling RaggieSoft PWA Outbound Handoff Enhancer:
+		//    When running as an installed standalone PWA, ensure clicks to Book Reader or
+		//    Backstage use `target="_blank" rel="noopener"` so Chromium/Android PWA Link
+		//    Capturing hands them directly to the sibling PWA window while audio keeps playing.
 		const isStandalonePwa =
 			(window.matchMedia &&
 				window.matchMedia(
@@ -187,9 +246,12 @@
 				// Ignore malformed hrefs
 			}
 		};
+		// `true` as the 3rd argument attaches the listener in the DOM "capture" phase
+		// so `target="_blank"` is applied before the browser processes the link click.
 		document.addEventListener('click', handleSiblingPwaClick, true);
 
-		// Intercept browser install prompt to offer an in-app button
+		// 6. Intercept Chromium's `beforeinstallprompt` event so we can offer a clean
+		//    in-header "Install App" button whenever the user chooses to install.
 		const handleBeforeInstall = (/** @type {Event} */ e) => {
 			e.preventDefault();
 			deferredPrompt = e;
@@ -203,12 +265,18 @@
 			deferredPrompt = null;
 		});
 
+		// Cleanup function returned from `onMount`: Svelte calls this automatically
+		// if the component is ever unmounted, preventing duplicate event listeners.
 		return () => {
 			document.removeEventListener('click', handleSiblingPwaClick, true);
 			window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
 		};
 	});
 
+	/**
+	 * Triggers the native browser "Install App" dialog stored in `deferredPrompt`
+	 * and awaits the user's choice (`'accepted'` or `'dismissed'`).
+	 */
 	async function installApp() {
 		if (!deferredPrompt) return;
 		deferredPrompt.prompt();
@@ -506,7 +574,13 @@
 					<span class="hidden sm:inline">Search</span>
 				</button>
 
-				<!-- Single Mobile Hamburger Menu Toggle (< 768px) -->
+				<!--
+					Single Mobile Hamburger Menu Toggle (`< 768px`, hidden on `md:` and wider):
+					Accessibility attributes explained:
+					- `aria-expanded={mobileMenuOpen}` tells screen readers if the drawer is open (`true`) or closed (`false`).
+					- `aria-controls="music-mobile-navigation"` points to the exact `id` of the drawer panel below.
+					- `aria-label` dynamically switches between "Open navigation menu" and "Close navigation menu".
+				-->
 				<button
 					type="button"
 					id="mobile-menu-toggle"
@@ -708,11 +782,20 @@
 			</p>
 		</aside>
 
+		<!--
+			SVELTE 5 `{@render children()}` TAG:
+			This is the dynamic content slot! Whatever `+page.svelte` (or `+error.svelte`)
+			matches the current browser URL gets rendered right here inside `<main>`,
+			while the header above, the footer below, and `<Player />` at the bottom
+			remain intact across page navigations.
+		-->
 		{@render children()}
 	</main>
 
 	<!-- ===================================================================== -->
 	<!-- GLOBAL FOOTER: BEHIND THE SCENES, LEGAL, & HYBRID LICENSING           -->
+	<!-- Displays MIT (code) + CC BY-SA 4.0 / Commercial (music) licensing     -->
+	<!-- alongside the mandatory Fictitious Persons & Entities Disclaimer.      -->
 	<!-- ===================================================================== -->
 	<footer
 		class="mt-12 border-t border-slate-800/80 bg-slate-900/60 px-4 py-8 text-xs text-slate-400 sm:px-6 lg:px-8"
@@ -784,6 +867,16 @@
 		</div>
 	</footer>
 </div>
+
+<!--
+	GLOBAL OVERLAY MODALS & PERSISTENT AUDIO PLAYER:
+	Mounting these three components outside `<main>` at the root of `+layout.svelte`
+	means:
+	1. `<SearchFilterModal />` can be opened from the header button on ANY route.
+	2. `<AddToPlaylistModal />` can be triggered by any "+ Playlist" button site-wide.
+	3. `<Player />` stays mounted in the DOM permanently, so `<audio>` playback and
+	   WebVTT synchronized lyrics continue uninterrupted as you browse the site!
+-->
 
 <!-- Global Search & Filter Modal -->
 <SearchFilterModal

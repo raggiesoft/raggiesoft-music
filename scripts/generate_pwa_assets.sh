@@ -2,10 +2,17 @@
 # ============================================================================
 # ARCHITECTURAL BLOCK COMMENT: generate_pwa_assets.sh (The Listening Room / music.raggiesoft.com)
 # ============================================================================
-# Purpose:
-#     Automates the generation of Progressive Web App (PWA) icons, SVG/ICO favicons,
-#     and Option A Co-Branded ("App + Imprint") Light Mode & Dark Mode iOS/iPadOS
-#     startup splash screens for The Listening Room (`music.raggiesoft.com`).
+# Plain-English Overview (Beginner Guide to PWA Icons & iOS Splash Screens):
+#     When someone installs The Listening Room (`music.raggiesoft.com`) onto
+#     their iPhone, iPad, Android phone, or desktop computer ("Add to Home Screen"),
+#     the operating system expects crisp icons at exact pixel sizes (16x16 up to
+#     512x512) PLUS device-matched launch splash screens so the app opens just
+#     like a native App Store download.
+#
+#     Instead of manually exporting 100+ image files in Photoshop every time we
+#     tweak an icon, this Bash script runs an embedded Python 3 program (using
+#     the Pillow `PIL` image library) to generate every icon and all 92 Light/Dark
+#     iOS/iPadOS startup splash screens automatically!
 #
 # Design Decisions & Future Maintenance:
 #     1. Separation of App Icon vs. Record Label Logo:
@@ -19,39 +26,46 @@
 #     2. Full 92-Screen iOS/iPadOS Matrix (46 Light Mode + 46 Dark Mode):
 #        - Generates all 23 portrait + 23 landscape device resolutions in both
 #          Light Mode (`#F8FAFC` light studio slate) and Dark Mode (`#020617` deep
-#          studio slate).
+#          studio slate) referenced by `<link rel="apple-touch-startup-image">` in `src/app.html`.
 #     3. Zero-Network Deterministic Build:
 #        - Uses Python 3 + Pillow (`PIL`) with Lanczos resampling and 2x supersampled
-#          squircle masks.
+#          squircle masks so curved corners look razor-sharp without jagged pixel edges.
 # ============================================================================
 
+# `set -e` ("exit on error"): stops the script immediately if any command fails
 set -e
 
+# Navigate to the `subdomains/music/` project root regardless of where the script was called from
 cd "$(dirname "$0")/.." || exit
 
 echo "Generating The Listening Room PWA icons and 92 Light/Dark Co-Branded iOS splash screens..."
 
+# Run an inline Python 3 script via a Bash "heredoc" (`<< 'EOF' ... EOF`)
 /opt/homebrew/bin/python3 - << 'EOF'
 import os, io, base64
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+# Resolve local music app directories and the shared CDN `pwa-icons` asset folder
 music_root = os.getcwd()
 cdn_pwa_dir = os.path.abspath(os.path.join(music_root, "../../../raggiesoft-assets/engine-room-records/images/pwa-icons"))
 static_icons_dir = os.path.join(music_root, "static/icons")
 static_logos_dir = os.path.join(music_root, "static/logos")
 
+# Create output folders if they don't exist yet (`exist_ok=True` prevents errors if they do)
 os.makedirs(cdn_pwa_dir, exist_ok=True)
 os.makedirs(static_icons_dir, exist_ok=True)
 
+# Load master source PNGs in RGBA mode (Red, Green, Blue, Alpha transparency)
 app_icon = Image.open(os.path.join(static_logos_dir, "listening-room-app-icon.png")).convert("RGBA")
 logo_black = Image.open(os.path.join(static_logos_dir, "engine-room-records-logo.png")).convert("RGBA")
 logo_white = Image.open(os.path.join(static_logos_dir, "engine-room-records-logo-white.png")).convert("RGBA")
 
-# Tight bounding box around the Engine Room Records gear logo
+# Tight bounding box around the Engine Room Records gear logo (trims transparent outer padding)
 bbox = logo_black.getbbox()
 cropped_gear_black = logo_black.crop(bbox)
 cropped_gear_white = logo_white.crop(bbox)
 
+# RGB color tuples `(Red, Green, Blue)` matching our Tailwind CSS v4 Studio Cobalt theme in `src/app.css`
 ICON_EDGE_BG = (6, 6, 18)           # Deep obsidian-indigo matching the master icon edge
 DARK_BG = (2, 6, 23)                # #020617 (Studio Dark Mode background)
 LIGHT_BG = (248, 250, 252)          # #F8FAFC (Studio Light Mode background)
@@ -64,6 +78,7 @@ LIGHT_TEXT_PRIMARY = (15, 23, 42)   # #0F172A
 LIGHT_TEXT_ACCENT = (2, 132, 199)   # #0284C7 (Studio Deep Cyan-Blue)
 LIGHT_TEXT_MUTED = (71, 85, 105)    # #475569
 
+# Helper to load macOS system Helvetica / San Francisco fonts with a safe fallback
 def load_font(candidates, size):
     for path, idx in candidates:
         if os.path.exists(path):
@@ -83,7 +98,9 @@ SANS_REG_CANDIDATES = [
 ]
 
 def make_rounded_squircle(img_rgba, size, radius_ratio=0.225, border_rgba=None):
-    """Creates a 2x-supersampled anti-aliased rounded squircle icon."""
+    """Creates a 2x-supersampled anti-aliased rounded squircle icon.
+    Drawing at 2x resolution (`ss = size * 2`) and downscaling with LANCZOS
+    eliminates stair-step pixelation ('jaggies') along the rounded corners."""
     ss = size * 2
     resized = img_rgba.resize((ss, ss), Image.Resampling.LANCZOS)
     mask = Image.new("L", (ss, ss), 0)
@@ -102,7 +119,8 @@ def make_rounded_squircle(img_rgba, size, radius_ratio=0.225, border_rgba=None):
     return out.resize((size, size), Image.Resampling.LANCZOS)
 
 def make_maskable_icon(img_rgba, size, safe_padding_ratio=0.10):
-    """Creates a full-bleed maskable icon with safe-zone padding so Android/OS masks never clip the headphones."""
+    """Creates a full-bleed maskable icon with safe-zone padding so Android/OS masks
+    (circle, teardrop, or squircle) never clip the vinyl headphones artwork."""
     canvas = Image.new("RGB", (size, size), ICON_EDGE_BG)
     inner = int(round(size * (1.0 - 2.0 * safe_padding_ratio)))
     resized = img_rgba.resize((inner, inner), Image.Resampling.LANCZOS)
@@ -110,7 +128,7 @@ def make_maskable_icon(img_rgba, size, safe_padding_ratio=0.10):
     canvas.paste(resized, (offset, offset), resized)
     return canvas
 
-# 1. Generate SVG Favicon (rounded squircle)
+# 1. Generate SVG Favicon (rounded squircle embedded as base64 PNG inside `<svg>`)
 fav_png = make_rounded_squircle(app_icon, 128, radius_ratio=0.22, border_rgba=(56, 189, 248, 150))
 buf = io.BytesIO()
 fav_png.save(buf, format="PNG", optimize=True)
@@ -128,12 +146,12 @@ with open(os.path.join(music_root, "src/lib/assets/favicon.svg"), "w") as f:
 with open(os.path.join(cdn_pwa_dir, "icon.svg"), "w") as f:
     f.write(svg_favicon)
 
-# 2. Generate Multi-Resolution favicon.ico (16x16, 32x32, 48x48)
+# 2. Generate Multi-Resolution favicon.ico (packs 16x16, 32x32, and 48x48 into one `.ico` file)
 ico_base = make_rounded_squircle(app_icon, 256, radius_ratio=0.22, border_rgba=(56, 189, 248, 160))
 ico_base.save(os.path.join(music_root, "static/favicon.ico"), format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
 ico_base.save(os.path.join(cdn_pwa_dir, "favicon.ico"), format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
 
-# 3. Generate iOS Home Screen Icon (180x180 full-bleed; iOS applies its own squircle mask)
+# 3. Generate iOS Home Screen Icon (180x180 full-bleed RGB; iOS applies its own squircle mask)
 apple_180 = app_icon.resize((180, 180), Image.Resampling.LANCZOS).convert("RGB")
 apple_180.save(os.path.join(static_icons_dir, "apple-touch-icon.png"), format="PNG", optimize=True)
 apple_180.save(os.path.join(cdn_pwa_dir, "apple-icon-180.png"), format="PNG", optimize=True)
@@ -152,6 +170,7 @@ icon_192_mask.save(os.path.join(cdn_pwa_dir, "manifest-icon-192.maskable.png"), 
 icon_512_mask.save(os.path.join(cdn_pwa_dir, "manifest-icon-512.maskable.png"), format="PNG", optimize=True)
 
 # 5. Generate All 46 iOS / iPadOS Startup Splash Screen Resolutions (Light & Dark = 92 files)
+#    Each pair lists `(portrait_w, portrait_h)` and `(landscape_w, landscape_h)` in physical device pixels.
 splash_resolutions = [
     (2048, 2732), (2732, 2048),
     (2064, 2752), (2752, 2064),
@@ -178,6 +197,7 @@ splash_resolutions = [
     (640, 1136),  (1136, 640),
 ]
 
+# Renders one co-branded launch splash image (`w` x `h`) in either Light Mode or Dark Mode
 def make_cobranded_splash(w, h, is_dark):
     bg_rgb = DARK_BG if is_dark else LIGHT_BG
     text_primary = DARK_TEXT_PRIMARY if is_dark else LIGHT_TEXT_PRIMARY
@@ -190,11 +210,11 @@ def make_cobranded_splash(w, h, is_dark):
     short_side = min(w, h)
     is_landscape = w > h
 
-    # Center Hero App Icon size
+    # Center Hero App Icon size (proportional to the shorter screen dimension)
     icon_dim = int(round(short_side * (0.24 if is_landscape else 0.28)))
     squircle = make_rounded_squircle(app_icon, icon_dim, radius_ratio=0.225, border_rgba=border_rgba)
 
-    # Soft elevation drop shadow behind squircle
+    # Soft Gaussian-blurred elevation drop shadow behind the squircle app icon
     shadow_pad = int(round(icon_dim * 0.18))
     shadow = Image.new("RGBA", (icon_dim + shadow_pad * 2, icon_dim + shadow_pad * 2), (0, 0, 0, 0))
     sdraw = ImageDraw.Draw(shadow)
@@ -216,7 +236,7 @@ def make_cobranded_splash(w, h, is_dark):
 
     draw = ImageDraw.Draw(canvas)
 
-    # Typography sizes scaled to short_side
+    # Typography sizes scaled dynamically to `short_side` so iPhone SE and 13" iPad Pro both look balanced
     title_sz = max(24, int(round(short_side * (0.045 if is_landscape else 0.052))))
     sub_sz = max(13, int(round(short_side * (0.019 if is_landscape else 0.021))))
     imp_sub_sz = max(11, int(round(short_side * (0.015 if is_landscape else 0.0165))))
@@ -225,7 +245,7 @@ def make_cobranded_splash(w, h, is_dark):
     font_sub = load_font(SANS_BOLD_CANDIDATES, sub_sz)
     font_imp_sub = load_font(SANS_REG_CANDIDATES, imp_sub_sz)
 
-    # App Title + Subtitle below squircle
+    # App Title + Subtitle centered horizontally below the squircle hero icon
     title_text = "The Listening Room"
     sub_text = "HI-RES NARRATIVE AUDIO & LYRICS"
 
@@ -255,8 +275,10 @@ def make_cobranded_splash(w, h, is_dark):
     canvas.alpha_composite(gear_resized, (center_x - gear_w // 2, gear_y))
     draw.text((center_x - iw2 // 2, imp_sub_y), imp_line2, font=font_imp_sub, fill=text_muted)
 
+    # Convert RGBA -> RGB before saving as optimized JPEG
     return canvas.convert("RGB")
 
+# Loop through all 46 device resolutions and export both Light and Dark splash JPEGs (92 total)
 for (w, h) in splash_resolutions:
     light_img = make_cobranded_splash(w, h, is_dark=False)
     light_img.save(os.path.join(cdn_pwa_dir, f"apple-splash-{w}-{h}.jpg"), format="JPEG", quality=92, optimize=True)

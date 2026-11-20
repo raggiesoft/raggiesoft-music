@@ -2,10 +2,25 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * ShareModal.svelte
+	 * src/lib/components/ShareModal.svelte — Pop-Up Social Share Dialog Wrapper
 	 * ============================================================================
-	 * Interactive Modal Dialog for sharing any Album or Artist from anywhere in
-	 * the Engine Room Records library.
+	 * Plain-English Overview (100-Level JavaScript & Svelte 5 Guide):
+	 *   What does this component do, and how does it relate to `ShareSection.svelte`?
+	 *     On full Artist and Album pages, `ShareSection.svelte` is rendered inline
+	 *     near the bottom of the page. However, on grid cards (like `/discography`),
+	 *     we also want a quick "Share" button that pops open that exact same UI
+	 *     inside a centered modal overlay!
+	 *
+	 *     Rather than duplicating 200 lines of Facebook / Bluesky / Clipboard code,
+	 *     `ShareModal.svelte` demonstrates **Component Composition**: it provides
+	 *     the accessible modal backdrop, close button, and `Escape` key handler,
+	 *     and renders `<ShareSection {title} {subtitle} ... />` right inside!
+	 *
+	 *   Svelte 5 `$props()` Concept:
+	 *     In Svelte 5, child components receive inputs ("props") from their parent
+	 *     by destructuring `$props()` with default fallback values (`isOpen = false`,
+	 *     `onClose = () => {}`, etc.). Notice `{title}` in `<ShareSection {title} />`—
+	 *     that is Svelte's shorthand for `title={title}`!
 	 *
 	 * Replicates the RaggieSoft Book Library share experience (OpenGraph preview
 	 * card, Facebook Share, Bluesky Compose, Copy Link, and Native Share) inside
@@ -14,6 +29,7 @@
 	 */
 	import ShareSection from './ShareSection.svelte';
 
+	// Receive modal state (`isOpen`, `onClose` callback) and OpenGraph card metadata from parent
 	let {
 		isOpen = false,
 		onClose = () => {},
@@ -25,7 +41,7 @@
 	} = $props();
 
 	/**
-	 * Closes modal on Escape key press.
+	 * Closes modal on Escape key press (`WCAG 2.1 AA` keyboard dismissal requirement).
 	 * @param {KeyboardEvent} e
 	 */
 	function handleKeydown(e) {
@@ -35,8 +51,10 @@
 	}
 </script>
 
+<!-- Listen globally for `Escape` key presses while this component is mounted -->
 <svelte:window onkeydown={handleKeydown} />
 
+<!-- Only render the modal overlay DOM when `isOpen` is `true` -->
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
@@ -44,7 +62,7 @@
 		aria-modal="true"
 		aria-label="Share {title}"
 	>
-		<!-- Backdrop click area -->
+		<!-- Full-bleed backdrop click area (`tabindex="-1"` keeps keyboard Tab cycling focused on real controls inside the card) -->
 		<button
 			type="button"
 			onclick={() => onClose()}
@@ -53,6 +71,7 @@
 			tabindex="-1"
 		></button>
 
+		<!-- Scrollable modal container housing the close button and embedded `<ShareSection />` -->
 		<div class="relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl">
 			<button
 				type="button"
@@ -70,6 +89,7 @@
 				</svg>
 			</button>
 
+			<!-- Forward all metadata props to `ShareSection` using Svelte's `{propName}` attribute shorthand -->
 			<ShareSection {title} {subtitle} {description} {url} {socialPreview} />
 		</div>
 	</div>

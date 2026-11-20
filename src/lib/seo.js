@@ -1,10 +1,28 @@
 /**
  * @license MIT
  * ============================================================================
- * src/lib/seo.js
+ * src/lib/seo.js — SEO Metadata & Schema.org JSON-LD Entity Graph Engine
  * ============================================================================
- * Canonical Search Engine Optimization (SEO), Metadata & Schema.org JSON-LD
- * Entity Graph Engine for The Listening Room (`https://music.raggiesoft.com`).
+ * Plain-English Overview (100-Level JavaScript & Semantic Web Guide):
+ *   What are OpenGraph tags and Schema.org JSON-LD?
+ *     1. HTML `<title>`, `<meta name="description">`, and OpenGraph (`og:*`) tags
+ *        control how links to `music.raggiesoft.com` look in search results and
+ *        chat apps (Discord, iMessage, Bluesky, Facebook).
+ *     2. Schema.org JSON-LD (`<script type="application/ld+json">`) is a structured
+ *        "knowledge graph" embedded in each page's `<head>` so search engines
+ *        understand the exact relationship between entities:
+ *          - Real-world creator (`Person`: Michael P. Ragsdale) & unincorporated
+ *            imprint (`Organization`: Engine Room Records)
+ *          - Fictional in-universe band (`MusicGroup`) & story timeline (`temporalCoverage`)
+ *          - Underlying written song (`MusicComposition`) vs. specific recorded
+ *            audio master (`MusicRecording`, deduplicated by 12-character ISRC!).
+ *
+ *   Security Note on `serializeJsonLd()` in this file:
+ *     When embedding JSON inside an HTML `<script>` tag, if any song lyric or
+ *     description ever contained `</script>`, the browser's HTML parser would
+ *     prematurely close the script tag! Replacing `<` with its Unicode escape
+ *     `\u003c` keeps the JSON 100% identical after `JSON.parse()` while making
+ *     HTML injection impossible.
  *
  * Architectural Guarantees:
  * 1. Unified Cross-Network Entity `@id`s:
@@ -651,6 +669,9 @@ export function buildTrackSeoMeta(track, album) {
 
 /**
  * Serializes a JSON-LD object safely for injection into `<svelte:head>`.
+ * Note why `</` + `'script>'` is split across two string literals: inside `.js` files
+ * bundled into inline scripts, avoiding a literal closing script token prevents legacy
+ * HTML parsers from misinterpreting the string literal.
  *
  * @param {Record<string, any>} payload
  * @returns {string}

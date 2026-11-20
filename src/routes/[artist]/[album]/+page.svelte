@@ -2,25 +2,33 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Album Dedicated Route: /[artist]/[album])
+	 * FILE: src/routes/[artist]/[album]/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/[artist]/[album]
+	 *             (e.g., `/the-stardust-engine/1987-electric-horizon`)
 	 * ============================================================================
-	 * Dedicated, crawlable album showcase view for Engine Room Records
-	 * (`music.raggiesoft.com/$artist-slug/$album-slug`).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/[artist]/[album]/+page.js` (which resolves
+	 * `params.artist` and `params.album` into an album object + related context),
+	 * this component renders the dedicated Album Showcase screen!
 	 *
-	 * Architecture & Design Decisions:
-	 * 1. Hierarchical SEO URLs: Nested under `/[artist]/[album]` so shared links
-	 *    immediately communicate both the band and the release, and chopping off
-	 *    the album segment resolves cleanly to the artist's profile (`/[artist]`).
-	 * 2. Social Crawler Optimization: Injects high-resolution 1200x630 Open Graph
-	 *    and Twitter Card tags referencing the album's canonical `socialPreview` image,
-	 *    along with rich Schema.org MusicAlbum JSON-LD metadata for search engines.
-	 * 3. Persistent Audio Integration: Seamlessly hooks into the global Svelte 5
-	 *    `player` store. Starting playback here retains state across navigation.
-	 * 4. Rich Lore & Synchronized Lyrics: Surfaces track-level narrative lore and
-	 *    official lyrics directly within the album context.
-	 * 5. Book-Reader-Style Social Sharing: Includes `<ShareSection />` at the bottom
-	 *    of the page with OpenGraph preview card, Facebook, Bluesky, Copy Link, and
-	 *    Native Share.
+	 * KEY JAVASCRIPT & SVELTE 5 CONCEPTS IN THIS FILE:
+	 * 1. Multi-Disc Red Book CD Grouping (`discs` `$derived.by()`):
+	 *    - Groups `album.tracks` by `track.disc` (`1`, `2`, ...) and sums `MM:SS`
+	 *      track durations so multi-disc releases display each disc's total runtime
+	 *      against the classic 74:00 Red Book Compact Disc standard.
+	 * 2. Flexible Track Deep-Linking (`findTrackByDeepLink()` + `$effect()`):
+	 *    - When a novel or lore page links to `?track=moon-1-tidal-lock` or
+	 *      `#track-...`, our `$effect()` matches the track, highlights it, expands
+	 *      its Lore & Lyrics accordion, and uses `tick()` (waiting one microtask
+	 *      for Svelte to finish updating the DOM) before calling `scrollIntoView()`.
+	 *    - Audio only auto-starts if the user explicitly opted into
+	 *      `dspManager.autoplayDeepLinks` in `/settings` (default `false` for
+	 *      WCAG 2.1 Audio Control accessibility!).
+	 * 3. Alternate Version & Shared-ISRC Comparison:
+	 *    - Distinguishes between the exact album+track currently playing
+	 *      (`isExactRelatedTrack`) vs. another album that shares the identical
+	 *      master ISRC (`isSharedMasterPlaying`), and builds chronological
+	 *      comparison queues across demos, studio masters, and live concerts.
 	 * ============================================================================
 	 */
 	import { tick } from 'svelte';
@@ -42,8 +50,12 @@
 	import ShareSection from '#lib/components/ShareSection.svelte';
 	import StoreButton from '#lib/components/StoreButton.svelte';
 
+	// Receive `{ album, relatedAlbums, adjacentReleases, sameEraAlbums, connectedPlaylists, relatedArtists }`
+	// returned by `load({ params })` in `src/routes/[artist]/[album]/+page.js`.
 	let { data } = $props();
 
+	// Wrap incoming `data` fields in `$derived(...)` so clicking between albums
+	// (e.g., "Earlier Release" / "Next Release") updates every reactive dependency!
 	let album = $derived(data.album);
 	let relatedAlbums = $derived(data.relatedAlbums);
 	let adjacentReleases = $derived(data.adjacentReleases || { previous: null, next: null });
@@ -51,7 +63,7 @@
 	let connectedPlaylists = $derived(data.connectedPlaylists || []);
 	let relatedArtists = $derived(data.relatedArtists || []);
 
-	// Deterministic SEO metadata & canonical URL for this hierarchical album route
+	// Deterministic SEO metadata & canonical URL (`https://music.raggiesoft.com/[artist]/[album]`)
 	let seo = $derived(buildAlbumSeoMeta(album));
 	let canonicalUrl = $derived(seo.canonicalUrl);
 
@@ -1162,6 +1174,11 @@
 					{/if}
 
 					<div class="divide-y divide-slate-800/60">
+						<!--
+							Inside `{#each disc.tracks as track (track.id)}`, `{@const ...}` creates
+							per-track local constants (`relatedSongs` and `comparisonData`) so each row
+							can display an alternate-versions badge and expandable version comparison panel!
+						-->
 						{#each disc.tracks as track (track.id)}
 							{@const relatedSongs = getRelatedSongs(track, album)}
 							{@const comparisonData =

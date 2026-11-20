@@ -2,28 +2,34 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Preferences & Theme Settings Route: /settings)
+	 * FILE: src/routes/settings/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/settings
 	 * ============================================================================
-	 * Dedicated Preferences, Adaptive Theme Picker & System Configuration Portal
-	 * for Engine Room Records (`music.raggiesoft.com/settings`), modeled after
-	 * `raggiesoft-book-library/sophia/settings.php`.
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Paired with `src/routes/settings/+page.js` (`export const prerender = true`),
+	 * this component renders the interactive Preferences & Theme Settings screen
+	 * at `/settings`.
 	 *
-	 * Features:
-	 * 1. Adaptive Theme Palette Selection:
-	 *    - Choose between 5 custom theme palettes (`studio`, `industrial`, `sepia`,
-	 *      `stardust`, `solstice`).
-	 *    - Every theme automatically respects `prefers-color-scheme` (with tailored
-	 *      Light and Dark surface/text/border tokens).
-	 * 2. Appearance Mode Override (`auto` [Match OS], `light`, `dark`):
-	 *    - Defaults to `auto` so it follows the user's OS `prefers-color-scheme`
-	 *      in real time, while also allowing manual override.
-	 * 3. Live Brand Logo Preview:
-	 *    - Shows how the official Engine Room Records logo automatically swaps
-	 *      between `/logos/engine-room-records-logo.png` (pure black on transparent
-	 *      for light mode) and `/logos/engine-room-records-logo-white.png` (pure
-	 *      white on transparent for dark mode).
-	 * 4. Playback Session & Local Storage Management:
-	 *    - Inspect or clear saved playback session and reset preferences.
+	 * HOW PREFERENCES WORK WITHOUT A SERVER DATABASE:
+	 * Every button on this page calls methods on two shared Svelte 5 reactive
+	 * stores (`themeManager` from `#lib/theme.svelte.js` and `dspManager` from
+	 * `#lib/dspPreference.svelte.js`). Those stores:
+	 *   1. Update reactive `$state` properties immediately (so buttons, badges,
+	 *      CSS custom properties on `<html>`, and logos update in real time!).
+	 *   2. Save the chosen value into `window.localStorage` inside the user's
+	 *      own browser so their choice is remembered on future visits.
+	 *
+	 * WHAT THE USER SEES & INTERACTS WITH ON THIS SCREEN:
+	 * 1. Preferred Streaming Platform Picker (Spotify, Apple Music, Amazon Music,
+	 *    YouTube Music) + Autoplay on Shared Song Links toggle (defaults to Off
+	 *    so opening a link never surprises someone with sudden audio) + Streaming
+	 *    Support Reminder reset button.
+	 * 2. Appearance Mode Selector (`auto` Match System Appearance, `light`, `dark`)
+	 *    with a live preview of the black vs. white Engine Room Records studio logo.
+	 * 3. Adaptive Theme Palette Picker (`studio`, `industrial`, `sepia`,
+	 *    `stardust`, `solstice`) showing both Light and Dark color swatches.
+	 * 4. Playback & Storage Controls to clear the saved "Jump Back In" session,
+	 *    restore dismissed banners, or reset everything to factory defaults.
 	 * ============================================================================
 	 */
 	import { resolve } from '$app/paths';
@@ -35,6 +41,9 @@
 		MAX_NUDGE_DISMISSALS
 	} from '#lib/dspPreference.svelte.js';
 
+	// Static array of configuration objects describing the 3 brightness modes.
+	// Defining data in an array lets us render all 3 cards cleanly with `{#each}`
+	// in the HTML template instead of copy-pasting nearly identical `<button>` markup!
 	const COLOR_MODES = [
 		{
 			id: 'auto',
@@ -59,10 +68,14 @@
 		}
 	];
 
+	// Reactive `$state` holding a temporary toast confirmation string (or `null` when hidden).
 	let statusMessage = $state(/** @type {string | null} */ (null));
 
 	/**
-	 * Displays a brief confirmation banner when a setting is updated or reset.
+	 * Displays a brief confirmation banner when a setting is updated or reset,
+	 * then clears `statusMessage` back to `null` after 3,000 milliseconds (3 seconds)
+	 * using JavaScript's built-in `setTimeout()` timer.
+	 *
 	 * @param {string} msg
 	 */
 	function notifyChange(msg) {
@@ -93,7 +106,8 @@
 	}
 
 	/**
-	 * Selects the listener's global preferred streaming platform.
+	 * Selects the listener's global preferred streaming platform so `<StoreButton />`
+	 * components across every album and artist page highlight their favorite app first.
 	 * @param {'spotify' | 'apple' | 'amazon' | 'youtube'} platformId
 	 * @param {string} name
 	 */
@@ -112,6 +126,7 @@
 
 	/**
 	 * Updates whether deep-linked track URLs (`?track=...`) automatically start audio playback.
+	 * Defaults to `false` to respect WCAG 2.1 Audio Control accessibility guidelines.
 	 * @param {boolean} enabled
 	 */
 	function selectAutoplayDeepLinks(enabled) {
@@ -125,6 +140,8 @@
 
 	/**
 	 * Clears the saved "Jump Back In" playback session from `localStorage`.
+	 * Wrapped in `try / catch` because strict browser privacy modes (like Safari
+	 * Private Browsing) can throw a `SecurityError` when touching `localStorage`.
 	 */
 	function clearPlaybackHistory() {
 		if (typeof window !== 'undefined') {
@@ -138,7 +155,8 @@
 	}
 
 	/**
-	 * Restores the dismissed Transparency Notice on the Home dashboard.
+	 * Restores the dismissed Transparency Notice on the Home dashboard by removing
+	 * its dismissal flag from `localStorage`.
 	 */
 	function restoreTransparencyBanner() {
 		if (typeof window !== 'undefined') {
@@ -163,6 +181,10 @@
 	}
 </script>
 
+<!--
+	Mark `/settings` with `noindex,follow`: utility preference screens shouldn't
+	clutter search engine results, whereas songs, albums, and artists SHOULD be indexed.
+-->
 <svelte:head>
 	<title>Preferences &amp; Theme Settings | The Listening Room (Engine Room Records)</title>
 	<meta name="robots" content="noindex,follow" />
@@ -198,6 +220,11 @@
 			</a>
 		</div>
 
+		<!--
+			Accessible Live Confirmation Toast (`role="status"` + `aria-live="polite"`):
+			Screen readers announce `statusMessage` politely after finishing the current
+			word whenever `notifyChange()` sets a confirmation string!
+		-->
 		{#if statusMessage}
 			<div
 				class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 px-4 py-3 text-xs font-bold text-emerald-200 sm:text-sm"
@@ -212,6 +239,10 @@
 
 	<!-- =================================================================== -->
 	<!-- 1. PREFERRED STREAMING PLATFORM & DEEP-LINK AUTOPLAY                -->
+	<!-- Inside `{#each}`, `{@const ...}` declares scoped local helper       -->
+	<!-- constants for that single loop iteration (`platform`, `isSelected`) -->
+	<!-- and `aria-pressed={isSelected}` tells assistive tech which toggle   -->
+	<!-- button is currently selected!                                       -->
 	<!-- =================================================================== -->
 	<section class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl sm:p-8">
 		<div class="mb-5">

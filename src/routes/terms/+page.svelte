@@ -2,38 +2,36 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Terms of Service & Licensing — /terms)
+	 * FILE: src/routes/terms/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/terms
 	 * ============================================================================
-	 * Architectural Overview:
-	 * Renders the legally binding Terms of Service and Hybrid Licensing Matrix
-	 * for The Listening Room (music.raggiesoft.com) and the wider RaggieSoft
-	 * network, operated by Michael P. Ragsdale (a natural person residing in the
-	 * Commonwealth of Virginia operating under the unincorporated creative
-	 * imprints RaggieSoft, RaggieSoft Media, and Engine Room Records).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Located at `src/routes/terms/+page.svelte`, this route serves the static
+	 * `/terms` page (`build/terms.html`, inheriting `prerender = true` from
+	 * `src/routes/+layout.js`).
 	 *
-	 * Key Protections Enforced:
+	 * WHAT THE USER SEES ON THIS SCREEN:
+	 * The complete Terms of Service and Hybrid Licensing Matrix for The Listening
+	 * Room and Engine Room Records:
 	 * 1. Natural-Person Operator Disclosure & Fictional Entity Separation:
-	 *    Explicitly separates Michael P. Ragsdale's unincorporated creative
-	 *    imprints from fictional worldbuilding entities (e.g. Engine Room
-	 *    Records, LLC; The O'Connell Family Revocable Trust; OmniCorp; Apex).
+	 *    Separates Michael P. Ragsdale's real-world unincorporated imprints from
+	 *    fictional story-world entities (`Engine Room Records, LLC`, `OmniCorp`, etc.).
 	 * 2. Hybrid Licensing + Anti-Hijacking / Content ID / ISRC Protection:
-	 *    - Code: MIT License.
-	 *    - Creative Content: CC BY-SA 4.0, Applicable DSP License, or Direct
-	 *      Commercial Synchronization License via corporate.raggiesoft.com.
-	 *    - Strictly prohibits third-party Content ID / Rights Manager / audio
-	 *      fingerprinting registration, PRO/collection society claims, or
-	 *      misappropriation of US ISRC Agency Prefix QTAHP (Registrant #185611).
-	 * 3. Zero Consumer Billing, Fourthwall Merchant-of-Record & B2B Sync:
-	 *    Establishes that The Listening Room is 100% free ($0.00) with zero
-	 *    subscriptions or consumer billing.
-	 * 4. Explicit $0.00 Personal Liability Cap, Indemnification & Norfolk Venue:
-	 *    Protects the individual operator in the absence of a corporate veil,
-	 *    with exclusive venue in the state and federal courts in Norfolk, VA.
-	 * 5. Hardcoded Effective & Last Updated Dates + Public Revision Ledger:
-	 *    Forensically auditable against git history (never dynamically generated).
+	 *    - Source Code: MIT License.
+	 *    - Music, Lyrics, Artwork & Lore: CC BY-SA 4.0, Applicable DSP License, or
+	 *      Direct Commercial Synchronization License (`corporate.raggiesoft.com`).
+	 *    - Anti-Hijacking: Prohibits YouTube Content ID / audio fingerprinting claims,
+	 *      unauthorized DSP uploads, PRO claims, and spoofing of US ISRC Prefix `QTAHP`.
+	 * 3. Zero Consumer Billing ($0.00 public access) & Fourthwall Merchant-of-Record.
+	 * 4. Closed-System Roster, Fictitious Entities Disclaimer, $0.00 Liability Cap,
+	 *    Norfolk VA Venue, and git-tracked Public Revision Ledger.
 	 * ============================================================================
 	 */
+
+	// `resolve('/behind-the-scenes')` builds a safe internal route link.
 	import { resolve } from '$app/paths';
+
+	// Builds Schema.org `BreadcrumbList` structured data (`Home -> Terms & Licensing`).
 	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
 
 	const termsBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
@@ -42,6 +40,7 @@
 	]);
 </script>
 
+<!-- Injects page title, canonical URL, OpenGraph/Twitter social preview cards, and JSON-LD -->
 <svelte:head>
 	<title>Terms &amp; Licensing | The Listening Room</title>
 	<meta

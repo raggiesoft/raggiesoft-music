@@ -2,40 +2,62 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Behind the Scenes: AI & The Creative Process — /behind-the-scenes)
+	 * FILE: src/routes/behind-the-scenes/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/behind-the-scenes
 	 * ============================================================================
-	 * Architectural Overview:
-	 * Provides listeners with an in-depth, transparent look behind the scenes of
-	 * The Listening Room (music.raggiesoft.com) and Engine Room Records.
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Because this file is located at `src/routes/behind-the-scenes/+page.svelte`,
+	 * SvelteKit automatically serves it at `/behind-the-scenes`! Since there is no
+	 * dynamic URL parameter here (no `[brackets]` in the folder name), this page
+	 * doesn't even need its own `+page.js`—it inherits `export const prerender = true`
+	 * straight from `src/routes/+layout.js` and compiles into static HTML at
+	 * `build/behind-the-scenes.html`.
 	 *
-	 * Core Sections:
+	 * WHAT THE USER SEES ON THIS SCREEN:
+	 * An open, consumer-friendly tour of how Engine Room Records albums are made:
 	 * 1. Three-Pillar Creative Workflow:
-	 *    - The Writer & Executive Producer: Michael Ragsdale (Human)
-	 *    - The Co-Writer & Lead Systems Engineer: Google Antigravity (Gemini / Argon)
-	 *    - The Studio Booth: Suno v6 (Commercial-Tier Audio Synthesis)
-	 * 2. The Prompt Engineering & Studio Production Philosophy:
-	 *    - Details how songs evolve from human concepts and prose into structured
-	 *      arrangement roadmaps, phonetic lyric sheets, and mastered multi-format
-	 *      releases (128kbps web previews, V0 MP3/OGG, and 24-bit WAV/FLAC).
-	 * 3. Licensing & Commercial Clearances Overview:
-	 *    - Explains the MIT (Code) + CC BY-SA 4.0 / DSP / RaggieSoft Media
-	 *      Commercial Licensing structure, with direct links to `/terms` and
-	 *      `https://raggiesoft.com/raggiesoft-media/licensing/commercial`.
+	 *    - Pillar 01: Michael Ragsdale (Human Writer, Executive Producer & Curator)
+	 *    - Pillar 02: Google Antigravity / Gemini (Co-Writer, Arranger & Engineer)
+	 *    - Pillar 03: Suno v6 (Commercial-Tier Studio Booth & Vocal Synthesis)
+	 * 2. Six-Point Production & Prompt Engineering Philosophy (zero copyrighted
+	 *    triggers, phonetic pronunciation cues, diacritical precision like Uluṟu,
+	 *    3-tier audio mastering, visual reference sheets, and closed-system policy).
+	 * 3. Work of Fiction Disclaimer + MIT / CC BY-SA 4.0 / Commercial Licensing
+	 *    callout and social `<ShareSection />`.
 	 * ============================================================================
 	 */
+
+	// `resolve` generates verified internal links (e.g., `resolve('/terms')`).
 	import { resolve } from '$app/paths';
+
+	// `buildBreadcrumbJsonLdScript` returns a `<script type="application/ld+json">`
+	// string teaching search engines the page hierarchy (`Home -> Behind the Scenes`).
 	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
+
+	// Reusable social sharing card displayed at the bottom of the page.
 	import ShareSection from '#lib/components/ShareSection.svelte';
 
+	// Concise <= 155-character meta description shared across standard SEO,
+	// OpenGraph (`og:description`), and Twitter Card (`twitter:description`) tags.
 	const btsDescription =
 		'Go behind the scenes of The Listening Room and Engine Room Records to see how Michael P. Ragsdale crafts concept albums, rock operas, lyrics, and lore.';
 
+	// Pre-compute the Schema.org BreadcrumbList JSON-LD tag injected in `<svelte:head>`.
 	const btsBreadcrumbJsonLd = buildBreadcrumbJsonLdScript([
 		{ name: 'Home', url: 'https://music.raggiesoft.com/' },
 		{ name: 'Behind the Scenes', url: 'https://music.raggiesoft.com/behind-the-scenes' }
 	]);
 </script>
 
+<!--
+	`<svelte:head>` injects document-level metadata into `<head>`:
+	- `<title>` and `<meta name="description">` for browser tabs & search snippets.
+	- Canonical `rel="canonical"` link so search engines know the authoritative URL.
+	- `og:*` (Open Graph) & `twitter:*` tags so pasting this URL into Discord,
+	  iMessage, Facebook, or Bluesky renders a rich 1200x630 preview card.
+	- `{@html btsBreadcrumbJsonLd}` outputs the trusted JSON-LD `<script>` tag
+	  literally without escaping `<` and `>` into `&lt;` and `&gt;`.
+-->
 <svelte:head>
 	<title>Behind the Scenes: AI &amp; The Creative Process | The Listening Room</title>
 	<meta name="description" content={btsDescription} />
@@ -88,6 +110,10 @@
 
 	<!-- ===================================================================== -->
 	<!-- 2. THE THREE-PILLAR CREATIVE WORKFLOW                                 -->
+	<!-- `aria-labelledby="pillars-heading"` links this `<section>` landmark   -->
+	<!-- to its `<h2>` heading so screen-reader users can jump straight to it. -->
+	<!-- Responsive CSS Grid: 1 column on mobile, 3 equal columns on `lg:`     -->
+	<!-- (`>= 1024px`) viewports (`grid-cols-1 lg:grid-cols-3`).               -->
 	<!-- ===================================================================== -->
 	<section aria-labelledby="pillars-heading">
 		<div class="mb-5">

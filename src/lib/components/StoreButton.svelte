@@ -2,10 +2,27 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * StoreButton.svelte
+	 * src/lib/components/StoreButton.svelte — Split Streaming App & Storefront Button
 	 * ============================================================================
-	 * Universal Split DSP & Fourthwall Direct Storefront Component for
-	 * The Listening Room by Engine Room Records (music.raggiesoft.com).
+	 * Plain-English Overview (100-Level JavaScript & Svelte 5 Guide):
+	 *   How does this "Split Button" work across the whole website?
+	 *     1. Left half (`<a href={activePlatform.url}>`): Opens the album or artist
+	 *        directly on the listener's preferred streaming app (Spotify, Apple Music,
+	 *        Amazon Music, or YouTube Music), styled in that app's brand color.
+	 *     2. Right half (`<button>` chevron arrow): Opens a compact dropdown menu
+	 *        where choosing another app calls `dspManager.setPreferredDsp(id)`.
+	 *        Because `dspManager.preferredDsp` is a Svelte 5 `$state()` rune in
+	 *        `dspPreference.svelte.js`, switching it on ONE button updates EVERY
+	 *        `<StoreButton />` on the page and inside `<Player />` simultaneously!
+	 *
+	 *   Key DOM & Event Concepts Demonstrated Here:
+	 *     - `bind:this={containerEl}`: Gives JavaScript a direct reference to the
+	 *       wrapper `<div>` element on the page.
+	 *     - Outside-Click Dismissal (`handleWindowClick`): When the dropdown menu is
+	 *       open and the user clicks anywhere on `window`, `!containerEl.contains(e.target)`
+	 *       checks whether the click landed OUTSIDE this button—closing the menu cleanly!
+	 *     - `e.stopPropagation()` on the chevron toggle button prevents that click
+	 *       from bubbling up to `window` right as the menu opens.
 	 *
 	 * Modeled after `raggiesoft-hub/includes/components/store-button.php` with
 	 * reactive Svelte 5 state synchronization via `dspManager`.
@@ -36,6 +53,7 @@
 	import { dspManager } from '#lib/dspPreference.svelte.js';
 
 	/**
+	 * Component props destructured via Svelte 5 `$props()`.
 	 * @type {{
 	 *   type?: 'album' | 'artist',
 	 *   size?: 'small' | 'medium' | 'large',
@@ -66,11 +84,13 @@
 		compactLabel = false
 	} = $props();
 
+	// Local UI state tracking whether THIS specific button's dropdown menu is open
 	let menuOpen = $state(false);
+	// Populated by `bind:this={containerEl}` once the wrapper `<div>` mounts in the DOM
 	/** @type {HTMLDivElement | null} */
 	let containerEl = $state(null);
 
-	// Reactive list of available DSP platforms for this item
+	// Reactive list of available DSP platforms for this item (omits platforms with empty IDs)
 	let availablePlatforms = $derived(
 		dspManager.getAvailablePlatforms({
 			type,
@@ -82,7 +102,7 @@
 		})
 	);
 
-	// Reactive active platform (matches user's global default, or falls back to first available)
+	// Reactive active platform: automatically re-evaluates whenever `dspManager.preferredDsp` OR item IDs change!
 	let activePlatform = $derived(
 		dspManager.resolveActiveDsp({
 			type,
@@ -94,7 +114,7 @@
 		})
 	);
 
-	// Primary button text based on size, type, and compact mode
+	// Primary button text computed via `$derived.by()` based on `size`, `type`, and `compactLabel`
 	let primaryLabel = $derived.by(() => {
 		if (!activePlatform) return '';
 		if (size === 'small' || compactLabel) {
@@ -107,7 +127,7 @@
 			: activePlatform.config.upgradeLabel;
 	});
 
-	// Size-specific padding and typography classes
+	// Size-specific Tailwind padding and font-size classes for the left action link
 	let sizeClasses = $derived.by(() => {
 		if (size === 'small') {
 			return 'px-3 py-1.5 text-xs';
@@ -118,6 +138,7 @@
 		return 'px-3.5 py-2.5 text-xs sm:px-5 sm:py-3 sm:text-base';
 	});
 
+	// Size-specific Tailwind padding classes for the right dropdown chevron button
 	let chevronSizeClasses = $derived.by(() => {
 		if (size === 'small') {
 			return 'px-2 py-1.5 text-xs';
@@ -129,7 +150,7 @@
 	});
 
 	/**
-	 * Selects a platform as the user's global default and closes the dropdown.
+	 * Selects a platform as the user's global default (`localStorage`) and closes the dropdown.
 	 * @param {'spotify' | 'apple' | 'amazon' | 'youtube'} id
 	 */
 	function handleSelectPlatform(id) {
@@ -138,7 +159,7 @@
 	}
 
 	/**
-	 * Closes dropdown when clicking outside the button group.
+	 * Closes dropdown when clicking anywhere outside `containerEl`.
 	 * @param {MouseEvent} e
 	 */
 	function handleWindowClick(e) {
@@ -148,8 +169,10 @@
 	}
 </script>
 
+<!-- Listen for clicks anywhere in the window so clicking outside closes `menuOpen` -->
 <svelte:window onclick={handleWindowClick} />
 
+<!-- Render nothing at all if an album has neither DSP streaming links nor Fourthwall download links -->
 {#if activePlatform || (showFourthwall && (storeStandardUrl || storeAudiophileUrl || storefrontUrl))}
 	<div
 		bind:this={containerEl}
@@ -158,7 +181,7 @@
 		<!-- 1. SPLIT DSP STREAMING BUTTON -->
 		{#if activePlatform}
 			<div class="relative inline-flex max-w-full rounded-xl shadow-lg">
-				<!-- Main Action Link (Opens Preferred DSP in New Tab) -->
+				<!-- Main Action Link (Opens Preferred DSP in New Tab; rounded on left only if chevron is shown) -->
 				<a
 					href={activePlatform.url}
 					target="_blank"
@@ -170,7 +193,7 @@
 						: 'rounded-xl'}"
 					title="{primaryLabel} (Opens in new tab)"
 				>
-					<!-- Platform Brand SVG Icon -->
+					<!-- Platform Brand SVG Icon (selected conditionally via `{#if ... {:else if ...}`) -->
 					{#if activePlatform.id === 'spotify'}
 						<svg class="h-4 w-4 shrink-0 fill-current" viewBox="0 0 24 24" aria-hidden="true">
 							<path
@@ -201,7 +224,7 @@
 					<span class="text-[11px] opacity-85" aria-hidden="true">↗</span>
 				</a>
 
-				<!-- Split Dropdown Toggle (Set Global Default DSP) -->
+				<!-- Split Dropdown Toggle (Only shown when >= 2 streaming platforms exist for this release) -->
 				{#if availablePlatforms.length > 1}
 					<button
 						type="button"
@@ -230,6 +253,7 @@
 						</svg>
 					</button>
 
+					<!-- Floating Dropdown Menu (`role="menu"`) listing available platforms -->
 					{#if menuOpen}
 						<div
 							class="absolute top-full left-0 z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-slate-700/90 bg-slate-900 shadow-2xl"

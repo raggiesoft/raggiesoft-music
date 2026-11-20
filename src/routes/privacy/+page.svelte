@@ -2,35 +2,37 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * +page.svelte (Privacy Policy — /privacy)
+	 * FILE: src/routes/privacy/+page.svelte
+	 * URL SERVED: https://music.raggiesoft.com/privacy
 	 * ============================================================================
-	 * Architectural Overview:
-	 * Renders the Privacy Policy for The Listening Room (music.raggiesoft.com)
-	 * and the wider RaggieSoft network, operated by Michael P. Ragsdale (a
-	 * natural person residing in the Commonwealth of Virginia operating under
-	 * the unincorporated creative imprints RaggieSoft, RaggieSoft Media, and
-	 * Engine Room Records).
+	 * PLAIN-ENGLISH OVERVIEW FOR NEW WEB DEVELOPERS:
+	 * Placed inside `src/routes/privacy/`, this static Svelte component renders
+	 * the `/privacy` route (inheriting `prerender = true` from `src/routes/+layout.js`
+	 * so SvelteKit compiles `build/privacy.html` at build time).
 	 *
-	 * Key Disclosures:
-	 * 1. Natural-Person Data Controller Identity & Zero-Database Architecture:
-	 *    Explains that Michael P. Ragsdale operates The Listening Room as an
-	 *    individual creator with zero user accounts, zero login walls, and zero
-	 *    SQL/NoSQL backend databases.
-	 * 2. Local-First Browser Storage (`localStorage` & Service Worker Cache):
-	 *    - Playback position, preferred streaming service (`raggiesoft_preferred_dsp`),
-	 *      theme settings (`engine_room_settings`), and dismissed UI notices are stored
-	 *      exclusively on the listener's device and never sent to a remote server.
-	 * 3. Server Logs ("Jessica" NYC1) & CDN Delivery (`assets.raggiesoft.com`).
-	 * 4. Infrastructure & Edge Security (Cloudflare WAF/CDN).
-	 * 5. Anonymous Aggregate Telemetry (Google Analytics 4 — `G-P9RG9JVYB6`).
-	 * 6. Voluntary Scheduling & Email Correspondence (Microsoft Bookings / M365).
-	 * 7. E-Commerce Merchant of Record (Fourthwall Inc. — `store.raggiesoft.com`).
-	 * 8. VCDPA / CCPA / GDPR Rights, Children's Privacy & Revision Ledger.
+	 * WHAT THE USER SEES ON THIS SCREEN:
+	 * A clear, readable Privacy Policy explaining how The Listening Room works
+	 * without user accounts, login walls, or server-side customer databases:
+	 * 1. Natural-Person Operator Identity (Michael P. Ragsdale vs. fictional
+	 *    in-universe "LLC" entities).
+	 * 2. On-Device Browser Preferences (`localStorage` & Service Worker cache),
+	 *    which stay 100% on the listener's own device and can be reset in `/settings`.
+	 * 3. Standard Web Server Logs (DigitalOcean), Cloudflare edge protection,
+	 *    anonymous aggregate Google Analytics 4 (`G-P9RG9JVYB6`), voluntary
+	 *    Microsoft 365 / Bookings correspondence, and Fourthwall Merchant-of-Record
+	 *    separation (`store.raggiesoft.com`).
+	 * 4. VCDPA / CCPA / GDPR no-sale rights and a git-auditable revision ledger.
 	 * ============================================================================
 	 */
+
+	// `resolve('/settings')` generates a safe internal link to the Settings page
+	// where listeners can clear their locally stored browser preferences.
 	import { resolve } from '$app/paths';
+
+	// Generates Schema.org `BreadcrumbList` JSON-LD (`Home -> Privacy Policy`).
 	import { buildBreadcrumbJsonLdScript } from '#lib/seo.js';
 
+	// Concise <= 155-char description reused across standard, OpenGraph, and Twitter tags.
 	const privacyDescription =
 		'Privacy Policy for The Listening Room (music.raggiesoft.com) by Michael P. Ragsdale: zero user accounts, no customer databases, and private settings.';
 
@@ -40,6 +42,7 @@
 	]);
 </script>
 
+<!-- Document `<head>` metadata: title, canonical URL, OpenGraph/Twitter social cards, and JSON-LD -->
 <svelte:head>
 	<title>Privacy Policy | The Listening Room</title>
 	<meta name="description" content={privacyDescription} />
@@ -59,8 +62,9 @@
 	{@html privacyBreadcrumbJsonLd}
 </svelte:head>
 
+<!-- Main centered reading column (`max-w-4xl` keeps line lengths comfortable to read) -->
 <div class="mx-auto max-w-4xl space-y-8">
-	<!-- Header -->
+	<!-- Header: Hardcoded Effective & Last Updated dates (never auto-generated with `new Date()`) -->
 	<section class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl sm:p-10">
 		<span
 			class="inline-block rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 text-xs font-extrabold tracking-wider text-blue-300 uppercase"

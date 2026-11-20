@@ -2,10 +2,22 @@
 	/**
 	 * @license MIT
 	 * ============================================================================
-	 * ShareSection.svelte
+	 * src/lib/components/ShareSection.svelte — Social Share & OpenGraph Card Preview
 	 * ============================================================================
-	 * Book-Reader-Style Social Share & OpenGraph Preview Component for
-	 * Engine Room Records (music.raggiesoft.com).
+	 * Plain-English Overview (100-Level JavaScript & Browser Web APIs Guide):
+	 *   What does this component do?
+	 *     Renders a live preview of how the current Artist, Album, Track, or
+	 *     Playlist link will look when pasted into Discord, iMessage, Bluesky, or
+	 *     Facebook (`1200x630` OpenGraph card), paired with four sharing options:
+	 *       1. Facebook Share Intent URL (`encodeURIComponent(url)` safely escapes
+	 *          special URL characters like `:`, `/`, and `?` inside query strings).
+	 *       2. Bluesky Compose Intent URL (pre-fills a post with title + URL).
+	 *       3. Async Clipboard API (`navigator.clipboard.writeText(url)`), which
+	 *          copies the URL to the OS clipboard and shows `"✓ Copied!"` for 2.5s.
+	 *       4. Web Share API (`navigator.share(shareData)`), which opens the native
+	 *          iOS / Android / macOS system share sheet (AirDrop, Messages, Mail)
+	 *          and gracefully falls back to copying the link on desktop browsers
+	 *          that don't support `navigator.share`!
 	 *
 	 * Modeled directly after `raggiesoft-book-library/sophia/landing.php` and
 	 * `oliver.php` so listeners have an identical, reliable sharing experience
@@ -24,6 +36,7 @@
 	 * ============================================================================
 	 */
 
+	// Destructure component inputs via Svelte 5 `$props()` with sensible defaults
 	let {
 		title = 'Engine Room Records',
 		subtitle = 'Official Audio Platform',
@@ -33,11 +46,12 @@
 		sharePrompt = 'Share this release with friends and fellow listeners.'
 	} = $props();
 
+	// Reactive boolean (`$state`) that flips Copy buttons green ("✓ Copied!") for 2.5 seconds
 	let copied = $state(false);
 	/** @type {any} */
 	let copyTimer = null;
 
-	// Derived encoded URLs for Facebook & Bluesky social intents
+	// `$derived(...)` automatically recomputes these social share URLs whenever `url`, `title`, or `subtitle` changes!
 	let facebookShareUrl = $derived(
 		`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
 	);
@@ -47,7 +61,8 @@
 	);
 
 	/**
-	 * Copies the canonical link to the user's clipboard and triggers confirmation state.
+	 * Copies the canonical link to the user's clipboard using the async Browser Clipboard API
+	 * and resets the `"Copied!"` badge back to normal after 2,500 milliseconds.
 	 */
 	async function copyShareLink() {
 		if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -65,7 +80,8 @@
 	}
 
 	/**
-	 * Invokes the native device share sheet if available, falling back to clipboard copy.
+	 * Invokes the native OS share sheet (`navigator.share`) if supported by the browser/device,
+	 * falling back cleanly to `copyShareLink()` on desktop browsers without native share sheets.
 	 */
 	async function triggerNativeShare() {
 		const shareData = {
@@ -83,7 +99,7 @@
 				await navigator.share(shareData);
 				return;
 			} catch {
-				// User cancelled native share sheet; do nothing
+				// User cancelled native share sheet (`AbortError`); do nothing
 				return;
 			}
 		}
@@ -92,6 +108,7 @@
 	}
 </script>
 
+<!-- Two-column responsive card (`lg:grid-cols-12`: 7 columns for share buttons, 5 columns for visual card preview) -->
 <section
 	class="overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6 shadow-xl backdrop-blur-md sm:p-8"
 	aria-label="Share this page"
@@ -122,7 +139,7 @@
 				so your link looks great on Facebook, Bluesky, Discord, and iMessage.
 			</p>
 
-			<!-- Direct URL Display Box -->
+			<!-- Direct URL Display Box (`select-all` highlights the full URL when clicked) -->
 			<div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-2.5">
 				<span class="truncate px-2 font-mono text-xs text-slate-300 select-all">
 					{url}
@@ -140,7 +157,7 @@
 
 			<!-- Action Buttons (Facebook, Bluesky, Copy Link, Native Share) -->
 			<div class="flex flex-wrap items-center gap-3 pt-2">
-				<!-- Facebook Share Intent -->
+				<!-- Facebook Share Intent (`rel="noopener noreferrer"` protects window security on `target="_blank"`) -->
 				<a
 					href={facebookShareUrl}
 					target="_blank"
@@ -208,7 +225,7 @@
 			</div>
 		</div>
 
-		<!-- Right Column: Social Preview Card Visual (5 cols on lg) -->
+		<!-- Right Column: Social Preview Card Visual (5 cols on lg; `aspect-[1200/630]` matches standard OpenGraph 1.91:1 ratio) -->
 		<div class="lg:col-span-5">
 			<div
 				class="overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/90 shadow-2xl"
