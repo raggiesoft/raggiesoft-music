@@ -1,0 +1,12 @@
+# ============================================================================
+# .gitattributes — raggiesoft-music (music.raggiesoft.com)
+# ============================================================================
+# Marks the pre-rendered SvelteKit static export (`build/`), compiled catalog
+# JSON manifests, and lockfile as generated artifacts so GitHub Linguist
+# reports the true Svelte 5 + JavaScript source breakdown while keeping
+# `build/` tracked for zero-Node server deployment via `sarah-deploy.sh`.
+# ============================================================================
+build/** linguist-generated=true
+src/lib/data/musicCatalog.json linguist-generated=true
+src/lib/data/metadata.json linguist-generated=true
+package-lock.json linguist-generated=true
