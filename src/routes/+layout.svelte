@@ -291,7 +291,7 @@
 <div
 	class="flex min-h-screen max-w-full flex-col overflow-x-clip bg-slate-950 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] text-slate-100 selection:bg-blue-600 selection:text-white"
 >
-	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261017j) -->
+	<!-- Omnidirectional RaggieSoft Ecosystem Network Bar (Hidden on mobile < 768px via raggiesoft-network.css?v=20261121b) -->
 	<nav class="rs-network-bar" aria-label="RaggieSoft Ecosystem Network">
 		<div class="rs-network-bar-inner">
 			<span class="rs-network-label">✦ RaggieSoft Network:</span>
