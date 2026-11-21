@@ -68,49 +68,48 @@ function staticPwaAdapter(options = {}) {
 			// Step 4: Post-process generated HTML so social-media link previews (Discord, iMessage, Bluesky, Facebook)
 			// always find `<title>`, `<link rel="canonical">`, and `og:*` / `twitter:*` meta tags within the first ~2 KB
 			// of `<head>`, rather than buried underneath dozens of `<link rel="modulepreload">` tags.
-			// Normalize relative `./_app/` and `../_app/` asset references in generated HTML
-			// to root-relative `/_app/` AND hoist `<title>`, `<link rel="canonical">`, and
-			// SEO / OpenGraph / Twitter `<meta>` tags above SvelteKit's `modulepreload` block
-			// so social unfurlers and crawlers parse all primary metadata within the first ~2 KB.
+			//
+			// CRITICAL SVELTE 5 HYDRATION INVARIANT:
+			//   SvelteKit emits `%sveltekit.head%` in three consecutive sections:
+			//     1. Contiguous `<link href="/_app/immutable/..." rel="modulepreload">` links
+			//     2. `<title>...</title>` + `<!--<hash>--> ...all <svelte:head> tags... <!---->`
+			//     3. `<link href="/_app/immutable/assets/..." rel="stylesheet">`
+			//   Never pluck individual `<meta>` or `<link>` tags out from inside `<!--<hash>-->...<!---->`,
+			//   because Svelte 5's client `head(hash, ...)` hydration walks exact `nextSibling` offsets starting
+			//   at `<!--<hash>-->`! Instead, we swap Section 1 (`modulepreload` links) and Section 2 (the entire
+			//   atomic `<svelte:head>` block, untouched) so all SEO/OpenGraph tags sit at the top of `<head>` AND
+			//   every DOM node inside `<!--<hash>-->...<!---->` stays 100% intact for Svelte 5 hydration!
 			/** @param {string} rawHtml */
 			function hoistSeoHeadTagsAbovePreloads(rawHtml) {
-				// Find where SvelteKit's `<link href="/_app/immutable/..."` preload block starts inside `<head>`
-				const preloadStart = rawHtml.indexOf('<link href="/_app/immutable/');
 				const headEnd = rawHtml.indexOf('</head>');
-				if (preloadStart === -1 || headEnd === -1 || preloadStart > headEnd) {
+				if (headEnd === -1) {
 					return rawHtml;
 				}
-				// Slice out the portion of `<head>` from the first preload link down to `</head>`
-				const headSlice = rawHtml.slice(preloadStart, headEnd);
-				/** @type {string[]} */
-				const hoisted = [];
-				const titleRegex = /<title\b[^>]*>[\s\S]*?<\/title>/gi;
-				const canonicalRegex = /<link\b[^>]*rel=["']canonical["'][^>]*>/gi;
-				const seoMetaRegex =
-					/<meta\b[^>]*(?:name=["'](?:description|robots|twitter:[^"']+)["']|property=["'](?:og:[^"']+|music:[^"']+)["'])[^>]*>/gi;
+				const headContent = rawHtml.slice(0, headEnd);
 
-				// Extract matching SEO tags into `hoisted[]` while removing them from their lower position
-				let strippedSlice = headSlice
-					.replace(titleRegex, (m) => {
-						hoisted.push(m);
-						return '';
-					})
-					.replace(canonicalRegex, (m) => {
-						hoisted.push(m);
-						return '';
-					})
-					.replace(seoMetaRegex, (m) => {
-						hoisted.push(m);
-						return '';
-					});
+				// Match the contiguous block of `<link href="/_app/immutable/..." rel="modulepreload">` lines
+				// followed immediately by the intact `<svelte:head>` payload up to the stylesheet `<link>`!
+				const svelteHeadSwapRegex =
+					/((?:[ \t]*<link\s+href="\/_app\/immutable\/[^"]+"\s+rel="modulepreload"\s*\/?>\r?\n)+)([\s\S]*?)(?=[ \t]*<link\s+href="\/_app\/immutable\/assets\/)/;
 
-				if (hoisted.length === 0) {
+				const swappedHead = headContent.replace(
+					svelteHeadSwapRegex,
+					(fullMatch, preloadBlock, svelteHeadBlock) => {
+						// SPA fallback (`200.html`) has an empty `<svelte:head>` slot—leave it unchanged
+						if (!svelteHeadBlock || !svelteHeadBlock.trim()) {
+							return fullMatch;
+						}
+						const normalizedHeadBlock = svelteHeadBlock.endsWith('\n')
+							? svelteHeadBlock
+							: svelteHeadBlock + '\n';
+						return normalizedHeadBlock + preloadBlock;
+					}
+				);
+
+				if (swappedHead === headContent) {
 					return rawHtml;
 				}
-
-				// Reassemble HTML with the hoisted SEO tags placed immediately BEFORE `<link href="/_app/immutable/...">`
-				const formattedHoisted = hoisted.join('\n\t\t') + '\n\t\t';
-				return rawHtml.slice(0, preloadStart) + formattedHoisted + strippedSlice + rawHtml.slice(headEnd);
+				return swappedHead + rawHtml.slice(headEnd);
 			}
 
 			// Recursively walk every folder in `build/` to rewrite relative `../_app/` paths to `/_app/`

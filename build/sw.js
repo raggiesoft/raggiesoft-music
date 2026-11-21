@@ -36,10 +36,10 @@
  * ============================================================================
  */
 
-// Versioned cache bucket names. Bumping `v7` -> `v8` in a future release triggers
+// Versioned cache bucket names. Bumping `v8` -> `v9` in a future release triggers
 // automatic cleanup of old cached assets inside the `activate` listener below.
-const CACHE_NAME = 'err-pwa-v7';
-const STATIC_CACHE = 'err-static-v7';
+const CACHE_NAME = 'err-pwa-v8';
+const STATIC_CACHE = 'err-static-v8';
 
 // Core "App Shell" URLs saved immediately when the Service Worker installs.
 // Exclude /manifest.json from precache and bypass in fetch so ManifestUpdateManager

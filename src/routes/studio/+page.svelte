@@ -1274,7 +1274,7 @@
 			<!--
 				Displays `generatedVttText` live inside a `readonly` `<textarea>` so you can
 				visually inspect the exact `WEBVTT` + `NOTE SYNC_TYPE: HUMAN_VERIFIED` +
-				`HH:MM:SS.mmm --> HH:MM:SS.mmm` cue blocks as you hold/release Spacebar!
+				`HH:MM:SS.mmm -> HH:MM:SS.mmm` cue blocks as you hold/release Spacebar!
 			-->
 			<div
 				class="flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 lg:col-span-4"
