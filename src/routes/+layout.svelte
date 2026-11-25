@@ -856,6 +856,30 @@
 					Privacy Policy
 				</a>
 				<a
+					href="https://raggiesoft.com/about/privacy"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="transition-colors hover:text-blue-400"
+				>
+					Network Privacy ↗
+				</a>
+				<a
+					href="https://raggiesoft.com/about/terms"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="transition-colors hover:text-blue-400"
+				>
+					Network Terms ↗
+				</a>
+				<a
+					href="https://raggiesoft.com/about/ai-disclaimer"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="transition-colors hover:text-blue-400"
+				>
+					AI &amp; Creative Process ↗
+				</a>
+				<a
 					href="https://raggiesoft.com/raggiesoft-media/licensing/commercial"
 					target="_blank"
 					rel="noopener noreferrer"
