@@ -529,7 +529,7 @@ function batchCompileStardustParsedown(markdownItems) {
 				const parsed = JSON.parse(res.stdout);
 				if (Array.isArray(parsed) && parsed.length === markdownItems.length) {
 					console.log(
-						`✨ Compiled ${markdownItems.length} Markdown lore/lyric blocks via stardust-parsedown.php`
+						`✅ Compiled ${markdownItems.length} Markdown lore/lyric blocks via stardust-parsedown.php`
 					);
 					return parsed;
 				}
