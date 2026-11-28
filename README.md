@@ -15,7 +15,7 @@ Production audio streaming Progressive Web App (PWA) and browser-based **WebVTT 
 - **Hold-Spacebar WebVTT Caption Studio (`/studio`)**: Interactive in-browser caption timing tool engineered to align vocal phrasing and export W3C-compliant `WEBVTT` files (`NOTE SYNC_TYPE: HUMAN_VERIFIED`) for synchronized lyric/caption display.
 - **OS MediaSession & Offline-Ready PWA**: Integrates native lock-screen, media-key, and Control Center metadata/artwork controls via the W3C `navigator.mediaSession` API alongside a Web App Manifest.
 - **Build-Time Static Catalog & SEO Validator (`scripts/build-catalog.js` & `scripts/validate-seo.js`)**: Compiles structured album/track JSON manifests into `550+` static routes with verified OpenGraph tags, Twitter Cards, canonical URLs, and a unified `sitemap.xml`—requiring zero server-side SQL databases.
-- **Code-Level WCAG 2.1 AA & Section 508 Web Accessibility**: Semantic HTML5 controls, full keyboard focus management across modals and tracklists, `autoplay: false` enforcement, and verified $\ge 4.5:1$ contrast across Light and Dark (`prefers-color-scheme`) themes.
+- **Code-Level WCAG 2.1 AA & Section 508 Web Accessibility**: Semantic HTML5 controls, full keyboard focus management across modals and tracklists, `autoplay: false` enforcement, and verified ≥ 4.5:1 contrast across Light and Dark (`prefers-color-scheme`) themes.
 
 ---
 
